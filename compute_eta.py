@@ -9,7 +9,7 @@ Created on Mon Oct 25 17:35:21 2021
 import numpy as np
 import math
 
-def etaLow(N,k,beta):
+def etaLow(N, k, beta, verbose=False):
     '''
     Rootfinding problem to compute the lower bound on the satprob (eta)
 
@@ -56,12 +56,13 @@ def etaLow(N,k,beta):
     
     eta_star = t1
     
-    # print('Compute remainder..')
-    # print('Remainder is:',remainder(k,N,eta_star,beta))
+    if verbose:
+        print('Compute remainder..')
+        print('Remainder is:',remainder(k,N,eta_star,beta))
     
     return eta_star
 
-def betaLow(N,k,eta):
+def betaLow(N, k, eta, verbose=False):
     '''
     Rootfinding problem to compute the lower bound on the satprob (eta)
 
@@ -99,7 +100,8 @@ def betaLow(N,k,eta):
     b2 = 1
     
     while b2-b1 > 1E-10:
-        print(' -- Diff is',np.abs(b2-b1))
+        if verbose:
+            print(' -- Diff is',np.abs(b2-b1))
         
         b = (b1+b2)/2
         
