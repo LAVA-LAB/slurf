@@ -1,4 +1,5 @@
 import stormpy as sp
+import math
 
 class ModelSamplerInterface:
     """
@@ -47,10 +48,10 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     This simple interface builds a parametric CTMC and then uses an instantation checker to check the model.
     """
 
-
     def __init__(self):
         self._model = None
         self._properties = None
+        self._parameters = None
 
     def load(self, model, properties):
         """
@@ -66,15 +67,17 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         """
         program = sp.parse_prism_program(model)
         event, time_bounds = properties[0], properties[1]
-        property_strings = [f"P=? [ F<={t} '{event}' ]" for t in properties]
+        property_strings = [f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds]
         self._properties = sp.parse_properties_for_prism_program(";".join(property_strings), program)
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
-        self._model = sp.build_sparse_model_with_options(program, options)
-        # TODO get parameters
+        self._model = sp.build_sparse_parametric_model_with_options(program, options)
+        self._parameters = list(self._model.collect_all_parameters())
         # TODO instantiation checker
+        return { p: (0, math.inf) for p in self._parameters}
+
 
     def sample(self, id, sample_point, property_ids=None, store=False):
         # TODO query instantiatino checker.
+        pass
 
-    
 
