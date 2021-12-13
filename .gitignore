@@ -140,4 +140,5 @@ cython_debug/
 # PyCharm
 .idea/
 
-
+# Tmp file for CTMC extraction from DFT
+tmp_ctmc.drn
