@@ -2,6 +2,7 @@ import stormpy as sp
 import stormpy.pars
 import math
 
+
 class ModelSamplerInterface:
     """
     Describes the interface for sampling parametric models.
@@ -51,6 +52,7 @@ class ModelSamplerInterface:
         Some object that can be exported to CSV or JSON with interesting stats
         """
 
+
 class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     """
     This simple interface builds a parametric CTMC and then uses an instantiation checker to check the model.
@@ -85,8 +87,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Create instantiation model checker
         self._inst_checker = sp.pars.PCtmcInstantiationChecker(self._model)
         # Return all parameters each with range (0 infinity)
-        return { p: (0, math.inf) for p in self._parameters}
-
+        return {p: (0, math.inf) for p in self._parameters}
 
     def sample(self, id, sample_point, property_ids=None, store=False):
         # Set property ids (use all if none are given)
@@ -102,11 +103,10 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         for prop_id in prop_ids:
             # Specify formula
             formula = self._properties[prop_id].raw_formula
-            self._inst_checker.specify_formula(sp.ParametricCheckTask(formula, True)) # Only initial states
+            self._inst_checker.specify_formula(sp.ParametricCheckTask(formula, True))  # Only initial states
             # Check CTMC
             result = self._inst_checker.check(env, point).at(self._init_state)
             # Add result
             results[prop_id] = result
 
         return results
-

@@ -12,5 +12,6 @@ def _path(folder, file):
     """
     return os.path.join(testfile_dir, folder, file)
 
+
 dummy_file = _path("", "dft.drn")
 tiny_pctmc = _path("", "tiny.sm")
