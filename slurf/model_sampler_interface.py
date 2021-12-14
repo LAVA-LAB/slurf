@@ -71,6 +71,19 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Return all parameters each with range (0 infinity)
         return {p: (0, math.inf) for p in self._parameters}
 
+    def prepare_properties(self, properties, program=None):
+        if isinstance(properties, list):
+            # List of properties
+            property_string = ";".join(properties)
+        else:
+            # Given as tuple (reachability label, [time bounds])
+            event, time_bounds = properties[0], properties[1]
+            property_string = ";".join([f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds])
+        if program is not None:
+            self._properties = sp.parse_properties_for_prism_program(property_string, program)
+        else:
+            self._properties = sp.parse_properties(property_string)
+
     def load(self, model, properties):
         """
 
@@ -86,9 +99,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Load prism program
         program = sp.parse_prism_program(model)
         # Create properties
-        event, time_bounds = properties[0], properties[1]
-        property_strings = [f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds]
-        self._properties = sp.parse_properties_for_prism_program(";".join(property_strings), program)
+        self.prepare_properties(properties, program)
         # Build (sparse) CTMC
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
         model = sp.build_sparse_parametric_model_with_options(program, options)
@@ -148,15 +159,13 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         dft = sp.dft.load_parametric_dft_galileo_file(model)
 
         # Create properties
-        event, time_bounds = properties[0], properties[1]
-        property_strings = [f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds]
-        self._properties = sp.parse_properties(";".join(property_strings))
+        self.prepare_properties(properties)
 
         # Use the first property to generate the CTMC state space
         # Obtain CTMC by exporting to DRN format and loading again
         # TODO: implement dedicated methods
         drn_file = "tmp_ctmc.drn"
         sp.set_settings(["--io:exportexplicit", drn_file])
-        tmp_prop = sp.parse_properties(f'T=? [ F "{event}" ]')[0]
+        tmp_prop = sp.parse_properties(f'T=? [ F "failed" ]')[0]
         stormpy.dft.analyze_parametric_dft(dft, [tmp_prop.raw_formula])
         return self.init_from_model(sp.build_parametric_model_from_drn(drn_file))

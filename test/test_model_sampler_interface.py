@@ -15,6 +15,16 @@ class TestModelSampler:
         assert math.isclose(result[1], 0.9427719189)
         assert math.isclose(result[2], 0.9987049333)
 
+    def test_CTMC_properties(self):
+        sampler = CtmcReliabilityModelSamplerInterface()
+        properties = ['P=? [ F<=5 "full" ]', 'P=? [ F=1 "empty" ]']
+        parameters_with_bounds = sampler.load(testutils.tiny_pctmc, properties)
+        parameter_objects_by_name = {p.name: p for p in parameters_with_bounds.keys()}
+        assert "p" in parameter_objects_by_name
+        result = sampler.sample(1, {parameter_objects_by_name["p"]: 0.3})
+        assert math.isclose(result[0], 0.9427719189)
+        assert math.isclose(result[1], 0.2720439223)
+
     # TODO: only one DFT call can be enabled because otherwise the setting '--exportexplicit' is set multiple times
     # def test_DFT(self):
     #     sampler = DftReliabilityModelSamplerInterface()
