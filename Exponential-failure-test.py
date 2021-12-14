@@ -5,9 +5,6 @@ Created on Wed Dec  8 13:49:38 2021
 @author: Thom Badings
 """
 
-
-from scipy.stats import beta as betaF
-
 import seaborn as sns
 
 import numpy as np
