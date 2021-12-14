@@ -120,7 +120,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         """
         # Load prism program
-        program = sp.parse_prism_program(model)
+        program = sp.parse_prism_program(model, prism_compat=True)
         # Create properties
         self.prepare_properties(properties, program)
         # Build (sparse) CTMC
