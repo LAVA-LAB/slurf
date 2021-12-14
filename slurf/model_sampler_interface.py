@@ -19,14 +19,14 @@ class ModelSamplerInterface:
     def load(self, model, properties):
         """
 
+        Initialize sampler with model and properties.
+
         Parameters
         ----------
-        model Description file for the (parametric) model
-        properties An (ordered) set of properties to be evaluated
+        model Description file for the (parametric) model.
+        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
 
-        Returns
-        -------
-        A dictionary that maps the parameter objects used for sampling later to upper and lower bounds.
+        Returns Dict of all parameters and their bounds (default [0, infinity)).
         """
 
     def sample(self, id, sample_point, property_ids=None, store=False):
@@ -60,6 +60,17 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     """
 
     def init_from_model(self, model):
+        """
+        Initialize sampler from CTMC model.
+
+        Parameters
+        ----------
+        model CTMC.
+
+        Returns Dict of all parameters and their bounds (default [0, infinity)).
+        -------
+
+        """
         self._model = model
         # Get (unique) initial state
         assert len(self._model.initial_states) == 1
@@ -72,6 +83,16 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         return {p: (0, math.inf) for p in self._parameters}
 
     def prepare_properties(self, properties, program=None):
+        """
+        Set properties.
+
+        Parameters
+        ----------
+        properties Properties either given as a tuple (event, [time bounds]) or a list of properties.
+        program Prism program (optional).
+        -------
+
+        """
         if isinstance(properties, list):
             # List of properties
             property_string = ";".join(properties)
@@ -87,12 +108,14 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     def load(self, model, properties):
         """
 
+        Initialize sampler with model and properties.
+
         Parameters
         ----------
-        model A CTMC with a label d
-        properties Properties here is a tuple (event, [time bounds])
+        model A CTMC with a label.
+        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
 
-        Returns
+        Returns Dict of all parameters and their bounds (default [0, infinity)).
         -------
 
         """
@@ -149,7 +172,7 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         Parameters
         ----------
         model A DFT with parametric failure rates.
-        properties Properties here is a tuple (event, [time bounds]).
+        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
 
         Returns Dictionary of parameters and their bounds.
         -------
