@@ -1,7 +1,11 @@
 import numpy as np
 import cvxpy as cp
-import math
-import copy
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from compute_eta import etaLow
+
 
 class scenarioProblem:
     """
@@ -39,7 +43,7 @@ class scenarioProblem:
         x_star = prob.value
 
         support_mask = np.ones(self.Nsamples, dtype=bool)
-        keep_mask = np.zeros(self.Nsamples, dtype=bool)
+        relaxed_mask = np.zeros(self.Nsamples, dtype=bool)
 
         # For every non-relaxed sample, check its dual values
         for i in range(self.Nsamples):
@@ -48,7 +52,7 @@ class scenarioProblem:
 
             # If any xi is nonzero, sample definitely belongs to support set
             if any(~np.isclose(sol['xi'][i, :], 0)):
-                keep_mask[i] = True
+                relaxed_mask[i] = True
 
             else:
                 # If all dual values are zero, sample is not associated with
@@ -57,12 +61,14 @@ class scenarioProblem:
                     support_mask[i] = False
 
         # Remove every sample which is definitely not of support
-        samples_keep = self.samples[keep_mask]
-        samples_left = self.samples[support_mask * ~keep_mask, :]
+        samples_keep = self.samples[relaxed_mask]
+        samples_left = self.samples[support_mask * ~relaxed_mask, :]
 
-        print('Length keep set:', len(samples_keep))
-        print('Length left set:', len(samples_left))
-        print('Removed:', sum(support_mask == 0))
+        nr_discarded = sum(relaxed_mask)
+
+        print(' - Number of relaxed samples:', len(samples_keep))
+        print(' - Number of remaining samples:', len(samples_left))
+        print(' - Samples in interior of region:', sum(support_mask == 0))
 
         # Iteratively remove other samples
         while True:
@@ -70,11 +76,8 @@ class scenarioProblem:
             if len(samples_left) == 0:
                 break
 
-            print('Samples left:',len(samples_left))
-            n = 0
-
             mask = np.ones(len(samples_left), dtype=bool)
-            mask[n] = False
+            mask[0] = False
 
             current_samples = np.vstack((samples_left[mask], samples_keep))
 
@@ -85,19 +88,13 @@ class scenarioProblem:
                any(~np.isclose(sol['x_width'], solB['x_width'])):
 
                 # Move current sample to the 'keep' set
-                samples_keep = np.vstack((samples_keep, samples_left[n]))
-                samples_left = samples_left[mask]
+                samples_keep = np.vstack((samples_keep, samples_left[0]))
 
-                print('Keep sample!')
+            # Remove current sample from set
+            samples_left = samples_left[mask]
 
-            else:
-            # If the objective is still the same, we can safely remove it
-
-                # Remove current sample from set
-                samples_left = samples_left[mask]
-
-        complexity = len(samples_left) + len(samples_keep)
-        print('Complexity is', complexity)
+        nr_support = len(samples_keep) - nr_discarded
+        complexity = (nr_support, nr_discarded)
 
         return sol, complexity, x_star
 
@@ -140,3 +137,69 @@ def solve(samples, costOfRegret):
         }
 
     return prob, sol
+
+
+def compute_slurf(Tlist, samples, rho_list, beta=0.99):
+    """
+
+    Parameters
+    ----------
+    Tlist List of time points to evaluate at
+    samples 2D Numpy array of samples
+    Nsamples Number of samples
+    rho_list List of the values of rho for which the scenario program is solved
+    -------
+
+    """
+
+    Nsamples = len(samples)
+
+    # Create plot
+    fig, ax = plt.subplots()
+    plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.3)
+
+    # Set colors and markers
+    colors = sns.color_palette()
+    markers = ['o', '*', 'x', '.', '+']
+
+    x_low = {}
+    x_upp = {}
+    Pviolation = np.zeros(len(rho_list))
+
+    problem = scenarioProblem(samples)
+
+    for i, rho in enumerate(rho_list):
+
+        print('\nInitialize scenario problem; cost of violation: {}'.format(rho))
+
+        sol, c_star, x_star = problem.rectangular(rho)
+        x_mean = sol['x_mean']
+        x_width = sol['x_width']
+
+        Pviolation[i] = np.round(1 - etaLow(Nsamples, sum(c_star), beta), 4)
+
+        print('Upper bound on violation probability:', Pviolation[i])
+
+        # Plot confidence regions
+        labelStr = r'$\rho$: '+str(rho) + \
+            r'; support: '+str(c_star[0]) + \
+            r'; discard: '+str(c_star[1]) + \
+            r'; $\epsilon$: ' + str(np.round(Pviolation[i], 2))
+
+        x_low[i] = x_mean - x_width
+        x_upp[i] = x_mean + x_width
+
+        plt.plot(Tlist, x_low[i], lw=2, marker=markers[i],
+                 color=colors[i], label=labelStr)
+        plt.plot(Tlist, x_upp[i], lw=2, marker=markers[i],
+                 color=colors[i])
+
+    plt.xlabel('Time')
+    plt.ylabel('Probability of zero infected')
+
+    ax.set_title("Probability of zero infected population over time (N={} samples)".format(Nsamples))
+
+    plt.legend(prop={'size': 6})
+    plt.show()
+
+    return Pviolation, x_low, x_upp
