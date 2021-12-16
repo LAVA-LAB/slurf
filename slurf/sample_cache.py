@@ -33,8 +33,9 @@ def export_sample_cache(sample_cache, file):
     for sample in sample_cache.get_samples():
         samples_json.append({
             "valuation": sample.get_valuation(),
-            "result": sample.get_result()}
-        )
+            "result": sample.get_result(),
+            "refined": sample.is_refined()
+        })
     with open(file, 'wb') as out:
         pickle.dump(samples_json, out)
 
@@ -45,6 +46,5 @@ def import_sample_cache(file):
         samples = SampleCache()
         for sjson in samples_json:
             sample = samples.add_sample(sjson["valuation"])
-            for res in sjson["result"]:
-                sample.add_result(res)
+            sample.add_results(sjson["result"])
         return samples

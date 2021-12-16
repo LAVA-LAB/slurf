@@ -58,7 +58,7 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        samples Cache of samples to check.
+        samples List of samples to check.
 
         Returns
         -------
@@ -213,13 +213,15 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         env = sp.Environment()
         # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+        results = []
         for prop in self._properties:
             # Specify formula
             self._inst_checker.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
             # Check CTMC
-            result = self._inst_checker.check(env, storm_valuation).at(self._init_state)
-            # Add result
-            sample_point.add_result(result)
+            # TODO: allow approximate computations
+            results.append(self._inst_checker.check(env, storm_valuation).at(self._init_state))
+        # Add result
+        sample_point.add_results(results, refined=True)
 
         return sample_point
 
@@ -249,10 +251,14 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Get corresponding sample point
         sample = self._samples.get_sample(sample_id)
 
+        # TODO refine sample
+        results = sample.get_result()
+        print("Warning: no refinement takes place")
+        sample.update_results(results)
+
         self._time_sample += time.process_time() - time_start
         self._refined_samples += 1
-        # TODO: Not implemented yet
-        assert False
+        return sample
 
     def refine_batch(self, sample_ids):
         time_start = time.process_time()
@@ -260,11 +266,15 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Get corresponding sample points
         samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
 
+        for sample in samples:
+            # TODO refine sample
+            results = sample.get_result()
+            print("Warning: no refinement takes place")
+            sample.update_results(results)
+
         self._time_sample += time.process_time() - time_start
         self._refined_samples += len(samples)
-
-        # TODO: Not implemented yet
-        assert False
+        return samples
 
 
 class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):

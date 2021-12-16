@@ -61,17 +61,17 @@ class TestModelSampler:
         sampler = CtmcReliabilityModelSamplerInterface()
         parameters_with_bounds = sampler.load(testutils.tiny_pctmc, ("full", [1, 5, 10]))
         assert "p" in parameters_with_bounds
-        results = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}])
-        assert len(results) == 3
-        result0 = results[0].get_result()
+        samples = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}])
+        assert len(samples) == 3
+        result0 = samples[0].get_result()
         assert math.isclose(result0[0], 0.1734083474)
         assert math.isclose(result0[1], 0.9427719189)
         assert math.isclose(result0[2], 0.9987049333)
-        result1 = results[1].get_result()
+        result1 = samples[1].get_result()
         assert math.isclose(result1[0], 0.1626966733)
         assert math.isclose(result1[1], 0.9112407511)
         assert math.isclose(result1[2], 0.9958568149)
-        result2 = results[2].get_result()
+        result2 = samples[2].get_result()
         assert math.isclose(result2[0], 0.1527927762)
         assert math.isclose(result2[1], 0.8761070032)
         assert math.isclose(result2[2], 0.9904796978)
@@ -88,3 +88,24 @@ class TestModelSampler:
         assert stats['no_properties'] == 3
         assert stats['sample_calls'] == 1
         assert stats['refined_samples'] == 0
+
+    def test_refine_batch_ctmc(self):
+        sampler = CtmcReliabilityModelSamplerInterface()
+        parameters_with_bounds = sampler.load(testutils.tiny_pctmc, ("full", [1, 5, 10]))
+        assert "p" in parameters_with_bounds
+        samples = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}])
+        assert len(samples) == 3
+
+        samples_refined = sampler.refine_batch([samples[0].get_id(), samples[2].get_id()])
+        sample0 = samples_refined[0]
+        assert sample0.is_refined()
+        result0 = sample0.get_result()
+        assert math.isclose(result0[0], 0.1734083474)
+        assert math.isclose(result0[1], 0.9427719189)
+        assert math.isclose(result0[2], 0.9987049333)
+        sample2 = samples_refined[1]
+        assert sample2.is_refined()
+        result2 = sample2.get_result()
+        assert math.isclose(result2[0], 0.1527927762)
+        assert math.isclose(result2[1], 0.8761070032)
+        assert math.isclose(result2[2], 0.9904796978)
