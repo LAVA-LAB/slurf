@@ -3,7 +3,7 @@ ctmc
 const double ki;
 const double kr;
 
-const int maxPop = 100;
+const int maxPop = 20;
 const int initS = maxPop-5;
 const int initI = 5;
 const int initR = 0;

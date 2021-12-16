@@ -42,7 +42,7 @@ def sample_solutions(Nsamples, Tlist, model):
     param_obj_by_name = {p.name: p for p in parameters_with_bounds.keys()}
 
     samples = np.zeros((Nsamples, len(Tlist)))
-    parameters = np.random.uniform(low=[0.05, 0.05], high=[0.3, 0.3],
+    parameters = np.random.uniform(low=[0.05, 0.05], high=[0.1, 0.1],
                                    size=(Nsamples, 2))
 
     for n in range(Nsamples):
@@ -93,7 +93,9 @@ def compute_slurf(Tlist, samples, Nsamples, rho_list):
 
     for i, rho in enumerate(rho_list):
 
-        x_mean, x_width, c_star, x_star = problem.rectangular(rho)
+        sol, c_star, x_star = problem.rectangular(rho)
+        x_mean = sol['x_mean']
+        x_width = sol['x_width']
 
         print("\nThe optimal value is", x_star)
         print('Complexity of penalty-based program:', c_star)
@@ -150,14 +152,15 @@ print("Script started at:", printTime())
 # Generate samples
 Tlist = np.arange(10, 100+1, 15)
 
-Nsamples = 400
+Nsamples = 100
 
 # Generate given number of solutions to the parametric model
 model = _path("", "sir.sm")
 samples = sample_solutions(Nsamples, Tlist, model)
 
 # Values of rho (cost of regret) at which to solve the scenario program
-rho_list = [2, 0.5, 0.1, 0.05, 0.01]
+f = 8
+rho_list = [10, 10/(f**1), 10/(f**2), 10/(f**3), 10/(f**4)]
 
 # %%
 

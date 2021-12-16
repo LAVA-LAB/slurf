@@ -1,6 +1,7 @@
 import numpy as np
 import cvxpy as cp
 import math
+import copy
 
 class scenarioProblem:
     """
@@ -19,7 +20,7 @@ class scenarioProblem:
         self.samples = samples
         self.Nsamples, self.dim = np.shape(self.samples)
 
-    def rectangular(self, costOfRegret = 1):
+    def rectangular(self, costOfRegret=1, debug=False):
         """
 
         Parameters
@@ -32,85 +33,110 @@ class scenarioProblem:
 
         """
 
-        obj, x_mean, x_width, prob, constraints_low, constraints_upp = \
-            self._solve(self.samples, costOfRegret)
+        # Solve initial problem with all constraints
+        prob, sol = solve(self.samples, costOfRegret)
 
         x_star = prob.value
 
-        # Determine complexity of the solution
-        support_set = np.ones(self.Nsamples)
+        support_mask = np.ones(self.Nsamples, dtype=bool)
+        keep_mask = np.zeros(self.Nsamples, dtype=bool)
 
         # For every non-relaxed sample, check its dual values
         for i in range(self.Nsamples):
-            # # Otherwise, check its dual values
+            LB_dual = sol['constraints_low'][i].dual_value
+            UB_dual = sol['constraints_upp'][i].dual_value
 
-            LB_dual = constraints_low[i].dual_value
-            UB_dual = constraints_upp[i].dual_value
+            # If any xi is nonzero, sample definitely belongs to support set
+            if any(~np.isclose(sol['xi'][i, :], 0)):
+                keep_mask[i] = True
 
-            # If all dual values are zero, sample is not associated with any
-            # active constraint
-            active_count = sum(~np.isclose(LB_dual, 0)) + sum(~np.isclose(UB_dual, 0))
-            support_set[i] = active_count
+            else:
+                # If all dual values are zero, sample is not associated with
+                # any active constraint
+                if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)):
+                    support_mask[i] = False
 
         # Remove every sample which is definitely not of support
-        samples_bar = self.samples[support_set > 0, :]
+        samples_keep = self.samples[keep_mask]
+        samples_left = self.samples[support_mask * ~keep_mask, :]
+
+        print('Length keep set:', len(samples_keep))
+        print('Length left set:', len(samples_left))
+        print('Removed:', sum(support_mask == 0))
 
         # Iteratively remove other samples
-        done = False
-        while not done:
+        while True:
 
-            something_removed = False
+            if len(samples_left) == 0:
+                break
 
-            for n in range(len(samples_bar)):
-                mask = np.zeros(len(samples_bar), dtype=bool)
-                mask[n] = 1
+            print('Samples left:',len(samples_left))
+            n = 0
 
-                _, y_mean, y_width, _, _, _ = self._solve(samples_bar[mask], costOfRegret)
+            mask = np.ones(len(samples_left), dtype=bool)
+            mask[n] = False
 
-                # If objective is still the same, remove this sample
-                if all(np.isclose(x_mean.value, y_mean.value)) and \
-                   all(np.isclose(x_width.value, y_width.value)):
-                    something_removed = True
+            current_samples = np.vstack((samples_left[mask], samples_keep))
 
-                    # Remove current sample from set
-                    samples_bar = samples_bar[mask]
-                    break
+            _, solB = solve(current_samples, costOfRegret)
 
-            if not something_removed:
-                done = True
+            # If the objective has changed, we must keep this sample
+            if any(~np.isclose(sol['x_mean'], solB['x_mean'])) or \
+               any(~np.isclose(sol['x_width'], solB['x_width'])):
 
-        complexity = len(samples_bar)
-        print('Complexity ')
+                # Move current sample to the 'keep' set
+                samples_keep = np.vstack((samples_keep, samples_left[n]))
+                samples_left = samples_left[mask]
 
-        return x_mean.value, x_width.value, complexity, x_star
+                print('Keep sample!')
 
-    def _solve(self, samples, costOfRegret):
+            else:
+            # If the objective is still the same, we can safely remove it
 
-        Nsamples, dim = np.shape(samples)
+                # Remove current sample from set
+                samples_left = samples_left[mask]
 
-        # Define convex optimization program
-        x_mean = cp.Variable(dim, nonneg=True)
-        x_width = cp.Variable(dim, nonneg=True)
+        complexity = len(samples_left) + len(samples_keep)
+        print('Complexity is', complexity)
 
-        # Define regret/slack variables
-        xi = cp.Variable((Nsamples, dim), nonneg=True)
+        return sol, complexity, x_star
 
-        # Cost of violation
-        rho = cp.Parameter()
-        rho.value = costOfRegret
 
-        constraints_low = []
-        constraints_upp = []
+def solve(samples, costOfRegret):
 
-        # Add constraints for each samples
-        for n in range(Nsamples):
+    Nsamples, dim = np.shape(samples)
 
-            constraints_low += [samples[n, :] >= x_mean - x_width - xi[n, :]]
-            constraints_upp += [samples[n, :] <= x_mean + x_width + xi[n, :]]
+    # Define convex optimization program
+    x_mean = cp.Variable(dim, nonneg=True)
+    x_width = cp.Variable(dim, nonneg=True)
 
-        obj = cp.Minimize(sum(x_width) + rho * sum(xi @ np.ones(dim)))
+    # Define regret/slack variables
+    xi = cp.Variable((Nsamples, dim), nonneg=True)
 
-        prob = cp.Problem(obj, constraints_low + constraints_upp)
-        prob.solve(solver='GUROBI')
+    # Cost of violation
+    rho = cp.Parameter()
+    rho.value = costOfRegret
 
-        return obj, x_mean, x_width, prob, constraints_low, constraints_upp
+    constraints_low = []
+    constraints_upp = []
+
+    # Add constraints for each samples
+    for n in range(Nsamples):
+
+        constraints_low += [samples[n, :] >= x_mean - x_width - xi[n, :]]
+        constraints_upp += [samples[n, :] <= x_mean + x_width + xi[n, :]]
+
+    obj = cp.Minimize(sum(x_width) + rho * sum(xi @ np.ones(dim)))
+
+    prob = cp.Problem(obj, constraints_low + constraints_upp)
+    prob.solve() #solver='GUROBI')
+
+    sol = {
+        'x_mean': x_mean.value,
+        'x_width': x_width.value,
+        'xi': xi.value,
+        'constraints_low': constraints_low,
+        'constraints_upp': constraints_upp
+        }
+
+    return prob, sol
