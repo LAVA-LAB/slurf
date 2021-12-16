@@ -21,7 +21,10 @@ class ModelSamplerInterface:
         self._inst_checker = None
         self._samples = None
         # Statistics
+        self._states_orig = 0
+        self._transitions_orig = 0
         self._time_load = 0
+        self._time_bisim = 0
         self._time_sample = 0
         self._sample_calls = 0
         self._refined_samples = 0
@@ -102,12 +105,15 @@ class ModelSamplerInterface:
         return {
             "model_states": self._model.nr_states,
             "model_transitions:": self._model.nr_transitions,
+            "orig_model_states": self._states_orig,
+            "orig_model_transitions": self._transitions_orig,
             "no_parameters": len(self._parameters),
             "no_samples": len(self._samples.get_samples()),
             "no_properties": len(self._properties),
             "sample_calls": self._sample_calls,
             "refined_samples": self._refined_samples,
             "time_load": round(self._time_load, 4),
+            "time_bisim": round(self._time_bisim, 4),
             "time_sample": round(self._time_sample, 4)
         }
 
@@ -140,6 +146,15 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         """
         self._model = model
+        # Simplify model
+        # Keep track of size of original model
+        self._states_orig = self._model.nr_states
+        self._transitions_orig = self._model.nr_transitions
+        time_start = time.process_time()
+        # Apply bisimulation minimisation
+        self._model = sp.perform_bisimulation(self._model, self._properties, sp.BisimulationType.STRONG)
+        self._time_bisim = time.process_time() - time_start
+
         # Get (unique) initial state
         assert len(self._model.initial_states) == 1
         self._init_state = self._model.initial_states[0]
