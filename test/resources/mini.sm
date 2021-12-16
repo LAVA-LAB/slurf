@@ -1,0 +1,13 @@
+ctmc
+
+const double p;
+
+module one
+  s : [0 .. 7] init 0;
+  <> s=0 -> 1/2 : (s'=7);
+  <> s<3 -> 3/2 : (s'=s+1);
+  <> s>0 -> p : (s'=s-1);
+endmodule
+
+label "empty" = s=0;
+label "full" = s=3;
