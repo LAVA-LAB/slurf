@@ -221,10 +221,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._time_load = time.process_time() - time_start
         return parameters
 
-    def _sample(self, valuation):
-        self.check_correct_valuation(valuation)
-        sample_point = self._samples.add_sample(valuation)
-
+    def _sample(self, sample_point):
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
@@ -237,24 +234,40 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             lb, ub = self._inst_checker_approx.check(storm_valuation)
             results.append((lb, ub))
         # Add result
-        sample_point.add_results(results, refined=False)
+        sample_point.set_results(results, refined=False)
         return sample_point
 
-    def sample(self, valuation):
+    def sample(self, valuation, exact=False):
+
+        # Create sample point
+        self.check_correct_valuation(valuation)
+        sample_point = self._samples.add_sample(valuation)
+
+        if exact:
+            return self._refine(sample_point)
+
         time_start = time.process_time()
-        sample_point = self._sample(valuation)
+        sample_point = self._sample(sample_point)
         self._time_sample += time.process_time() - time_start
         self._sample_calls += 1
         return sample_point
 
-    def sample_batch(self, samples):
-        time_start = time.process_time()
+    def sample_batch(self, samples, exact=False):
+        # Create sample points
+        sample_points = []
+        for valuation in samples:
+            self.check_correct_valuation(valuation)
+            sample_points.append(self._samples.add_sample(valuation))
 
+        if exact:
+            # TODO: more efficient
+            return self.refine_batch([s.get_id() for s in sample_points])
+
+        time_start = time.process_time()
         results = dict()
         # TODO: use better approach than simply iterating
-        for valuation in samples:
-            sample_point = self._sample(valuation)
-            results[sample_point.get_id()] = sample_point
+        for sample_point in sample_points:
+            results[sample_point.get_id()] = self._sample(sample_point)
 
         self._time_sample += time.process_time() - time_start
         self._sample_calls += len(samples)
@@ -277,7 +290,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             # Check CTMC
             results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
         # Add result
-        sample_point.update_results(results)
+        sample_point.set_results(results, True)
+        return sample_point
 
     def refine(self, sample_id):
         time_start = time.process_time()

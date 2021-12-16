@@ -6,7 +6,7 @@ import math
 
 class TestModelSampler:
 
-    def test_ctmc(self):
+    def test_ctmc_refine(self):
         sampler = CtmcReliabilityModelSamplerInterface()
         parameters_with_bounds = sampler.load(testutils.tiny_pctmc, ("full", [1, 5, 10]))
         assert "p" in parameters_with_bounds
@@ -27,8 +27,7 @@ class TestModelSampler:
         properties = ['P=? [ F<=5 "full" ]', 'P=? [ F=1 "empty" ]']
         parameters_with_bounds = sampler.load(testutils.tiny_pctmc, properties)
         assert "p" in parameters_with_bounds
-        sample = sampler.sample({"p": 0.3})
-        sample = sampler.refine(sample.get_id())
+        sample = sampler.sample({"p": 0.3}, exact=True)
         result = sample.get_result()
         assert math.isclose(result[0], 0.9427719189)
         assert math.isclose(result[1], 0.2720439223)
@@ -51,16 +50,14 @@ class TestModelSampler:
         assert "y" in parameters_with_bounds
 
         # First sample point
-        sample1 = sampler.sample({"x": 0.5, "y": 1})
-        sample1 = sampler.refine(sample1.get_id())
+        sample1 = sampler.sample({"x": 0.5, "y": 1}, exact=True)
         result1 = sample1.get_result()
         assert math.isclose(result1[0], 0.692290873)
         assert math.isclose(result1[1], 0.8773735196)
         assert math.isclose(result1[2], 0.9548882389)
 
         # Second sample point
-        sample2 = sampler.sample({"x": 1, "y": 0.5})
-        sample2 = sampler.refine(sample2.get_id())
+        sample2 = sampler.sample({"x": 1, "y": 0.5}, exact=True)
         result2 = sample2.get_result()
         assert math.isclose(result2[0], 0.524342103)
         assert math.isclose(result2[1], 0.6967346701)
@@ -70,9 +67,7 @@ class TestModelSampler:
         sampler = CtmcReliabilityModelSamplerInterface()
         parameters_with_bounds = sampler.load(testutils.tiny_pctmc, ("full", [1, 5, 10]))
         assert "p" in parameters_with_bounds
-        samples = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}])
-        assert len(samples) == 3
-        samples = sampler.refine_batch(samples.keys())
+        samples = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}], exact=True)
         assert len(samples) == 3
         result0 = samples[0].get_result()
         assert math.isclose(result0[0], 0.1734083474)

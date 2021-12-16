@@ -11,9 +11,7 @@ class TestApproximateChecker:
         model = sp.build_parametric_model(program, properties)
         pars = model.collect_all_parameters()
         checker = ApproximateChecker(model)
-        instance = {p : pc.cln.Rational(0.5) for p in pars}
+        instance = {p: pc.cln.Rational(0.5) for p in pars}
         checker.specify_formula(properties[0].raw_formula)
         lb, ub = checker.check(instance)
         assert lb <= 0.9112407511268089 <= ub
-
-

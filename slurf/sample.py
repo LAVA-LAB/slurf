@@ -12,14 +12,9 @@ class Sample:
     def get_valuation(self):
         return self._valuation
 
-    def add_results(self, results, refined=False):
+    def set_results(self, results, refined=False):
         self._results = results
         self._refined = refined
-
-    def update_results(self, results):
-        assert len(results) == len(self._results)
-        self._refined = True
-        self._results = results
 
     def get_result(self):
         return self._results
