@@ -3,12 +3,14 @@ import stormpy.pars
 
 import math
 
+
 class ApproximateChecker:
     def __init__(self, pctmc):
         self._original_model = pctmc
         self._abort_label = "deadl"
         self._subcheckers = dict()
         self._environment = sp.Environment()
+        self._lb_formula = None
 
     def check(self, instantiation):
         checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
@@ -49,5 +51,5 @@ class ApproximateChecker:
         # TODO actually implement useful selection strategies here.
         selected_outgoing_transitions = sp.BitVector(self._original_model.nr_states, True)
         selected_outgoing_transitions.set(3, False)
-        selected_outgoing_transitions.set(6, False)
+        selected_outgoing_transitions.set(1, False)
         return selected_outgoing_transitions

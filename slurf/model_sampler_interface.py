@@ -1,4 +1,5 @@
 from slurf.sample_cache import SampleCache
+from slurf.approximate_ctmc_checker import ApproximateChecker
 
 import stormpy as sp
 import stormpy.pars
@@ -18,7 +19,8 @@ class ModelSamplerInterface:
         self._init_state = None
         self._properties = None
         self._parameters = None
-        self._inst_checker = None
+        self._inst_checker_approx = None
+        self._inst_checker_exact = None
         self._samples = None
         # Statistics
         self._states_orig = 0
@@ -160,8 +162,11 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._init_state = self._model.initial_states[0]
         # Get parameters
         self._parameters = {p.name: p for p in self._model.collect_all_parameters()}
-        # Create instantiation model checker
-        self._inst_checker = sp.pars.PCtmcInstantiationChecker(self._model)
+
+        # Create instantiation model checkers
+        self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._model)
+        self._inst_checker_approx = ApproximateChecker(self._model)
+
         # Create sample cache
         self._samples = SampleCache()
         # Return all parameters each with range (0 infinity)
@@ -223,21 +228,16 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
-        # Parameter valuation must be graph preserving
-        self._inst_checker.set_graph_preserving(True)
-
-        env = sp.Environment()
         # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
         results = []
         for prop in self._properties:
             # Specify formula
-            self._inst_checker.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
+            self._inst_checker_approx.specify_formula(prop.raw_formula)
             # Check CTMC
-            # TODO: allow approximate computations
-            results.append(self._inst_checker.check(env, storm_valuation).at(self._init_state))
+            lb, ub = self._inst_checker_approx.check(storm_valuation)
+            results.append((lb, ub))
         # Add result
-        sample_point.add_results(results, refined=True)
-
+        sample_point.add_results(results, refined=False)
         return sample_point
 
     def sample(self, valuation):
@@ -260,16 +260,32 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._sample_calls += len(samples)
         return results
 
+    def _refine(self, sample_point):
+        assert not sample_point.is_refined()
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Parameter valuation must be graph preserving
+        self._inst_checker_exact.set_graph_preserving(True)
+
+        env = sp.Environment()
+        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+        results = []
+        for prop in self._properties:
+            # Specify formula
+            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
+            # Check CTMC
+            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
+        # Add result
+        sample_point.update_results(results)
+
     def refine(self, sample_id):
         time_start = time.process_time()
 
         # Get corresponding sample point
         sample = self._samples.get_sample(sample_id)
-
-        # TODO refine sample
-        results = sample.get_result()
-        print("Warning: no refinement takes place")
-        sample.update_results(results)
+        # Refine sample
+        self._refine(sample)
 
         self._time_sample += time.process_time() - time_start
         self._refined_samples += 1
@@ -282,10 +298,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
 
         for sample in samples:
-            # TODO refine sample
-            results = sample.get_result()
-            print("Warning: no refinement takes place")
-            sample.update_results(results)
+            # Refine sample
+            self._refine(sample)
 
         self._time_sample += time.process_time() - time_start
         self._refined_samples += len(samples)
