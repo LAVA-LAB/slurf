@@ -4,16 +4,22 @@ import stormpy.pars
 import math
 
 class ApproximateChecker:
-    def __init__(self, pctmc, formula):
+    def __init__(self, pctmc):
         self._original_model = pctmc
-        self._lb_formula = formula
         self._abort_label = "deadl"
         self._subcheckers = dict()
         self._environment = sp.Environment()
 
     def check(self, instantiation):
         checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
-        return checker.check(self._environment, instantiation).at(initial_state), math.inf
+        checker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
+        lb = checker.check(self._environment, instantiation).at(initial_state)
+        # TODO specify correct formula
+        ub = math.inf
+        return lb, ub
+
+    def specify_formula(self, formula):
+        self._lb_formula = formula
 
     def _get_submodel_instantiation_checker(self, instantiation):
         if "all" in self._subcheckers:
@@ -24,7 +30,6 @@ class ApproximateChecker:
             assert len(submodel.initial_states) == 1
             init_state = submodel.initial_states[0]
             subchecker = sp.pars.PCtmcInstantiationChecker(submodel)
-            subchecker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
             self._subcheckers["all"] = (subchecker, init_state)
         return subchecker, init_state
 
