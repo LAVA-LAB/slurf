@@ -1,7 +1,11 @@
+from slurf.sample_cache import SampleCache
+
 import stormpy as sp
 import stormpy.pars
 import stormpy.dft
+
 import math
+import time
 
 
 class ModelSamplerInterface:
@@ -15,6 +19,12 @@ class ModelSamplerInterface:
         self._properties = None
         self._parameters = None
         self._inst_checker = None
+        self._samples = None
+        # Statistics
+        self._time_load = 0
+        self._time_sample = 0
+        self._sample_calls = 0
+        self._refined_samples = 0
 
     def load(self, model, properties):
         """
@@ -26,32 +36,90 @@ class ModelSamplerInterface:
         model Description file for the (parametric) model.
         properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
 
-        Returns Dict of all parameters and their bounds (default [0, infinity)).
+        Returns Dict of all parameters and their bounds (default bounds are [0, infinity)).
         """
 
-    def sample(self, id, sample_point, property_ids=None, store=False):
+    def sample(self, valuation):
         """
-        Analyse the model
+        Analyse the model according to a sample point.
 
         Parameters
         ----------
-        id An identifier that can be used later if we want to get some refinement or the like
-        sample_point The point that we want to sample in form of a dictionary from parameters to values
-        property_ids The properties to be evaluated as indexed, if None, then all properties should be checked
-        store Should we store the model to file for later reconsideration?
+        valuation Parameter valuation in form of a dictionary from parameters to values.
 
         Returns
         -------
-        A dictionary with for every property id the result of evaluating the model on the corresponding property
+        Sample point containing the result of evaluating the model for each property.
+        """
+
+    def sample_batch(self, samples):
+        """
+        Analyse the model according to a batch of sample points.
+
+        Parameters
+        ----------
+        samples Cache of samples to check.
+
+        Returns
+        -------
+        A dictionary of results corresponding to the names of the sample points.
+        """
+
+    def refine(self, sample_id):
+        """
+        Refine sample point and obtain exact result.
+
+        Parameters
+        ----------
+        sample_id Id of sample to refine.
+
+        Returns
+        -------
+        Sample point containing the refined result.
+        """
+
+    def refine_batch(self, sample_ids):
+        """
+        Refine sample points and obtain exact result.
+
+        Parameters
+        ----------
+        sample_ids Ids of samples to refine.
+
+        Returns
+        -------
+        A dictionary of results corresponding to the names of the sample points.
         """
 
     def get_stats(self):
         """
+        Get statistics on model and timings.
 
         Returns
         -------
-        Some object that can be exported to CSV or JSON with interesting stats
+        Dictionary  with interesting stats
         """
+        return {
+            "model_states": self._model.nr_states,
+            "model_transitions:": self._model.nr_transitions,
+            "no_parameters": len(self._parameters),
+            "no_samples": len(self._samples.get_samples()),
+            "no_properties": len(self._properties),
+            "sample_calls": self._sample_calls,
+            "refined_samples": self._refined_samples,
+            "time_load": round(self._time_load, 4),
+            "time_sample": round(self._time_sample, 4)
+        }
+
+    def check_correct_valuation(self, valuation):
+        # Check that a valuation instantiates all parameters
+        if len(valuation) != len(self._parameters):
+            print("ERROR: not all parameters are instantiated by valuation")
+            assert False
+        for param in valuation.keys():
+            if param not in self._parameters:
+                print("ERROR: parameter {} is not given in valuation".format(param))
+                assert False
 
 
 class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
@@ -76,11 +144,13 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         assert len(self._model.initial_states) == 1
         self._init_state = self._model.initial_states[0]
         # Get parameters
-        self._parameters = list(self._model.collect_all_parameters())
+        self._parameters = {p.name: p for p in self._model.collect_all_parameters()}
         # Create instantiation model checker
         self._inst_checker = sp.pars.PCtmcInstantiationChecker(self._model)
+        # Create sample cache
+        self._samples = SampleCache()
         # Return all parameters each with range (0 infinity)
-        return {p: (0, math.inf) for p in self._parameters}
+        return {p: (0, math.inf) for p in self._parameters.keys()}
 
     def prepare_properties(self, properties, program=None):
         """
@@ -119,41 +189,82 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         -------
 
         """
+        time_start = time.process_time()
         # Load prism program
-        program = sp.parse_prism_program(model)
+        program = sp.parse_prism_program(model, prism_compat=True)
         # Create properties
         self.prepare_properties(properties, program)
         # Build (sparse) CTMC
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
         model = sp.build_sparse_parametric_model_with_options(program, options)
-        return self.init_from_model(model)
+        parameters = self.init_from_model(model)
+        self._time_load = time.process_time() - time_start
+        return parameters
 
-    def sample(self, id, sample_point, property_ids=None, store=False):
-        # Set property ids (use all if none are given)
-        prop_ids = range(len(self._properties)) if property_ids is None else property_ids
+    def _sample(self, valuation):
+        self.check_correct_valuation(valuation)
+        sample_point = self._samples.add_sample(valuation)
 
-        # Check that sample point instantiates all parameters
-        if len(sample_point) != len(self._parameters):
-            print("ERROR: not all parameters are instantiated by sample point")
-            assert False
-        # Create sample point
-        point = {p: sp.RationalRF(val) for p, val in sample_point.items()}
-        # Sample point must be graph preserving
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Parameter valuation must be graph preserving
         self._inst_checker.set_graph_preserving(True)
 
         env = sp.Environment()
-        results = {}
         # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        for prop_id in prop_ids:
+        for prop in self._properties:
             # Specify formula
-            formula = self._properties[prop_id].raw_formula
-            self._inst_checker.specify_formula(sp.ParametricCheckTask(formula, True))  # Only initial states
+            self._inst_checker.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
             # Check CTMC
-            result = self._inst_checker.check(env, point).at(self._init_state)
+            result = self._inst_checker.check(env, storm_valuation).at(self._init_state)
             # Add result
-            results[prop_id] = result
+            sample_point.add_result(result)
 
+        return sample_point
+
+    def sample(self, valuation):
+        time_start = time.process_time()
+        sample_point = self._sample(valuation)
+        self._time_sample += time.process_time() - time_start
+        self._sample_calls += 1
+        return sample_point
+
+    def sample_batch(self, samples):
+        time_start = time.process_time()
+
+        results = dict()
+        # TODO: use better approach than simply iterating
+        for valuation in samples:
+            sample_point = self._sample(valuation)
+            results[sample_point.get_id()] = sample_point
+
+        self._time_sample += time.process_time() - time_start
+        self._sample_calls += len(samples)
         return results
+
+    def refine(self, sample_id):
+        time_start = time.process_time()
+
+        # Get corresponding sample point
+        sample = self._samples.get_sample(sample_id)
+
+        self._time_sample += time.process_time() - time_start
+        self._refined_samples += 1
+        # TODO: Not implemented yet
+        assert False
+
+    def refine_batch(self, sample_ids):
+        time_start = time.process_time()
+
+        # Get corresponding sample points
+        samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
+
+        self._time_sample += time.process_time() - time_start
+        self._refined_samples += len(samples)
+
+        # TODO: Not implemented yet
+        assert False
 
 
 class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
@@ -163,7 +274,7 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
     """
 
     def __init__(self):
-        super(ModelSamplerInterface, self).__init__()
+        super(CtmcReliabilityModelSamplerInterface, self).__init__()
         self._dft = None
 
     def load(self, model, properties):
@@ -178,8 +289,9 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         -------
 
         """
+        time_start = time.process_time()
         # Load DFT from Galileo file
-        dft = sp.dft.load_parametric_dft_galileo_file(model)
+        self._dft = sp.dft.load_parametric_dft_galileo_file(model)
 
         # Create properties
         self.prepare_properties(properties)
@@ -190,5 +302,14 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         drn_file = "tmp_ctmc.drn"
         sp.set_settings(["--io:exportexplicit", drn_file])
         tmp_prop = sp.parse_properties(f'T=? [ F "failed" ]')[0]
-        stormpy.dft.analyze_parametric_dft(dft, [tmp_prop.raw_formula])
-        return self.init_from_model(sp.build_parametric_model_from_drn(drn_file))
+        stormpy.dft.analyze_parametric_dft(self._dft, [tmp_prop.raw_formula])
+        parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file))
+        self._time_load = time.process_time() - time_start
+        return parameters
+
+    def get_stats(self):
+        stats = super(CtmcReliabilityModelSamplerInterface, self).get_stats()
+        stats["dft_be"] = self._dft.nr_be()
+        stats["dft_elements"] = self._dft.nr_elements()
+        stats["dft_dynamic"] = self._dft.nr_dynamic()
+        return stats
