@@ -46,5 +46,5 @@ def import_sample_cache(file):
         samples = SampleCache()
         for sjson in samples_json:
             sample = samples.add_sample(sjson["valuation"])
-            sample.add_results(sjson["result"])
+            sample.set_results(sjson["result"], sjson["refined"])
         return samples

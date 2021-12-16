@@ -10,7 +10,7 @@ class TestSampleCache:
         assert sample0._id == 0
         sample1 = sample_cache.add_sample({"p": 0.7})
         sample2 = sample_cache.add_sample({"p": 0.2})
-        sample2.add_results([0.6])
+        sample2.set_results([0.6])
         assert sample1._id == 1
         assert sample2._id == 2
         assert sample_cache.get_sample(2).get_valuation()["p"] == 0.2
