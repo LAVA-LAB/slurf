@@ -1,9 +1,9 @@
-import os
 import numpy as np
-from datetime import datetime
+import os
 
 from sample_SIR import sample_SIR
 from slurf.scenario_problem import compute_slurf
+from slurf.commons import getTime
 
 
 def _path(folder, file):
@@ -18,33 +18,28 @@ def _path(folder, file):
     return os.path.join(testfile_dir, folder, file)
 
 
-def getTime():
+np.random.seed(10)
 
-    now = datetime.now()
-    current_time = now.strftime("%H:%M:%S")
-
-    return current_time
-
-
-startTime = getTime()
+start, startTime = getTime()
 print("Script started at:", startTime)
 
 # Generate samples
-Tlist = np.arange(10, 100+1, 5)
+Tlist = np.arange(20, 140+1, 10)
 
-Nsamples = 300
+Nsamples = 100
 
 # Generate given number of solutions to the parametric model
-model = _path("", "sir.sm")
+model = _path("", "sir20.sm")
+
 sampler, sampleIDs, results = sample_SIR(Nsamples, Tlist, model)
 
-# Values of rho (cost of regret) at which to solve the scenario program
-# f = 3
-# rho_list = np.round([1, 1/(f**1), 1/(f**2), 1/(f**3), 1/(f**4)], 3)
-rho_list = [1, 0.1, 0.06, 0.03, 0.015]
+min_rho = 0.004
+increment_factor = 2
+beta = 0.9
 
 # Compute SLURF and plot
-Pviolation, x_low, x_upp = compute_slurf(Tlist, results, rho_list, beta=0.99)
+Pviolation, x_low, x_upp = compute_slurf(Tlist, results, beta,
+                                         min_rho, increment_factor)
 
-endTime = getTime()
+end, endTime = getTime()
 print("Script done at:", endTime)

@@ -32,8 +32,18 @@ def etaLow(N, k, beta, verbose=False):
     # Compute combination (i, k) in logarithmic base (term 1)
     m1 = np.array([np.arange(k,N+1)])
     
-    aux1 = np.sum( np.triu(np.log( np.repeat(m1, N-k+1, axis=0)), 1), axis=1 )
-    aux2 = np.sum( np.triu(np.log( np.repeat(m1-k, N-k+1, axis=0)), 1), axis=1)
+    # aux1_old = np.sum( np.triu(np.log( np.repeat(m1, N-k+1, axis=0)), 1), axis=1 )
+    # aux2_old = np.sum( np.triu(np.log( np.repeat(m1-k, N-k+1, axis=0)), 1), axis=1)
+
+    rep1 = np.repeat(m1, N-k+1, axis=0)
+    log1 = np.array([[np.log(val) if val != 0 else 0 for val in row]
+                     for row in rep1 ])
+    aux1 = np.sum( np.triu(log1, 1), axis=1 )
+    
+    rep2 = np.repeat(m1-k, N-k+1, axis=0)
+    log2 = np.array([[np.log(val) if val != 0 else 0 for val in row]
+                     for row in rep2 ])
+    aux2 = np.sum( np.triu(log2, 1), axis=1)
     
     coeffs1 = aux2 - aux1
     

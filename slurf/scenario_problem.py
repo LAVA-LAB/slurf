@@ -4,7 +4,7 @@ import cvxpy as cp
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from compute_eta import etaLow
+from slurf.compute_bound import etaLow
 
 
 class scenarioProblem:
@@ -12,143 +12,143 @@ class scenarioProblem:
     Functions related to the scenario optimization part.
     """
 
-    def __init__(self, samples):
-        """
-
-        Parameters
-        ----------
-        samples n x m array, with each row an m-dimensional sample
-
-        """
+    def init_problem(self, samples, sample_ids):
 
         self.samples = samples
+        self.sample_ids = sample_ids
         self.Nsamples, self.dim = np.shape(self.samples)
 
-    def rectangular(self, costOfRegret=1, debug=False):
-        """
+        # Define convex optimization program
+        self.xU = cp.Variable(self.dim, nonneg=True)
+        self.xL = cp.Variable(self.dim, nonneg=True)
 
-        Parameters
-        ----------
-        costOfRegret cost of violation parameter (rho in the paper)
+        # Define regret/slack variables
+        self.xi = cp.Variable((self.Nsamples, self.dim), nonneg=True)
 
-        Returns
-        -------
-        Mean and width of optimal solution, complexity, and optimal cost.
+        # Cost of violation
+        self.rho = cp.Parameter()
 
-        """
+        # Define slack variables (to enable/disable individual constraints)
+        self.param = cp.Parameter(self.Nsamples)
+        self.slack = cp.Variable(self.Nsamples)
+
+        self.constraints_low = []
+        self.constraints_upp = []
+
+        # Add constraints
+        for n in range(self.Nsamples):
+
+            self.constraints_low += \
+                [self.samples[n, :] >= self.xL -
+                 self.xi[n, :] - cp.multiply(self.param[n], self.slack[n])]
+            self.constraints_upp += \
+                [self.samples[n, :] <= self.xU +
+                 self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
+
+        # Objective function
+        self.obj = cp.Minimize(sum(self.xU - self.xL) +
+                               self.rho * cp.sum(self.xi))
+
+        self.prob = cp.Problem(self.obj, [self.xU >= self.xL] +
+                               self.constraints_low + self.constraints_upp)
+
+    def solve_instance(self, disable_mask, costOfRegret):
+
+        # Set current parameters
+        self.param.value = disable_mask
+        self.rho.value = costOfRegret
+
+        # Solve optimization problem
+        self.prob.solve(warm_start=True)
+
+        # Return solution
+        sol = {
+            'xL': self.xL.value,
+            'xU': self.xU.value,
+            'xi': self.xi.value,
+            'constraints_low': self.constraints_low,
+            'constraints_upp': self.constraints_upp
+            }
+
+        return self.prob.value, sol
+
+    def solve(self, costOfRegret=1):
+
+        print('Solve problem of size:', self.Nsamples)
 
         # Solve initial problem with all constraints
-        prob, sol = solve(self.samples, costOfRegret)
+        mask = np.zeros(self.Nsamples)
+        value, sol = self.solve_instance(mask, costOfRegret)
 
-        x_star = prob.value
-
+        # Initialize masks
+        interior_mask = np.zeros(self.Nsamples, dtype=bool)
         support_mask = np.ones(self.Nsamples, dtype=bool)
-        relaxed_mask = np.zeros(self.Nsamples, dtype=bool)
 
         # For every non-relaxed sample, check its dual values
         for i in range(self.Nsamples):
             LB_dual = sol['constraints_low'][i].dual_value
             UB_dual = sol['constraints_upp'][i].dual_value
 
-            # If any xi is nonzero, sample definitely belongs to support set
-            if any(~np.isclose(sol['xi'][i, :], 0)):
-                relaxed_mask[i] = True
+            if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)):
 
-            else:
-                # If all dual values are zero, sample is not associated with
-                # any active constraint
-                if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)):
-                    support_mask[i] = False
+                interior_mask[i] = True
+                support_mask[i] = False
 
-        # Remove every sample which is definitely not of support
-        samples_keep = self.samples[relaxed_mask]
-        samples_left = self.samples[support_mask * ~relaxed_mask, :]
+        print(' - Samples in interior of region:', sum(interior_mask))
 
-        nr_discarded = sum(relaxed_mask)
+        # Reduce the size of the problem by removing all samples in interior
+        # self.init_problem(self.samples[~interior_mask])
+        # support_mask = support_mask[~interior_mask]
 
-        print(' - Number of relaxed samples:', len(samples_keep))
-        print(' - Number of remaining samples:', len(samples_left))
-        print(' - Samples in interior of region:', sum(support_mask == 0))
+        for i in range(self.Nsamples):
 
-        # Iteratively remove other samples
-        while True:
+            # If current sample is in interior, or is relaxed, we can skip it
+            if not support_mask[i] or any(sol['xi'][i] > 0.01):
+                continue
 
-            if len(samples_left) == 0:
-                break
+            # Disable the samples that are: not of support and are not relaxed
+            disable_mask = np.array(~support_mask, dtype=int)
+            disable_mask[i] = 1
 
-            mask = np.ones(len(samples_left), dtype=bool)
-            mask[0] = False
+            # Solve the optimization problem
+            _, solB = self.solve_instance(disable_mask, costOfRegret)
 
-            current_samples = np.vstack((samples_left[mask], samples_keep))
+            # If the objective has not changed, this sample is not of support
+            if all(np.isclose(sol['xL'], solB['xL'])) and \
+               all(np.isclose(sol['xU'], solB['xU'])):
 
-            _, solB = solve(current_samples, costOfRegret)
+                support_mask[i] = 0
 
-            # If the objective has changed, we must keep this sample
-            if any(~np.isclose(sol['x_mean'], solB['x_mean'])) or \
-               any(~np.isclose(sol['x_width'], solB['x_width'])):
+            del disable_mask
 
-                # Move current sample to the 'keep' set
-                samples_keep = np.vstack((samples_keep, samples_left[0]))
+        complexity = sum(support_mask)
 
-            # Remove current sample from set
-            samples_left = samples_left[mask]
+        print(' - Complexity:', complexity)
 
-        nr_support = len(samples_keep) - nr_discarded
-        complexity = (nr_support, nr_discarded)
+        # Compute IDs of the samples which are in the interior
+        exterior_ids = self.sample_ids[~interior_mask]
 
-        return sol, complexity, x_star
+        return sol, complexity, value, exterior_ids
 
 
-def solve(samples, costOfRegret):
-
-    Nsamples, dim = np.shape(samples)
-
-    # Define convex optimization program
-    x_mean = cp.Variable(dim, nonneg=True)
-    x_width = cp.Variable(dim, nonneg=True)
-
-    # Define regret/slack variables
-    xi = cp.Variable((Nsamples, dim), nonneg=True)
-
-    # Cost of violation
-    rho = cp.Parameter()
-    rho.value = costOfRegret
-
-    constraints_low = []
-    constraints_upp = []
-
-    # Add constraints for each samples
-    for n in range(Nsamples):
-
-        constraints_low += [samples[n, :] >= x_mean - x_width - xi[n, :]]
-        constraints_upp += [samples[n, :] <= x_mean + x_width + xi[n, :]]
-
-    obj = cp.Minimize(sum(x_width) + rho * sum(xi @ np.ones(dim)))
-
-    prob = cp.Problem(obj, constraints_low + constraints_upp)
-    prob.solve() #solver='GUROBI')
-
-    sol = {
-        'x_mean': x_mean.value,
-        'x_width': x_width.value,
-        'xi': xi.value,
-        'constraints_low': constraints_low,
-        'constraints_upp': constraints_upp
-        }
-
-    return prob, sol
-
-
-def compute_slurf(Tlist, samples, rho_list, beta=0.99):
+def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, factor=2,
+                  itermax=8):
     """
 
     Parameters
     ----------
     Tlist List of time points to evaluate at
     samples 2D Numpy array of samples
-    Nsamples Number of samples
-    rho_list List of the values of rho for which the scenario program is solved
+    beta Confidence probability (close to one means good)
+    rho_min Cost of violation used in first iteration
+    factor Multiplication factor to increase rho with
+    itermax Maximum number of iterations to do over increasing rho
     -------
+
+    Returns
+    ----------
+    Pviolation, x_low, x_upp Results for the slurfs in all iterations
+    ----------
 
     """
 
@@ -159,45 +159,77 @@ def compute_slurf(Tlist, samples, rho_list, beta=0.99):
     plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.3)
 
     # Set colors and markers
-    colors = sns.color_palette()
-    markers = ['o', '*', 'x', '.', '+']
+    colors = sns.color_palette("Blues_r", n_colors=itermax)
+    markers = ['o', '*', 'x', '.', '+', 'v', '1', 'p', 'X']
 
     x_low = {}
     x_upp = {}
-    Pviolation = np.zeros(len(rho_list))
+    Pviolation = {}
+    c_star = {}
 
-    problem = scenarioProblem(samples)
+    # Initialize scenario optimization problem
+    problem = scenarioProblem()
+    problem.init_problem(samples, np.arange(Nsamples))
 
-    for i, rho in enumerate(rho_list):
+    # Initialize value of rho (cost of violation)
+    rho = rho_min
+    i = 0
+    exterior_ids = [None]
 
-        print('\nInitialize scenario problem; cost of violation: {}'.format(rho))
+    while len(exterior_ids) > 0 and i < itermax:
 
-        sol, c_star, x_star = problem.rectangular(rho)
-        x_mean = sol['x_mean']
-        x_width = sol['x_width']
+        i_rel = i % len(markers)
 
-        Pviolation[i] = np.round(1 - etaLow(Nsamples, sum(c_star), beta), 4)
+        print('\n\nSolve scenario problem; rho = {}'.format(rho))
 
-        print('Upper bound on violation probability:', Pviolation[i])
+        sol, c_star[i], x_star, exterior_ids = problem.solve(rho)
+
+        # If complexity is the same as in previous iteration, skip or break
+        if i > 0 and c_star[i] == c_star[i-1]:
+            if c_star[i] < 0.5*Nsamples:
+                # If we are already at the outside of the slurf, break overall
+                break
+            else:
+                # If we are still at the inside, increase rho and continue
+                rho *= factor
+                continue
+        
+        # If complexity is equal to number of samples, the bound is not
+        # informative (violation probability is one), so skip to next rho
+        if c_star[i] == Nsamples:
+            rho *= factor
+            continue
+
+        x_low[i] = sol['xL']
+        x_upp[i] = sol['xU']
+
+        problem.init_problem(samples[exterior_ids], exterior_ids)
+
+        print(' - Optimization problem solved')
+
+        Pviolation[i] = np.round(1 - etaLow(Nsamples, c_star[i], beta), 4)
+
+        print(' - Upper bound on violation probability:', Pviolation[i])
 
         # Plot confidence regions
-        labelStr = r'$\rho$: '+str(rho) + \
-            r'; support: '+str(c_star[0]) + \
-            r'; discard: '+str(c_star[1]) + \
+        labelStr = r'$\rho$: '+str(np.round(rho, 2)) + \
+            r'; complexity: '+str(c_star[i]) + \
             r'; $\epsilon$: ' + str(np.round(Pviolation[i], 2))
 
-        x_low[i] = x_mean - x_width
-        x_upp[i] = x_mean + x_width
+        plt.plot(Tlist, x_low[i], lw=0.5, marker=markers[i_rel],
+                 color=colors[i_rel], label=labelStr)
+        plt.plot(Tlist, x_upp[i], lw=0.5, marker=markers[i_rel],
+                 color=colors[i_rel])
 
-        plt.plot(Tlist, x_low[i], lw=2, marker=markers[i],
-                 color=colors[i], label=labelStr)
-        plt.plot(Tlist, x_upp[i], lw=2, marker=markers[i],
-                 color=colors[i])
+        # Increment
+        rho *= factor
+        i += 1
 
     plt.xlabel('Time')
     plt.ylabel('Probability of zero infected')
 
-    ax.set_title("Probability of zero infected population over time (N={} samples)".format(Nsamples))
+    ax.set_title("Probability of zero infected population (N={} samples)".
+                 format(Nsamples))
 
     plt.legend(prop={'size': 6})
     plt.show()

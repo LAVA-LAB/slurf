@@ -28,7 +28,7 @@ def sample_SIR(Nsamples, Tlist, model):
 
     parameters_dic = [{"ki": row[0], "kr": row[1]} for row in parameters]
 
-    sampleIDs = sampler.sample_batch(parameters_dic)
+    sampleIDs = sampler.sample_batch(parameters_dic, exact=True)
 
     for n in range(Nsamples):
 
