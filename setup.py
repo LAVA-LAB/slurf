@@ -30,7 +30,13 @@ setup(
         'test': PyTest
     },
     zip_safe=False,
-    install_requires=['stormpy>=1.6.3'],
+    install_requires=[
+        'stormpy>=1.6.3',
+        'numpy',
+        'cvxpy',
+        'matplotlib',
+        'seaborn'
+    ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     python_requires='>=3',
