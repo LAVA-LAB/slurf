@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 
 import matplotlib.pyplot as plt
+plt.rcParams['figure.dpi'] = 300
 import seaborn as sns
 
 from slurf.compute_bound import etaLow

@@ -5,6 +5,8 @@ from sample_SIR import sample_SIR
 from slurf.scenario_problem import compute_slurf
 from slurf.commons import getTime
 
+testfile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                "models")
 
 def _path(folder, file):
     """
@@ -13,18 +15,17 @@ def _path(folder, file):
     :param file: Example file.
     :return: Complete path to example file.
     """
-    testfile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "models")
+    
     return os.path.join(testfile_dir, folder, file)
 
 
-np.random.seed(10)
+np.random.seed(15)
 
 start, startTime = getTime()
 print("Script started at:", startTime)
 
 # Generate samples
-Tlist = np.arange(20, 140+1, 10)
+Tlist = np.arange(10, 140+1, 5)
 
 Nsamples = 100
 

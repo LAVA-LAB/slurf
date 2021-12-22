@@ -23,7 +23,7 @@ def sample_SIR(Nsamples, Tlist, model):
     parameters_with_bounds = sampler.load(model, ("done", Tlist))
 
     results = np.zeros((Nsamples, len(Tlist)))
-    parameters = np.random.uniform(low=[0.05, 0.05], high=[0.1, 0.1],
+    parameters = np.random.uniform(low=[0.05, 0.05], high=[0.08, 0.08],
                                    size=(Nsamples, 2))
 
     parameters_dic = [{"ki": row[0], "kr": row[1]} for row in parameters]
