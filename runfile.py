@@ -25,18 +25,18 @@ start, startTime = getTime()
 print("Script started at:", startTime)
 
 # Generate samples
-Tlist = np.arange(10, 140+1, 5)
+Tlist = np.arange(20, 140+1, 10)
 
-Nsamples = 100
+Nsamples = 1000
 
 # Generate given number of solutions to the parametric model
 model = _path("", "sir20.sm")
 
 sampler, sampleIDs, results = sample_SIR(Nsamples, Tlist, model)
 
-min_rho = 0.004
+min_rho = 0.001
 increment_factor = 2
-beta = 0.9
+beta = 0.99
 
 # Compute SLURF and plot
 Pviolation, x_low, x_upp = compute_slurf(Tlist, results, beta,
