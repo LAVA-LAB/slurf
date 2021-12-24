@@ -10,6 +10,7 @@ class ApproximationOptions:
     """
     def __init__(self):
         self._fixed_states_absorbing = []
+        self._max_depth_of_considered_states = 10
 
     def set_fixed_states_absorbing(self, ids):
         self._fixed_states_absorbing = ids
@@ -32,14 +33,17 @@ class ApproximateChecker:
         self._ub_formula = None
         self._options = options
 
-
     def check(self, instantiation):
         # TODO use an instantiation checker that yields transient probabilities
         checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
         checker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
         lb = checker.check(self._environment, instantiation).at(initial_state)
-        checker.specify_formula(sp.ParametricCheckTask(self._ub_formula, True))  # Only initial states
-        ub = checker.check(self._environment, instantiation).at(initial_state)
+        print(checker.original_model)
+        if checker.original_model.labeling.contains(self._abort_label):
+            checker.specify_formula(sp.ParametricCheckTask(self._ub_formula, True))  # Only initial states
+            ub = checker.check(self._environment, instantiation).at(initial_state)
+        else:
+            ub = lb
         return lb, ub
 
     def specify_formula(self, formula):
@@ -70,7 +74,7 @@ class ApproximateChecker:
                                                 sp.BitVector(self._original_model.nr_states, True),
                                                 selected_outgoing_transitions, False, options)
         submodel = submodel_result.model
-        assert self._abort_label == submodel_result.deadlock_label
+        assert submodel_result.deadlock_label is None or self._abort_label == submodel_result.deadlock_label
         return submodel
 
     def _select_states(self, instantiation):
