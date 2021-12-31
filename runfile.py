@@ -30,7 +30,7 @@ modelfile = "sir20.sm"
 properties = ("done", Tlist)
     
 # Compute solutions
-sampler, solutions = sample_solutions(Nsamples = 200, 
+sampler, solutions = sample_solutions(Nsamples = 100, 
                                       model = _path("models", modelfile),
                                       properties = properties,
                                       root_dir = root_dir,
