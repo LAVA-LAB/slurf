@@ -18,6 +18,9 @@ class SampleCache:
         self._max_id += 1
         sample = Sample(sample_id, valuation)
         self._samples.append(sample)
+        
+        self.num_samples = self._max_id
+        
         return sample
 
     def get_sample(self, sample_id):
