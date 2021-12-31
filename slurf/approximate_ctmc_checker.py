@@ -33,18 +33,38 @@ class ApproximateChecker:
         self._ub_formula = None
         self._options = options
 
+    class SubCheckerContainer:
+        """
+        Hold a subchecker and a pCTMC approximation
+        """
+        def __init__(self, checker, original_model, abort_label):
+            self._checker = checker
+            self._original_model = original_model
+            self._abort_label = abort_label
+
+        def get_bounds(self, environment, instantiation, lb_formula, ub_formula):
+            # TODO use an instantiation checker that yields transient probabilities
+            # Then, formulas no longer need to be passed
+            self._checker.specify_formula(sp.ParametricCheckTask(lb_formula, True))  # Only initial states
+            lb = self._checker.check(environment, instantiation).at(self._initial_state)
+            if self._is_approximation:
+                self._checker.specify_formula(sp.ParametricCheckTask(ub_formula, True))  # Only initial states
+                ub = self._checker.check(environment, instantiation).at(self._initial_state)
+            else:
+                ub = lb
+            return lb, ub
+
+        @property
+        def _is_approximation(self):
+            return self._original_model.labeling.contains_label(self._abort_label)
+
+        @property
+        def _initial_state(self):
+            return self._original_model.initial_states[0]
+
     def check(self, instantiation):
-        # TODO use an instantiation checker that yields transient probabilities
-        checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
-        checker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
-        lb = checker.check(self._environment, instantiation).at(initial_state)
-        print(checker.original_model)
-        if checker.original_model.labeling.contains(self._abort_label):
-            checker.specify_formula(sp.ParametricCheckTask(self._ub_formula, True))  # Only initial states
-            ub = checker.check(self._environment, instantiation).at(initial_state)
-        else:
-            ub = lb
-        return lb, ub
+        checker = self._get_submodel_instantiation_checker(instantiation)
+        return checker.get_bounds(self._environment, instantiation, self._lb_formula, self._ub_formula)
 
     def specify_formula(self, formula):
         self._lb_formula = formula
@@ -56,14 +76,14 @@ class ApproximateChecker:
     def _get_submodel_instantiation_checker(self, instantiation):
         if "all" in self._subcheckers:
             # TODO Check whether we can use a previous approximation.
-            subchecker, init_state = self._subcheckers["all"]
+            result = self._subcheckers["all"]
         else:
             submodel = self._build_submodel(instantiation)
             assert len(submodel.initial_states) == 1
-            init_state = submodel.initial_states[0]
             subchecker = sp.pars.PCtmcInstantiationChecker(submodel)
-            self._subcheckers["all"] = (subchecker, init_state)
-        return subchecker, init_state
+            result = ApproximateChecker.SubCheckerContainer(subchecker, submodel, self._abort_label)
+            self._subcheckers["all"] = result
+        return result
 
     def _build_submodel(self, instantiation):
         selected_outgoing_transitions = self._select_states(instantiation)

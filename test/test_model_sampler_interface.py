@@ -12,9 +12,15 @@ class TestModelSampler:
         assert "p" in parameters_with_bounds
         sample = sampler.sample({"p": 0.3})
         result = sample.get_result()
-        assert result[0][0] <= 0.1734083474 <= result[0][1]
-        assert result[1][0] <= 0.9427719189 <= result[1][1]
-        assert result[2][0] <= 0.9987049333 <= result[2][1]
+        assert result[0][0] <= 0.1734083474 + 0.0001
+        assert result[0][1] >= 0.1734083474 - 0.0001
+        assert result[0][0] <= result[0][1]
+        assert result[1][0] <= 0.9427719189 + 0.0001
+        assert result[1][0] >= 0.9427719189 - 0.0001
+        assert result[1][0] <= result[1][1]
+        assert result[2][0] <= 0.9987049333 + 0.0001
+        assert result[2][1] >= 0.9987049333 - 0.0001
+        assert result[2][0] <= result[2][1]
 
         sample = sampler.refine(sample.get_id())
         result = sample.get_result()
