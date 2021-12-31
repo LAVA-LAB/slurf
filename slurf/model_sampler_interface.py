@@ -353,7 +353,7 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         # Obtain CTMC by exporting to DRN format and loading again
         # TODO: implement dedicated methods
         drn_file = "tmp_ctmc.drn"
-        sp.set_settings(["--io:exportexplicit", drn_file])
+        sp.set_settings(["--io:exportbuild", drn_file])
         tmp_prop = sp.parse_properties(f'T=? [ F "failed" ]')[0]
         stormpy.dft.analyze_parametric_dft(self._dft, [tmp_prop.raw_formula])
         parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file))
