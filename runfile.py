@@ -1,12 +1,11 @@
 import numpy as np
 import os
 
-from sample_SIR import sample_SIR
-from slurf.scenario_problem import compute_slurf
+from sample_solutions import sample_solutions
+from slurf.scenario_problem import compute_slurf, plot_slurf
 from slurf.commons import getTime
 
-testfile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "models")
+root_dir = os.path.dirname(os.path.abspath(__file__))
 
 def _path(folder, file):
     """
@@ -16,31 +15,37 @@ def _path(folder, file):
     :return: Complete path to example file.
     """
     
-    return os.path.join(testfile_dir, folder, file)
+    return os.path.join(root_dir, folder, file)
 
+seed = False
+if seed:
+    np.random.seed(15)
 
-np.random.seed(15)
+print("Script started at:", getTime())
 
-start, startTime = getTime()
-print("Script started at:", startTime)
+# Specify properties
+Tlist = np.arange(5, 140+1, 5)
 
-# Generate samples
-Tlist = np.arange(20, 140+1, 10)
+modelfile = "sir20.sm"
+properties = ("done", Tlist)
+    
+# Compute solutions
+sampler, solutions = sample_solutions(Nsamples = 200, 
+                                      model = _path("models", modelfile),
+                                      properties = properties,
+                                      root_dir = root_dir,
+                                      cache = False)
 
-Nsamples = 1000
+print("Sampling completed at:", getTime())
 
-# Generate given number of solutions to the parametric model
-model = _path("", "sir20.sm")
+# Compute solution set using scenario optimization
+regions = compute_slurf(Tlist, solutions, 
+                        beta = 0.99, 
+                        rho_min = 0.0001, 
+                        increment_factor = 1.5,
+                        itermax = 20)
 
-sampler, sampleIDs, results = sample_SIR(Nsamples, Tlist, model)
+# Plot the solution set
+plot_slurf(Tlist, regions, solutions, mode='smooth')
 
-min_rho = 0.001
-increment_factor = 2
-beta = 0.99
-
-# Compute SLURF and plot
-Pviolation, x_low, x_upp = compute_slurf(Tlist, results, beta,
-                                         min_rho, increment_factor)
-
-end, endTime = getTime()
-print("Script done at:", endTime)
+print("Script done at:", getTime())

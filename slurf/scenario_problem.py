@@ -14,6 +14,15 @@ class scenarioProblem:
     """
 
     def init_problem(self, samples, sample_ids):
+        '''
+        
+        Parameters
+        ----------
+        samples Current subset of samples active in optimization problem
+        sample_ids Indices of sample subset (compared to complete sample set)
+        -------
+
+        '''
 
         self.samples = samples
         self.sample_ids = sample_ids
@@ -53,14 +62,19 @@ class scenarioProblem:
         self.prob = cp.Problem(self.obj, [self.xU >= self.xL] +
                                self.constraints_low + self.constraints_upp)
 
-    def solve_instance(self, disable_mask, costOfRegret):
+    def solve_instance(self, disable_mask, costOfRegret, solver='ECOS'):
 
         # Set current parameters
         self.param.value = disable_mask
         self.rho.value = costOfRegret
 
         # Solve optimization problem
-        self.prob.solve(warm_start=True)
+        if solver == 'ECOS':
+            self.prob.solve(warm_start=True, solver='ECOS')
+        elif solver == 'MOSEK':
+            self.prob.solve(warm_start=True, solver='MOSEK')
+        else:
+            self.prob.solve(warm_start=True)
 
         # Return solution
         sol = {
@@ -73,9 +87,7 @@ class scenarioProblem:
 
         return self.prob.value, sol
 
-    def solve(self, costOfRegret=1):
-
-        print('Solve problem of size:', self.Nsamples)
+    def solve(self, compareAt, costOfRegret=1):
 
         # Solve initial problem with all constraints
         mask = np.zeros(self.Nsamples)
@@ -97,10 +109,6 @@ class scenarioProblem:
 
         print(' - Samples in interior of region:', sum(interior_mask))
 
-        # Reduce the size of the problem by removing all samples in interior
-        # self.init_problem(self.samples[~interior_mask])
-        # support_mask = support_mask[~interior_mask]
-
         for i in range(self.Nsamples):
 
             # If current sample is in interior, or is relaxed, we can skip it
@@ -114,9 +122,11 @@ class scenarioProblem:
             # Solve the optimization problem
             _, solB = self.solve_instance(disable_mask, costOfRegret)
 
+            
+
             # If the objective has not changed, this sample is not of support
-            if all(np.isclose(sol['xL'], solB['xL'])) and \
-               all(np.isclose(sol['xU'], solB['xU'])):
+            if all( (np.isclose(sol['xL'], solB['xL']))[compareAt] ) and \
+               all( (np.isclose(sol['xU'], solB['xU']))[compareAt] ):
 
                 support_mask[i] = 0
 
@@ -132,7 +142,7 @@ class scenarioProblem:
         return sol, complexity, value, exterior_ids
 
 
-def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, factor=2,
+def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, increment_factor=2,
                   itermax=8):
     """
 
@@ -155,18 +165,7 @@ def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, factor=2,
 
     Nsamples = len(samples)
 
-    # Create plot
-    fig, ax = plt.subplots()
-    plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.3)
-
-    # Set colors and markers
-    colors = sns.color_palette("Blues_r", n_colors=itermax)
-    markers = ['o', '*', 'x', '.', '+', 'v', '1', 'p', 'X']
-
-    x_low = {}
-    x_upp = {}
-    Pviolation = {}
-    c_star = {}
+    regions = {}
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
@@ -176,63 +175,123 @@ def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, factor=2,
     rho = rho_min
     i = 0
     exterior_ids = [None]
+    
+    tres = 1e-3
+    compareAt = np.abs(np.max(samples, axis=0) - np.min(samples, axis=0)) > tres
 
     while len(exterior_ids) > 0 and i < itermax:
 
-        i_rel = i % len(markers)
+        print('\nSolve scenario problem of size {}; rho = {}'.\
+              format(problem.Nsamples, rho))
 
-        print('\n\nSolve scenario problem; rho = {}'.format(rho))
-
-        sol, c_star[i], x_star, exterior_ids = problem.solve(rho)
+        sol, c_star, x_star, exterior_ids = problem.solve(compareAt, rho)
 
         # If complexity is the same as in previous iteration, skip or break
-        if i > 0 and c_star[i] == c_star[i-1]:
-            if c_star[i] < 0.5*Nsamples:
+        if i > 0 and c_star == regions[i-1]['complexity']:
+            if c_star < 0.5*Nsamples:
                 # If we are already at the outside of the slurf, break overall
                 break
             else:
                 # If we are still at the inside, increase rho and continue
-                rho *= factor
+                rho *= increment_factor
                 continue
         
         # If complexity is equal to number of samples, the bound is not
         # informative (violation probability is one), so skip to next rho
-        if c_star[i] == Nsamples:
-            rho *= factor
+        if c_star == Nsamples:
+            rho *= increment_factor
             continue
-
-        x_low[i] = sol['xL']
-        x_upp[i] = sol['xU']
-
+        
         problem.init_problem(samples[exterior_ids], exterior_ids)
 
-        print(' - Optimization problem solved')
+        Pviolation = np.round(1 - etaLow(Nsamples, c_star, beta), 4)
 
-        Pviolation[i] = np.round(1 - etaLow(Nsamples, c_star[i], beta), 4)
+        print(' - Upper bound on violation probability:', Pviolation)
 
-        print(' - Upper bound on violation probability:', Pviolation[i])
-
-        # Plot confidence regions
-        labelStr = r'$\rho$: '+str(np.round(rho, 2)) + \
-            r'; complexity: '+str(c_star[i]) + \
-            r'; $\epsilon$: ' + str(np.round(Pviolation[i], 2))
-
-        plt.plot(Tlist, x_low[i], lw=0.5, marker=markers[i_rel],
-                 color=colors[i_rel], label=labelStr)
-        plt.plot(Tlist, x_upp[i], lw=0.5, marker=markers[i_rel],
-                 color=colors[i_rel])
+        regions[i] = {
+            'x_low': sol['xL'],
+            'x_upp': sol['xU'],
+            'rho': rho,
+            'complexity': c_star,
+            'Pviolation': Pviolation
+            }
 
         # Increment
-        rho *= factor
+        rho *= increment_factor
         i += 1
 
+    return regions
+
+def make_conservative(low, upp):
+    '''
+    Make a region conservative (such that the smooth curve is guaranteed to
+    contain the actual curve).
+
+    Parameters
+    ----------
+    low : Lower bound (array)
+    upp : Upper bound (array)
+
+    Returns
+    -------
+    x_low : Conservative lower bound
+    x_upp : Conservative upper bound
+
+    '''
+    
+    x_low = np.array([np.min(low[i-1:i+2]) if i > 0 and i < len(low) else 
+                          low[i] for i in range(len(low))])
+    x_upp = np.array([np.max(upp[i-1:i+2]) if i > 0 and i < len(upp) else 
+                          upp[i] for i in range(len(upp))])
+    
+    return x_low, x_upp
+
+def plot_slurf(Tlist, regions, samples, plotSamples=False, mode='conservative'):
+    
+    assert mode in ['smooth', 'step', 'conservative']
+    
+    # Create plot
+    fig, ax = plt.subplots()
+    if plotSamples:
+        plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.3)
+
+    # Set colors and markers
+    color_map = sns.color_palette("Blues_r", as_cmap=True)
+    
+    for i, item in sorted(regions.items(), reverse=True):
+        
+        color = color_map(1 - item['Pviolation'])
+        
+        if mode == 'conservative':
+            x_low, x_upp = make_conservative(item['x_low'], item['x_upp'])
+        else:
+            x_low, x_upp = item['x_low'], item['x_upp']
+        
+        plt.fill_between(Tlist, x_low, x_upp, color=color)
+        
+        j = int( len(Tlist)/2 + 3 - i  )
+        t = Tlist[j]
+        y = x_low[j]
+        
+        xy = (t-1, y)
+        xytext = (50, -15)
+        
+        plt.annotate(r'$\eta=$'+str(np.round(1-item['Pviolation'], 2)), 
+                     xy=xy, xytext=xytext,
+                     ha='left', va='center', textcoords='offset points',
+                     arrowprops=dict(arrowstyle="-|>",mutation_scale=12, facecolor='black'),
+                     )
+        
     plt.xlabel('Time')
     plt.ylabel('Probability of zero infected')
 
-    ax.set_title("Probability of zero infected population (N={} samples)".
-                 format(Nsamples))
-
-    plt.legend(prop={'size': 6})
+    ax.set_title("Confidence regions on a randomly sampled curve (N={} samples)".
+                 format(len(samples)))
+    
+    sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
+    sm.set_array([])
+    
+    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
+    ax.figure.colorbar(sm, cax=cax)
+    
     plt.show()
-
-    return Pviolation, x_low, x_upp
