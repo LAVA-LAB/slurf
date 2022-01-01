@@ -2,15 +2,14 @@ import stormpy as sp
 import stormpy.pars
 import stormpy.logic
 
-import math
 
 class ApproximationOptions:
     """
     Sets the hyperparameters used for approximation.
     """
-    def __init__(self):
+    def __init__(self, max_depth_of_considered_states=10000000000):
         self._fixed_states_absorbing = []
-        self._max_depth_of_considered_states = 10
+        self._max_depth_of_considered_states = max_depth_of_considered_states
 
     def set_fixed_states_absorbing(self, ids):
         self._fixed_states_absorbing = ids
@@ -18,6 +17,10 @@ class ApproximationOptions:
     @property
     def fixed_states_absorbing(self):
         return self._fixed_states_absorbing
+
+    @property
+    def max_depth_of_considered_states(self):
+        return self._max_depth_of_considered_states
 
 
 class ApproximateChecker:
@@ -31,6 +34,7 @@ class ApproximateChecker:
         self._environment = sp.Environment()
         self._lb_formula = None
         self._ub_formula = None
+        self._target_label = None
         self._options = options
 
     class SubCheckerContainer:
@@ -69,8 +73,10 @@ class ApproximateChecker:
     def specify_formula(self, formula):
         self._lb_formula = formula
         # TODO once instantiation checker yields transient probabilities, this is no longer necessary
-        assert type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula
+        # TODO this is a bit of a hack, but
+        assert type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula, "Currently only labels are allowed to specify target states"
         old_label = formula.subformula.right_subformula.label
+        self._target_label = old_label
         self._ub_formula = stormpy.parse_properties(str(self._lb_formula).replace("\"" + old_label + "\"", "(\"" + old_label + "\" | \"" + self._abort_label + "\")"))[0].raw_formula
 
     def _get_submodel_instantiation_checker(self, instantiation):
@@ -99,7 +105,12 @@ class ApproximateChecker:
 
     def _select_states(self, instantiation):
         # TODO actually implement useful selection strategies here.
-        selected_outgoing_transitions = sp.BitVector(self._original_model.nr_states, True)
+        notavoidstates = sp.BitVector(self._original_model.nr_states, True) # TODO We here assume that there are no avoid states.
+        target_states = self._original_model.labeling.get_states(self._target_label)
+        reachable_states = sp.get_reachable_states(self._original_model, self._original_model.initial_states_as_bitvector,
+                                 notavoidstates, target_states,
+                                 maximal_steps=self._options._max_depth_of_considered_states)
+        selected_outgoing_transitions = reachable_states
         for id in self._options.fixed_states_absorbing:
             selected_outgoing_transitions.set(id, False)
         return selected_outgoing_transitions

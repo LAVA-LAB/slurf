@@ -16,5 +16,6 @@ def _path(folder, file):
 dummy_file = _path("", "dft.drn")
 tiny_pctmc = _path("", "tiny.sm")
 mini_pctmc = _path("", "mini.sm")
+sir10_pctmc = _path("", "sir10.sm")
 dft_and = _path("", "and_param.dft")
 nonmonotonic_dft = _path("", "nonmonotonic_param.dft")
