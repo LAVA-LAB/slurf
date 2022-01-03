@@ -25,12 +25,12 @@ def get_parameter_values(Nsamples, param_dic):
             
         elif v['type'] == 'gaussian':
             assert 'mean' in v
-            assert 'covariance' in v
+            assert 'std' in v
             if not 'nonzero' in v:
                 v['nonzero'] = True
             
             param_matrix[:, i] = param_gaussian(Nsamples, v['mean'], 
-                                                v['covariance'], v['nonzero'])
+                                                v['std'], v['nonzero'])
             
     return param_matrix
             
@@ -43,9 +43,9 @@ def param_interval(Nsamples, lb, ub):
     
     return param_values
 
-def param_gaussian(Nsamples, mean, cov, nonzero=True):
+def param_gaussian(Nsamples, mean, std, nonzero=True):
     
-    param_values = np.random.normal(loc=mean, scale=cov, size=Nsamples)
+    param_values = np.random.normal(loc=mean, scale=std, size=Nsamples)
     
     if nonzero:
         param_values = np.maximum(param_values, 1e-3)

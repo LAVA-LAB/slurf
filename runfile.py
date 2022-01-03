@@ -26,7 +26,7 @@ print("Script started at:", getTime())
 
 
 # Specify number of samples
-Nsamples = 100
+Nsamples = 250
 
 # Specify confidence level
 beta = 0.99
@@ -45,13 +45,13 @@ if preset == 1:
     param_list = ['ki', 'kr']
     param_dic = {
         'ki': {'type': 'interval', 'lb': 0.05, 'ub': 0.08},
-        'kr': {'type': 'gaussian', 'mean': 0.065, 'covariance': 0.01, 'nonzero': True}
+        'kr': {'type': 'gaussian', 'mean': 0.065, 'std': 0.01, 'nonzero': True}
         }
     
     param_values = get_parameter_values(Nsamples, param_dic)
     
 elif preset == 2:
-    modelfile = "tandem.sm"
+    modelfile = "tandem7.sm"
     
     t = 3000
     properties = ['R=? [ I='+str(t)+' ]', 
@@ -60,11 +60,11 @@ elif preset == 2:
                       'Prob. that networks becomes full in '+str(t)+' time units']
     param_list = ['lambdaF', 'mu1a', 'mu1b', 'mu2', 'kappa']
     
-    var0 = 0.3
-    var1 = 0.1
-    var2 = .3
-    var3 = .5
-    var4 = 0.001
+    var0 = 0.05
+    var1 = 0.05
+    var2 = 0.05
+    var3 = 0.05
+    var4 = 0.05
     
     param_dic = {
         'lambdaF': {'type': 'interval', 'lb': 4-var0, 'ub': 4+var0},
@@ -72,6 +72,20 @@ elif preset == 2:
         'mu1b': {'type': 'interval', 'lb': 0.9*2-var2, 'ub': 0.9*2+var2},
         'mu2': {'type': 'interval', 'lb': 2-var3, 'ub': 2+var3},
         'kappa': {'type': 'interval', 'lb': 4-var4, 'ub': 4+var4}
+        }
+    
+    std0 = 0.1
+    std1 = 0.1
+    std2 = 0.1
+    std3 = 0.1
+    std4 = 0.1
+    
+    param_dic = {
+        'lambdaF': {'type': 'gaussian', 'mean': 4, 'std': std0},
+        'mu1a': {'type': 'gaussian', 'mean': 0.2, 'std': std1},
+        'mu1b': {'type': 'gaussian', 'mean': 1.8, 'std': std2},
+        'mu2': {'type': 'gaussian', 'mean': 2, 'std': std3},
+        'kappa': {'type': 'gaussian', 'mean': 4, 'std': std4}
         }
     
     param_values = get_parameter_values(Nsamples, param_dic)

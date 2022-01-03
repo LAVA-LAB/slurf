@@ -3,7 +3,7 @@
 
 ctmc
 
-const int c = 9; // queue capacity
+const int c = 7; // queue capacity
 
 const double lambdaF; // default 4
 const double lambda = lambdaF*c; // default 4 times queueing capacity
