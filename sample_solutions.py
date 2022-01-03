@@ -73,7 +73,12 @@ def sample_solutions(Nsamples, model, properties, param_list, param_values,
     sampler = CtmcReliabilityModelSamplerInterface()
     sampler.load(model, properties)
     
-    results = np.zeros((Nsamples, len(properties[1])))
+    if type(properties) == tuple:
+        num_props = len(properties[1])
+    else:
+        num_props = len(properties)
+        
+    results = np.zeros((Nsamples, num_props))
     
     cache_file = os.path.join(root_dir, "samples.pkl")
     

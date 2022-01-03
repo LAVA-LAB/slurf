@@ -142,13 +142,12 @@ class scenarioProblem:
         return sol, complexity, value, exterior_ids
 
 
-def compute_slurf(Tlist, samples, beta=0.99, rho_min=0.01, increment_factor=2,
-                  itermax=8):
+def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
+                          itermax=8):
     """
 
     Parameters
     ----------
-    Tlist List of time points to evaluate at
     samples 2D Numpy array of samples
     beta Confidence probability (close to one means good)
     rho_min Cost of violation used in first iteration
@@ -246,7 +245,7 @@ def make_conservative(low, upp):
     
     return x_low, x_upp
 
-def plot_slurf(Tlist, regions, samples, plotSamples=False, mode='conservative'):
+def plot_reliability(Tlist, regions, samples, plotSamples=False, mode='conservative'):
     
     assert mode in ['smooth', 'step', 'conservative']
     
