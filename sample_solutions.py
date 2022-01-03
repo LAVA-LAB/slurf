@@ -18,11 +18,10 @@ def get_parameter_values(Nsamples, param_dic):
         
         # Get Nsamples values
         if v['type'] == 'interval':
-            assert 'lower_bound' in v
-            assert 'upper_bound' in v
+            assert 'lb' in v
+            assert 'ub' in v
             
-            param_matrix[:, i] = param_interval(Nsamples, v['lower_bound'], 
-                                                v['upper_bound'])
+            param_matrix[:, i] = param_interval(Nsamples, v['lb'], v['ub'])
             
         elif v['type'] == 'gaussian':
             assert 'mean' in v
@@ -101,7 +100,7 @@ def sample_solutions(Nsamples, model, properties, param_list, param_values,
             print('- Cache incompatible: number of parameters does not match')
         elif Nsamples != samples_imp.num_samples:
             print('- Cache incompatible: number of samples does not match')
-        elif len(properties[1]) != num_properties:
+        elif num_props != num_properties:
             print('- Cache incompatible: number of properties does not match')
         else:
             
