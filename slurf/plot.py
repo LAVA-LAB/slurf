@@ -4,6 +4,41 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 plt.rcParams['figure.dpi'] = 300
 import seaborn as sns
+import itertools
+
+from slurf.commons import getDateTime, path
+
+def plot_results(root_dir, args, regions, solutions, reliability,
+                 prop_labels=None, Tlist=None):
+    
+    # Plot the solution set
+    if reliability:
+        # As reliability over time (if properties object is a tuple)
+        plot_reliability(Tlist, regions, solutions, args.beta, 
+                         mode=args.curve_plot_mode, plotSamples=True)
+        
+        # Save figure
+        exp_file = args.model.rsplit('/', 1)[1] + '_' + \
+                       str(getDateTime()+'.pdf')
+        filename = path(root_dir, "output", exp_file)
+        plt.savefig(filename, format='pdf', bbox_inches='tight')
+        print(' - Reliability plot exported to:',exp_file)
+        
+    else:
+        # As a solution set (if properties object is a list of properties)    
+        for idx_pair in itertools.combinations(np.arange(len(prop_labels)), 2):
+            # Plot the solution set for every combination of 2 properties
+            
+            plot_solution_set_2d(idx_pair, prop_labels, regions, solutions, 
+                                 args.beta, plotSamples=True)
+    
+            # Save figure
+            exp_file = args.model.rsplit('/', 1)[1] + '_' + \
+                           str(getDateTime() + '_' + str(idx_pair)+'.pdf')
+            filename = path(root_dir, "output", exp_file)
+            plt.savefig(filename, format='pdf', bbox_inches='tight')
+            print(' - 2D plot exported to:',exp_file)
+
 
 def make_conservative(low, upp):
     '''
@@ -29,10 +64,11 @@ def make_conservative(low, upp):
     
     return x_low, x_upp
 
+
 def plot_reliability(Tlist, regions, samples, beta, plotSamples=False, 
                      mode='conservative', annotate=False):
     
-    assert mode in ['smooth', 'step', 'conservative']
+    assert mode in ['optimistic', 'conservative']
     
     # Create plot
     fig, ax = plt.subplots()
@@ -80,6 +116,7 @@ def plot_reliability(Tlist, regions, samples, beta, plotSamples=False,
     cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
     ax.figure.colorbar(sm, cax=cax)
     
+
 def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
                          plotSamples=True):
     

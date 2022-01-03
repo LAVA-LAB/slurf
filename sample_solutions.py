@@ -1,10 +1,54 @@
 import numpy as np
 import os
+import pandas as pd
 
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
+from slurf.commons import path
+
+def load_distribution(root_dir, model_path):
+    """
+    Helper function to load probability distribution and parameter data
+    :model_folder: Subfolder to load the model from
+    :model_file: Filename of the model to load
+    """
+    
+    # Split path between (sub)folder and filename
+    model_folder, model_file = model_path.rsplit('/', 1)
+    
+    distr_file = path(root_dir, "models/"+str(model_folder), "parameters.xlsx")
+    try:
+        open(distr_file)
+    except IOError:
+        print("ERROR: Parameter distribution file (named 'parameters.xlsx') does not exist")
+        
+    model_file = path(root_dir, "models/"+str(model_folder), model_file)
+    try:
+        open(model_file)
+    except IOError:
+        print("ERROR: Model file does not exist")
+    
+    # Read parameter sheet
+    param_df = pd.read_excel(distr_file, sheet_name='Parameters', index_col=0)
+    param_dic = param_df.to_dict('index')
+
+    # Read property sheet
+    property_df = pd.read_excel(distr_file, sheet_name='Properties')
+    property_df = property_df[ property_df['enabled'] == True ]
+    properties = property_df['property'].to_list()
+    prop_labels = property_df['label'].to_list()
+    
+    if 'time' in property_df:
+        reliability = True
+        Tlist = property_df['time'].to_list()
+    else:
+        reliability = False
+        Tlist = None
+    
+    return model_file, param_dic, properties, prop_labels, reliability, Tlist
+
 
 def get_parameter_values(Nsamples, param_dic):
     
@@ -39,14 +83,13 @@ def get_parameter_values(Nsamples, param_dic):
             
     return param_matrix
             
-            
-        
 
 def param_interval(Nsamples, lb, ub):
     
     param_values = np.random.uniform(low=lb, high=ub, size=Nsamples)
     
     return param_values
+
 
 def param_gaussian(Nsamples, mean, std):
     
@@ -56,6 +99,7 @@ def param_gaussian(Nsamples, mean, std):
     param_values = np.maximum(param_values, 1e-3)
     
     return param_values
+
 
 def sample_solutions(Nsamples, model, properties, param_list, param_values,
                      root_dir, cache=False):

@@ -25,14 +25,20 @@
 
 SLURF can be run with
 
-`python runfile.py --N=<number of samples> --beta=<confidence probability> --folder=<subfolder to load model from> --model=<filename of model>`
+`python runfile.py --N=<number of samples> --beta=<confidence probability> --model=<path to model file>`
 
-For example, to run for `N=100` samples of the SIR epidemic model with a population of 20 and a confidence probability of `beta=0.99` (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
+The `folder` argument should contain the path to the model file (e.g., in PRISM format), rooted in the `model` folder. For example, to run for `N=100` samples of the SIR epidemic model with a population of 20 and a confidence probability of `beta=0.99` (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
 
-`python runfile.py --N=100 --beta=0.99 --folder=epidemic --model=sir20.sm`
+`python runfile.py --N=100 --beta=0.99 --folder=epidemic --model=epidemic/sir20.sm`
 
-The `folder` and `model` arguments are mandatory, while the number of samples is `N=100` by default, and the default confidence probability if `beta=0.99`.
+The `model` argument is mandatory, while the number of samples is `N=100` by default, and the default confidence probability if `beta=0.99`. Other optional arguments are as follows:
+
+- `rho_min` - Minimum cost of violation to start with in first iteration (0.0001 by default)
+- `rho_incr` - Increment factor of the cost of violation in every iteration (1.5 by default)
+- `rho_max_iter` - Maximum number of iterations for increasing cost of violations (20 by default)
+- `curve_plot_mode` - Plotting mode for reliability curves. Is either `optimistic` or `conservative` (default)
 
 ## Inspecting results
 
 All results (including figures) are stored in the `output/` folder.
+
