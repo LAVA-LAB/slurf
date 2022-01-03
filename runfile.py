@@ -90,7 +90,7 @@ sampler, solutions = sample_solutions(Nsamples = Nsamples,
 print("Sampling completed at:", getTime())
 
 # Compute solution set using scenario optimization
-regions = compute_solution_sets(Tlist, solutions, 
+regions = compute_solution_sets(solutions, 
                                 beta = 0.99, 
                                 rho_min = 0.0001, 
                                 increment_factor = 1.5,
