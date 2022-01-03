@@ -26,11 +26,16 @@ def get_parameter_values(Nsamples, param_dic):
         elif v['type'] == 'gaussian':
             assert 'mean' in v
             assert 'std' in v
-            if not 'nonzero' in v:
-                v['nonzero'] = True
             
             param_matrix[:, i] = param_gaussian(Nsamples, v['mean'], 
-                                                v['std'], v['nonzero'])
+                                                v['std'])
+            
+        # If parameter values are defined as 1/value, than inverse them
+        if 'inverse' in v:
+            if v['inverse'] is True:
+                param_matrix[:, i] = 1/param_matrix[:, i]
+                
+                print('Inverse parameters!')
             
     return param_matrix
             
@@ -43,12 +48,12 @@ def param_interval(Nsamples, lb, ub):
     
     return param_values
 
-def param_gaussian(Nsamples, mean, std, nonzero=True):
+def param_gaussian(Nsamples, mean, std):
     
     param_values = np.random.normal(loc=mean, scale=std, size=Nsamples)
     
-    if nonzero:
-        param_values = np.maximum(param_values, 1e-3)
+    # Make values nonnegative
+    param_values = np.maximum(param_values, 1e-3)
     
     return param_values
 
@@ -92,10 +97,6 @@ def sample_solutions(Nsamples, model, properties, param_list, param_values,
         num_properties = len(samples_imp.get_sample(0).get_result())
         
         # Only interpret results if the cache file matches the current call
-        # if model != samples_imp.model:
-        #     print('- Cache incompatible:')
-        #     print('--- Model specified is: "'+str(model)+'"')
-        #     print('--- Model in cachce is: "'+str(samples_imp.model)+'"')
         if params_import != param_list:
             print('- Cache incompatible: number of parameters does not match')
         elif Nsamples != samples_imp.num_samples:

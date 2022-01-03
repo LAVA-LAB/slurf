@@ -30,14 +30,12 @@ def make_conservative(low, upp):
     return x_low, x_upp
 
 def plot_reliability(Tlist, regions, samples, beta, plotSamples=False, 
-                     mode='conservative'):
+                     mode='conservative', annotate=False):
     
     assert mode in ['smooth', 'step', 'conservative']
     
     # Create plot
     fig, ax = plt.subplots()
-    if plotSamples:
-        plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.3)
 
     # Set colors and markers
     color_map = sns.color_palette("Blues_r", as_cmap=True)
@@ -60,25 +58,27 @@ def plot_reliability(Tlist, regions, samples, beta, plotSamples=False,
         xy = (t-1, y)
         xytext = (50, -15)
         
-        plt.annotate(r'$\eta=$'+str(np.round(1-item['Pviolation'], 2)), 
-                     xy=xy, xytext=xytext,
-                     ha='left', va='center', textcoords='offset points',
-                     arrowprops=dict(arrowstyle="-|>",mutation_scale=12, facecolor='black'),
-                     )
+        if annotate:
+            plt.annotate(r'$\eta=$'+str(np.round(1-item['Pviolation'], 2)), 
+                         xy=xy, xytext=xytext,
+                         ha='left', va='center', textcoords='offset points',
+                         arrowprops=dict(arrowstyle="-|>",mutation_scale=12, facecolor='black'),
+                         )
+        
+    if plotSamples:
+        plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.5)
         
     plt.xlabel('Time')
     plt.ylabel('Probability of zero infected')
 
-    ax.set_title("Confidence regions on a randomly sampled curve (confidence beta={}; N={} samples)".
-                 format(len(samples), beta))
+    ax.set_title("Solution sets over time (confidence beta={}; N={} samples)".
+                 format(beta, len(samples)))
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
     sm.set_array([])
     
     cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
     ax.figure.colorbar(sm, cax=cax)
-    
-    plt.show()
     
 def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
                          plotSamples=True):
@@ -97,7 +97,7 @@ def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
         
         diff = item['x_upp'] - item['x_low']
         
-        rect = patches.Rectangle(item['x_low'], diff[0], diff[1], 
+        rect = patches.Rectangle(item['x_low'][[X,Y]], diff[X], diff[Y], 
                                  linewidth=0, edgecolor='none', facecolor=color)
 
         # Add the patch to the Axes
@@ -106,16 +106,14 @@ def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
     if plotSamples:
         plt.scatter(samples[:,X], samples[:,Y], color='k', s=10, alpha=0.5)
         
-    plt.xlabel(prop_names[0])
-    plt.ylabel(prop_names[1])
+    plt.xlabel(prop_names[X])
+    plt.ylabel(prop_names[Y])
 
     ax.set_title("Solution sets (confidence beta={}; N={} samples)".
-                 format(len(samples), beta))
+                 format(beta, len(samples)))
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
     sm.set_array([])
     
     cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
     ax.figure.colorbar(sm, cax=cax)
-    
-    plt.show()

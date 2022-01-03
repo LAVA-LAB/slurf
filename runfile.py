@@ -1,10 +1,15 @@
 import numpy as np
 import os
 
+import itertools
+import pandas as pd
+import matplotlib.pyplot as plt
+
 from sample_solutions import sample_solutions, get_parameter_values
 from slurf.scenario_problem import compute_solution_sets
 from slurf.plot import plot_reliability, plot_solution_set_2d
-from slurf.commons import getTime
+from slurf.commons import getTime, getDateTime
+from slurf.parser import parse_arguments
 
 root_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -18,123 +23,101 @@ def _path(folder, file):
     
     return os.path.join(root_dir, folder, file)
 
-seed = False
-if seed:
-    np.random.seed(15)
+def _load_distribution(model_folder, model_file):
+    """
+    Helper function to load probability distribution and parameter data
+    :model_folder: Subfolder to load the model from
+    :model_file: Filename of the model to load
+    """
+    
+    distr_file = _path("models/"+str(model_folder), "parameters.xlsx")
+    try:
+        open(distr_file)
+    except IOError:
+        print("ERROR: Distribution file does not exist")
+        
+    model_file = _path("models/"+str(model_folder), model_file)
+    try:
+        open(model_file)
+    except IOError:
+        print("ERROR: Model file does not exist")
+    
+    # Read parameter sheet
+    param_df = pd.read_excel(distr_file, sheet_name='Parameters', index_col=0)
+    param_dic = param_df.to_dict('index')
 
-print("Script started at:", getTime())
+    # Read property sheet
+    property_df = pd.read_excel(distr_file, sheet_name='Properties')
+    properties = property_df['property'].to_list()
+    prop_labels = property_df['label'].to_list()
+    
+    if 'time' in property_df:
+        reliability = True
+        Tlist = property_df['time'].to_list()
+    else:
+        reliability = False
+        Tlist = None
+    
+    return model_file, param_dic, properties, prop_labels, reliability, Tlist
 
 
-# Specify number of samples
-Nsamples = 250
 
-# Specify confidence level
-beta = 0.99
 
-##########################
+if __name__ == '__main__':
 
-# WIP preset function to choose a model
-preset = 2
-
-if preset == 1:
-    modelfile = "sir20.sm"
+    args = parse_arguments()
     
-    Tlist = np.arange(5, 140+1, 5)
-    properties = ("done", Tlist)
+    print("Script started at:", getTime())
     
-    param_list = ['ki', 'kr']
-    param_dic = {
-        'ki': {'type': 'interval', 'lb': 0.05, 'ub': 0.08},
-        'kr': {'type': 'gaussian', 'mean': 0.065, 'std': 0.01, 'nonzero': True}
-        }
+    # Load probability distribution data
+    model_file, param_dic, properties, prop_labels, reliability, Tlist = \
+        _load_distribution(args.folder, args.file)
     
-    param_values = get_parameter_values(Nsamples, param_dic)
+    # Sample parameter values
+    param_values = get_parameter_values(args.Nsamples, param_dic)
+        
+    # Compute solutions by verifying the instantiated CTMCs
+    sampler, solutions = sample_solutions(Nsamples = args.Nsamples, 
+                                          model = _path("models", model_file),
+                                          properties = properties,
+                                          param_list = list(param_dic.keys()),
+                                          param_values = param_values,
+                                          root_dir = root_dir,
+                                          cache = False)
     
-elif preset == 2:
-    modelfile = "tandem7.sm"
+    print("Sampling completed at:", getTime())
     
-    t = 3000
-    properties = ['R=? [ I='+str(t)+' ]', 
-                  'P=? [ F<='+str(t)+' sc=c & sm=c & ph=2 ]']
-    property_names = ['Exp. customers at time '+str(t),
-                      'Prob. that networks becomes full in '+str(t)+' time units']
-    param_list = ['lambdaF', 'mu1a', 'mu1b', 'mu2', 'kappa']
+    # Compute solution set using scenario optimization
+    regions = compute_solution_sets(solutions, 
+                                    beta = args.beta, 
+                                    rho_min = 0.0001, 
+                                    increment_factor = 1.5,
+                                    itermax = 20)
     
-    var0 = 0.05
-    var1 = 0.05
-    var2 = 0.05
-    var3 = 0.05
-    var4 = 0.05
+    print("Scenario problems completed at:", getTime())
     
-    param_dic = {
-        'lambdaF': {'type': 'interval', 'lb': 4-var0, 'ub': 4+var0},
-        'mu1a': {'type': 'interval', 'lb': 0.1*2-var1, 'ub': 0.1*2+var1},
-        'mu1b': {'type': 'interval', 'lb': 0.9*2-var2, 'ub': 0.9*2+var2},
-        'mu2': {'type': 'interval', 'lb': 2-var3, 'ub': 2+var3},
-        'kappa': {'type': 'interval', 'lb': 4-var4, 'ub': 4+var4}
-        }
+    # Plot the solution set
+    if reliability:
+        # As reliability over time (if properties object is a tuple)
+        plot_reliability(Tlist, regions, solutions, args.beta, mode='smooth', 
+                         plotSamples=True)
+        
+        # Save figure
+        exp_file = args.folder+'_'+str(getDateTime()+'.pdf')
+        filename = _path("output", exp_file)
+        plt.savefig(filename, format='pdf', bbox_inches='tight')
+        print(' - Reliability plot exported to:',exp_file)
+        
+    else:
+        # As a solution set (if properties object is a list of properties)    
+        for idx_pair in itertools.combinations(np.arange(len(prop_labels)), 2):
+            # Plot the solution set for every combination of 2 properties
+            
+            plot_solution_set_2d(idx_pair, prop_labels, regions, solutions, 
+                                 args.beta, plotSamples=True)
     
-    std0 = 0.1
-    std1 = 0.1
-    std2 = 0.1
-    std3 = 0.1
-    std4 = 0.1
-    
-    param_dic = {
-        'lambdaF': {'type': 'gaussian', 'mean': 4, 'std': std0},
-        'mu1a': {'type': 'gaussian', 'mean': 0.2, 'std': std1},
-        'mu1b': {'type': 'gaussian', 'mean': 1.8, 'std': std2},
-        'mu2': {'type': 'gaussian', 'mean': 2, 'std': std3},
-        'kappa': {'type': 'gaussian', 'mean': 4, 'std': std4}
-        }
-    
-    param_values = get_parameter_values(Nsamples, param_dic)
-    
-    plot_idxs = (0,1)
-    
-elif preset == 3:
-    modelfile = "kanban.sm"
-    
-    properties = ['R{"tokens_cell1"}=? [ S ]', 'R{"tokens_cell2"}=? [ S ]']
-    param_list = ['t']
-    param_values = np.full((Nsamples, 1), 2)
-    
-# elif preset == -1:
-#     modelfile = "walkers_ringLL.sm"
-    
-#     properties = ['R{"steps"}=? [ C<=10 ]', 'P=? [F[10,10] (w1=17) ]']
-    
-#     param_list = ['failureRate']
-#     param_values = np.full((Nsamples, 1), 0.3)
-    
-##########################
-    
-# Compute solutions
-sampler, solutions = sample_solutions(Nsamples = Nsamples, 
-                                      model = _path("models", modelfile),
-                                      properties = properties,
-                                      param_list = param_list,
-                                      param_values = param_values,
-                                      root_dir = root_dir,
-                                      cache = False)
-
-print("Sampling completed at:", getTime())
-
-# Compute solution set using scenario optimization
-regions = compute_solution_sets(solutions, 
-                                beta = beta, 
-                                rho_min = 0.0001, 
-                                increment_factor = 1.5,
-                                itermax = 20)
-
-# Plot the solution set
-if type(properties) == tuple:
-    # As reliability over time (if properties object is a tuple)
-    plot_reliability(Tlist, regions, solutions, beta, mode='smooth')
-    
-else:
-    # As a solution set (if properties object is a list of properties)
-    plot_solution_set_2d(plot_idxs, property_names, regions, solutions, 
-                         beta, plotSamples=True)
-
-print("Script done at:", getTime())
+            # Save figure
+            exp_file = args.folder+'_'+str(getDateTime()+'_'+str(idx_pair)+'.pdf')
+            filename = _path("output", exp_file)
+            plt.savefig(filename, format='pdf', bbox_inches='tight')
+            print(' - 2D plot exported to:',exp_file)

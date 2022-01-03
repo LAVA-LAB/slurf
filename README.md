@@ -25,8 +25,14 @@
 
 SLURF can be run with
 
-`python runfile.py`
+`python runfile.py --N=<number of samples> --beta=<confidence probability> --folder=<subfolder to load model from> --model=<filename of model>`
 
+For example, to run for `N=100` samples of the SIR epidemic model with a population of 20 and a confidence probability of `beta=0.99` (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
 
+`python runfile.py --N=100 --beta=0.99 --folder=epidemic --model=sir20.sm`
 
+The `folder` and `model` arguments are mandatory, while the number of samples is `N=100` by default, and the default confidence probability if `beta=0.99`.
 
+## Inspecting results
+
+All results (including figures) are stored in the `output/` folder.

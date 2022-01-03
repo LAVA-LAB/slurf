@@ -103,7 +103,8 @@ class scenarioProblem:
                 interior_mask[i] = True
                 support_mask[i] = False
 
-        print(' - Samples in interior of region:', sum(interior_mask))
+        num_interior = sum(interior_mask)
+        print(' - Samples in interior of region:', num_interior)
 
         for i in range(self.Nsamples):
 
@@ -135,7 +136,7 @@ class scenarioProblem:
         # Compute IDs of the samples which are in the interior
         exterior_ids = self.sample_ids[~interior_mask]
 
-        return sol, complexity, value, exterior_ids
+        return sol, complexity, value, exterior_ids, num_interior
 
 
 def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
@@ -171,6 +172,8 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
     i = 0
     exterior_ids = [None]
     
+    # Do not solve problem if difference between max/min is very small (to
+    # avoid solver issues)
     tres = 1e-3
     compareAt = np.abs(np.max(samples, axis=0) - np.min(samples, axis=0)) > tres
 
@@ -179,10 +182,11 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
         print('\nSolve scenario problem of size {}; rho = {}'.\
               format(problem.Nsamples, rho))
 
-        sol, c_star, x_star, exterior_ids = problem.solve(compareAt, rho)
+        sol, c_star, x_star, exterior_ids, num_interior = problem.solve(compareAt, rho)
 
-        # If complexity is the same as in previous iteration, skip or break
-        if i > 0 and c_star == regions[i-1]['complexity']:
+        # If complexity is the same (or even higher) as in previous iteration, 
+        # skip or break
+        if i > 0 and c_star >= regions[i-1]['complexity']:
             if c_star < 0.5*Nsamples:
                 # If we are already at the outside of the slurf, break overall
                 break
@@ -197,7 +201,10 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
             rho *= increment_factor
             continue
         
-        problem.init_problem(samples[exterior_ids], exterior_ids)
+        # Reinitialize problem only if we can reduce its size (i.e., if there
+        # are samples fully in the interior of the current solution set)
+        if num_interior > 0:
+            problem.init_problem(samples[exterior_ids], exterior_ids)
 
         Pviolation = np.round(1 - etaLow(Nsamples, c_star, beta), 4)
 
