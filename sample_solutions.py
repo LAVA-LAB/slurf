@@ -6,26 +6,55 @@ from slurf.model_sampler_interface import \
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
 
-def param_SIR(Nsamples):
+def get_parameter_values(Nsamples, param_dic):
     
-    param_values = np.random.uniform(low=[0.05, 0.05], 
-                                     high=[0.08, 0.08],
-                                     size=(Nsamples, 2))
+    # Initialize parameter matrix
+    param_matrix = np.zeros((Nsamples, len(param_dic)))
+    
+    # For every parameter
+    for i, (param_key, v) in enumerate(param_dic.items()):
+        
+        assert 'type' in v
+        
+        # Get Nsamples values
+        if v['type'] == 'interval':
+            assert 'lower_bound' in v
+            assert 'upper_bound' in v
+            
+            param_matrix[:, i] = param_interval(Nsamples, v['lower_bound'], 
+                                                v['upper_bound'])
+            
+        elif v['type'] == 'gaussian':
+            assert 'mean' in v
+            assert 'covariance' in v
+            if not 'nonzero' in v:
+                v['nonzero'] = True
+            
+            param_matrix[:, i] = param_gaussian(Nsamples, v['mean'], 
+                                                v['covariance'], v['nonzero'])
+            
+    return param_matrix
+            
+            
+        
+
+def param_interval(Nsamples, lb, ub):
+    
+    param_values = np.random.uniform(low=lb, high=ub, size=Nsamples)
     
     return param_values
 
-def param_SIR_gauss(Nsamples):
+def param_gaussian(Nsamples, mean, cov, nonzero=True):
     
-    param_values = np.random.multivariate_normal(
-                        mean = np.array([0.065, 0.065]),
-                        cov = np.diag([0.0001, 0.0001]),
-                        size=(Nsamples))
+    param_values = np.random.normal(loc=mean, scale=cov, size=Nsamples)
     
-    param_values = np.maximum(param_values, 1e-3)
+    if nonzero:
+        param_values = np.maximum(param_values, 1e-3)
     
     return param_values
 
-def sample_solutions(Nsamples, model, properties, root_dir, cache=False):
+def sample_solutions(Nsamples, model, properties, param_list, param_values,
+                     root_dir, cache=False):
     """
 
     Parameters
@@ -43,8 +72,7 @@ def sample_solutions(Nsamples, model, properties, root_dir, cache=False):
     # Load model
     sampler = CtmcReliabilityModelSamplerInterface()
     sampler.load(model, properties)
-
-    param_list = ['ki', 'kr']
+    
     results = np.zeros((Nsamples, len(properties[1])))
     
     cache_file = os.path.join(root_dir, "samples.pkl")
@@ -82,14 +110,11 @@ def sample_solutions(Nsamples, model, properties, root_dir, cache=False):
             
             # If results are imported, return here
             return sampler, results
-
-    # If the script has not returned yet, we load samples
-    parameters = param_SIR(Nsamples)
     
-    assert len(param_list) == parameters.shape[1]
+    assert len(param_list) == param_values.shape[1]
 
     parameters_dic = [{param: row[i] for i,param in enumerate(param_list)} 
-                      for row in parameters]
+                      for row in param_values]
 
     sampleIDs = sampler.sample_batch(parameters_dic, exact=True)
 
