@@ -44,7 +44,7 @@ def parse_arguments(manualModel=None):
     else:
         args.model_type = 'CTMC'
     
-    if not bisim:
+    if not args.bisim:
         print('- Bisimulation is disabled')
     
     return args

@@ -1,4 +1,5 @@
 import os
+import pandas as pd
 from sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values
 from slurf.scenario_problem import compute_solution_sets
@@ -31,8 +32,6 @@ if __name__ == '__main__':
     
     print("\n===== Parameter values sampled at:", getTime(),"=====")
     
-    print(args.bisim)
-    
     # Sample parameter values
     if args.model_type == 'CTMC':
         sampler = CtmcReliabilityModelSamplerInterface()
@@ -52,7 +51,12 @@ if __name__ == '__main__':
                             root_dir = root_dir,
                             cache = False )
     
-    print("\n===== Sampling from model completed at:", getTime(),"=====")
+    print('-----------------------------------------')
+    print('MODEL STATISTICS:')
+    stats = sampler.get_stats()
+    df = pd.DataFrame.from_dict(stats, orient='index')
+    print(df)
+    print('-----------------------------------------')
     
     # Compute solution set using scenario optimization
     regions = compute_solution_sets(solutions, 

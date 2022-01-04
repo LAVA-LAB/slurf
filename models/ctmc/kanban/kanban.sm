@@ -7,19 +7,19 @@ ctmc
 const int t = 2; 
 
 // rates
-const double in1;
-const double out4     = 0.9;
-const double synch123 = 0.4;
-const double synch234 = 0.5;
-const double back     = 0.3;
-const double redo1    = 0.36;
-const double redo2    = 0.42;
-const double redo3    = 0.39;
-const double redo4    = 0.33;
-const double ok1      = 0.84;
-const double ok2      = 0.98;
-const double ok3      = 0.91;
-const double ok4      = 0.77;
+const double in1; // 1.0 by default
+const double out4; // 0.9
+const double synch123; // 0.4
+const double synch234; // 0.5
+const double back; // 0.3
+const double redo1; // 0.36
+const double redo2; // 0.42
+const double redo3; // 0.39
+const double redo4; // 0.33
+const double ok1; // 0.84
+const double ok2; // 0.98
+const double ok3; // 0.91
+const double ok4; //0.77
 
 module k1
 

@@ -106,7 +106,7 @@ class ModelSamplerInterface:
         """
         return {
             "model_states": self._model.nr_states,
-            "model_transitions:": self._model.nr_transitions,
+            "model_transitions": self._model.nr_transitions,
             "orig_model_states": self._states_orig,
             "orig_model_transitions": self._transitions_orig,
             "no_parameters": len(self._parameters),
