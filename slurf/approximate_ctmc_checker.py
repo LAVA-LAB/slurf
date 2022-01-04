@@ -38,8 +38,7 @@ class ApproximateChecker:
         checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
         checker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
         lb = checker.check(self._environment, instantiation).at(initial_state)
-        print(checker.original_model)
-        if checker.original_model.labeling.contains(self._abort_label):
+        if self._original_model.labeling.contains_label(self._abort_label):
             checker.specify_formula(sp.ParametricCheckTask(self._ub_formula, True))  # Only initial states
             ub = checker.check(self._environment, instantiation).at(initial_state)
         else:
