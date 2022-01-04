@@ -7,6 +7,7 @@ import stormpy.dft
 
 import math
 import time
+import os.path
 
 
 class ModelSamplerInterface:
@@ -173,14 +174,14 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Return all parameters each with range (0 infinity)
         return {p: (0, math.inf) for p in self._parameters.keys()}
 
-    def prepare_properties(self, properties, program=None):
+    def prepare_properties(self, properties, model_desc=None):
         """
         Set properties.
 
         Parameters
         ----------
         properties Properties either given as a tuple (event, [time bounds]) or a list of properties.
-        program Prism program (optional).
+        model_desc Model description as either Prism program or Jani model (optional).
         -------
 
         """
@@ -191,12 +192,17 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             # Given as tuple (reachability label, [time bounds])
             event, time_bounds = properties[0], properties[1]
             property_string = ";".join([f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds])
-        if program is not None:
-            self._properties = sp.parse_properties_for_prism_program(property_string, program)
+        if model_desc is not None:
+            symb_desc = stormpy.SymbolicModelDescription(model_desc)
+            if symb_desc.is_prism_program:
+                self._properties = sp.parse_properties_for_prism_program(property_string, model_desc)
+            else:
+                assert symb_desc.is_jani_model
+                self._properties = sp.parse_properties_for_jani_model(property_string, model_desc)
         else:
             self._properties = sp.parse_properties(property_string)
 
-    def load(self, model, properties, bisim=True):
+    def load(self, model, properties, bisim=True, constants=None):
         """
 
         Initialize sampler with model and properties.
@@ -205,19 +211,31 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         ----------
         model A CTMC with a label.
         properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        bisim Whether to apply bisimulation.
+        constants Constants for graph changing variables in model description (optional)
 
         Returns Dict of all parameters and their bounds (default [0, infinity)).
         -------
 
         """
         time_start = time.process_time()
-        # Load prism program
-        program = sp.parse_prism_program(model, prism_compat=True)
+        jani_file = (os.path.splitext(model)[1] == ".jani")
+
+        if jani_file:
+            # Parse Jani program
+            model_desc, formulas = stormpy.parse_jani_model(model)
+            if constants:
+                symb_desc = stormpy.SymbolicModelDescription(model_desc)
+                constant_definitions = symb_desc.parse_constant_definitions(constants)
+                model_desc = symb_desc.instantiate_constants(constant_definitions).as_jani_model()
+        else:
+            # Parse Prism program
+            model_desc = sp.parse_prism_program(model, prism_compat=True)
         # Create properties
-        self.prepare_properties(properties, program)
+        self.prepare_properties(properties, model_desc)
         # Build (sparse) CTMC
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
-        model = sp.build_sparse_parametric_model_with_options(program, options)
+        model = sp.build_sparse_parametric_model_with_options(model_desc, options)
         parameters = self.init_from_model(model, bisim)
         self._time_load = time.process_time() - time_start
         return parameters

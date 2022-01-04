@@ -22,6 +22,18 @@ class TestModelSampler:
         assert math.isclose(result[1], 0.9427719189)
         assert math.isclose(result[2], 0.9987049333)
 
+    def test_ctmc_jani_sample_exact(self):
+        sampler = CtmcReliabilityModelSamplerInterface()
+        parameters_with_bounds = sampler.load(testutils.tandem_pctmc_jani, ("sc=c", [0.2, 0.5, 1]), constants="c=5")
+
+        assert "mu1b" in parameters_with_bounds
+        sample = sampler.sample({"mu1b": 1.8}, exact=True)
+        assert sample.is_refined()
+        result = sample.get_result()
+        assert math.isclose(result[0], 0.3352605619)
+        assert math.isclose(result[1], 0.943440896 )
+        assert math.isclose(result[2], 0.9997330603)
+
     def test_ctmc_properties(self):
         sampler = CtmcReliabilityModelSamplerInterface()
         properties = ['P=? [ F<=5 "full" ]', 'P=? [ F=1 "empty" ]']
