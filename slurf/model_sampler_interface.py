@@ -6,8 +6,9 @@ import stormpy.pars
 import stormpy.dft
 
 import math
-import time
 import os.path
+import time
+from tqdm import tqdm
 
 
 class ModelSamplerInterface:
@@ -287,7 +288,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         time_start = time.process_time()
         results = dict()
         # TODO: use better approach than simply iterating
-        for sample_point in sample_points:
+        for sample_point in tqdm(sample_points):
             results[sample_point.get_id()] = self._sample(sample_point)
 
         self._time_sample += time.process_time() - time_start
@@ -332,7 +333,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Get corresponding sample points
         samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
 
-        for sample in samples:
+        for sample in tqdm(samples):
             # Refine sample
             self._refine(sample)
 
