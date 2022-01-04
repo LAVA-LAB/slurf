@@ -189,9 +189,11 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             # List of properties
             property_string = ";".join(properties)
         else:
-            # Given as tuple (reachability label, [time bounds])
+            # Given as tuple (reachability label/expression, [time bounds])
             event, time_bounds = properties[0], properties[1]
-            property_string = ";".join([f'P=? [ F<={float(t)} "{event}" ]' for t in time_bounds])
+            # Todo: use less hackish way to distinguish between expression and label
+            ev_str = event if "=" in event else f'"{event}"'
+            property_string = ";".join([f'P=? [ F<={float(t)} {ev_str} ]' for t in time_bounds])
         if model_desc is not None:
             symb_desc = stormpy.SymbolicModelDescription(model_desc)
             if symb_desc.is_prism_program:
