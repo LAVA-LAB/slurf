@@ -135,7 +135,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     This simple interface builds a parametric CTMC and then uses an instantiation checker to check the model.
     """
 
-    def init_from_model(self, model):
+    def init_from_model(self, model, bisim=True):
         """
         Initialize sampler from CTMC model.
 
@@ -154,7 +154,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._transitions_orig = self._model.nr_transitions
         time_start = time.process_time()
         # Apply bisimulation minimisation
-        self._model = sp.perform_bisimulation(self._model, self._properties, sp.BisimulationType.STRONG)
+        if bisim:
+            self._model = sp.perform_bisimulation(self._model, self._properties, sp.BisimulationType.STRONG)
         self._time_bisim = time.process_time() - time_start
 
         # Get (unique) initial state
@@ -195,7 +196,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         else:
             self._properties = sp.parse_properties(property_string)
 
-    def load(self, model, properties):
+    def load(self, model, properties, bisim=True):
         """
 
         Initialize sampler with model and properties.
@@ -217,7 +218,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Build (sparse) CTMC
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
         model = sp.build_sparse_parametric_model_with_options(program, options)
-        parameters = self.init_from_model(model)
+        parameters = self.init_from_model(model, bisim)
         self._time_load = time.process_time() - time_start
         return parameters
 

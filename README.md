@@ -33,10 +33,12 @@ The `folder` argument should contain the path to the model file (e.g., in PRISM 
 
 The `model` argument is mandatory, while the number of samples is `N=100` by default, and the default confidence probability if `beta=0.99`. Other optional arguments are as follows:
 
-- `rho_min` - Minimum cost of violation to start with in first iteration (0.0001 by default)
-- `rho_incr` - Increment factor of the cost of violation in every iteration (1.5 by default)
-- `rho_max_iter` - Maximum number of iterations for increasing cost of violations (20 by default)
-- `curve_plot_mode` - Plotting mode for reliability curves. Is either `optimistic` or `conservative` (default)
+- `--rho_min 0.0001` - Minimum cost of violation to start with in first iteration (0.0001 by default)
+- --`rho_incr` 1.5 - Increment factor of the cost of violation in every iteration (1.5 by default)
+- --`rho_max_iter 20` - Maximum number of iterations for increasing cost of violations (20 by default)
+- `--curve_plot_mode conservative` - Plotting mode for reliability curves. Is either `optimistic` or `conservative` (default)
+
+For models with multiple reward structures, bisimulation should be disabled. You can do this by providing the optional argument `--no-bisim`.
 
 ## Inspecting results
 

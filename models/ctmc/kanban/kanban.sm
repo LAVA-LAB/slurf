@@ -7,7 +7,7 @@ ctmc
 const int t = 2; 
 
 // rates
-const double in1      = 1.0;
+const double in1;
 const double out4     = 0.9;
 const double synch123 = 0.4;
 const double synch234 = 0.5;

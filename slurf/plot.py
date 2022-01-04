@@ -9,12 +9,12 @@ import itertools
 from slurf.commons import getDateTime, path
 
 def plot_results(root_dir, args, regions, solutions, reliability,
-                 prop_labels=None, Tlist=None):
+                 prop_labels=None, timebounds=None):
     
     # Plot the solution set
     if reliability:
         # As reliability over time (if properties object is a tuple)
-        plot_reliability(Tlist, regions, solutions, args.beta, 
+        plot_reliability(timebounds, regions, solutions, args.beta, 
                          mode=args.curve_plot_mode, plotSamples=True)
         
         # Save figure
@@ -65,7 +65,7 @@ def make_conservative(low, upp):
     return x_low, x_upp
 
 
-def plot_reliability(Tlist, regions, samples, beta, plotSamples=False, 
+def plot_reliability(timebounds, regions, samples, beta, plotSamples=False, 
                      mode='conservative', annotate=False):
     
     assert mode in ['optimistic', 'conservative']
@@ -85,16 +85,16 @@ def plot_reliability(Tlist, regions, samples, beta, plotSamples=False,
         else:
             x_low, x_upp = item['x_low'], item['x_upp']
         
-        plt.fill_between(Tlist, x_low, x_upp, color=color)
-        
-        j = int( len(Tlist)/2 + 3 - i  )
-        t = Tlist[j]
-        y = x_low[j]
-        
-        xy = (t-1, y)
-        xytext = (50, -15)
+        plt.fill_between(timebounds, x_low, x_upp, color=color)
         
         if annotate:
+            j = int( len(timebounds)/2 + 3 - i  )
+            t = timebounds[j]
+            y = x_low[j]
+            
+            xy = (t-1, y)
+            xytext = (50, -15)
+            
             plt.annotate(r'$\eta=$'+str(np.round(1-item['Pviolation'], 2)), 
                          xy=xy, xytext=xytext,
                          ha='left', va='center', textcoords='offset points',
@@ -102,10 +102,10 @@ def plot_reliability(Tlist, regions, samples, beta, plotSamples=False,
                          )
         
     if plotSamples:
-        plt.plot(Tlist, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.5)
+        plt.plot(timebounds, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.5)
         
     plt.xlabel('Time')
-    plt.ylabel('Probability of zero infected')
+    plt.ylabel('Failure probability')
 
     ax.set_title("Solution sets over time (confidence beta={}; N={} samples)".
                  format(beta, len(samples)))

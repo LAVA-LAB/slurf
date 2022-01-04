@@ -2,13 +2,11 @@ import numpy as np
 import os
 import pandas as pd
 
-from slurf.model_sampler_interface import \
-    CtmcReliabilityModelSamplerInterface
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
 from slurf.commons import path
 
-def load_distribution(root_dir, model_path):
+def load_distribution(root_dir, model_path, model_type):
     """
     Helper function to load probability distribution and parameter data
     :model_folder: Subfolder to load the model from
@@ -34,20 +32,34 @@ def load_distribution(root_dir, model_path):
     param_df = pd.read_excel(distr_file, sheet_name='Parameters', index_col=0)
     param_dic = param_df.to_dict('index')
 
-    # Read property sheet
-    property_df = pd.read_excel(distr_file, sheet_name='Properties')
-    property_df = property_df[ property_df['enabled'] == True ]
-    properties = property_df['property'].to_list()
-    prop_labels = property_df['label'].to_list()
-    
-    if 'time' in property_df:
-        reliability = True
-        Tlist = property_df['time'].to_list()
+    # Interpretation of properties differs between CTMCs and DFTs
+    if model_type == 'CTMC':
+        
+        # Read property sheet
+        property_df = pd.read_excel(distr_file, sheet_name='Properties')
+        property_df = property_df[ property_df['enabled'] == True ]
+        properties = property_df['property'].to_list()
+        prop_labels = property_df['label'].to_list()
+        
+        if 'time' in property_df:
+            reliability = True
+            timebounds = property_df['time'].to_list()
+        else:
+            reliability = False
+            timebounds = None
+            
     else:
-        reliability = False
-        Tlist = None
+        
+        # Read property sheet
+        property_df = pd.read_excel(distr_file, sheet_name='Properties')
+        
+        timebounds = tuple(property_df['failed'])        
+        properties = ("failed", timebounds)
+        
+        prop_labels = None
+        reliability = True
     
-    return model_file, param_dic, properties, prop_labels, reliability, Tlist
+    return model_file, param_dic, properties, prop_labels, reliability, timebounds
 
 
 def get_parameter_values(Nsamples, param_dic):
@@ -78,8 +90,6 @@ def get_parameter_values(Nsamples, param_dic):
         if 'inverse' in v:
             if v['inverse'] is True:
                 param_matrix[:, i] = 1/param_matrix[:, i]
-                
-                print('Inverse parameters!')
             
     return param_matrix
             
@@ -96,20 +106,25 @@ def param_gaussian(Nsamples, mean, std):
     param_values = np.random.normal(loc=mean, scale=std, size=Nsamples)
     
     # Make values nonnegative
-    param_values = np.maximum(param_values, 1e-3)
+    param_values = np.maximum(param_values, 1e-9)
     
     return param_values
 
 
-def sample_solutions(Nsamples, model, properties, param_list, param_values,
-                     root_dir, cache=False):
+def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list, 
+                     param_values, root_dir, cache=False):
     """
 
     Parameters
     ----------
+    sampler Sampler object (for either CTMC of DFT)
     Nsamples Number of samples
     model File name of the model to load
+    bisim True if bisimulation (strong) is enabled
     properties List of property strings
+    param_list Names (labels) of the parameters
+    param_values List of values for every parameter
+    root_dir Root directory where script is being run
     cache If True, we export the samples to a cache file
 
     Returns 2D Numpy array with every row being a sample
@@ -118,8 +133,7 @@ def sample_solutions(Nsamples, model, properties, param_list, param_values,
     """
 
     # Load model
-    sampler = CtmcReliabilityModelSamplerInterface()
-    sampler.load(model, properties)
+    sampler.load(model, properties, bisim)
     
     if type(properties) == tuple:
         num_props = len(properties[1])
