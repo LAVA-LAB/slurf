@@ -100,7 +100,7 @@ class TestModelSampler:
         sampler.sample({"p": 0.3})
         stats = sampler.get_stats()
         assert stats["model_states"] == 4
-        assert stats['model_transitions:'] == 6
+        assert stats['model_transitions'] == 6
         assert stats['no_parameters'] == 1
         assert stats['no_samples'] == 1
         assert stats['no_properties'] == 3
