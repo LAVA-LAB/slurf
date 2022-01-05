@@ -371,6 +371,8 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         time_start = time.process_time()
         # Load DFT from Galileo file
         self._dft = sp.dft.load_parametric_dft_galileo_file(model)
+        # Make DFT well-formed
+        self._dft = sp.dft.transform_parametric_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
 
         # Create properties
         self.prepare_properties(properties)
