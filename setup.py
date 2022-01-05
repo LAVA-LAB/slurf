@@ -31,10 +31,11 @@ setup(
     },
     zip_safe=False,
     install_requires=[
-        'stormpy>=1.6.3',
-        'numpy',
+        'stormpy>=1.6.3', # Back-end model checker
         'cvxpy',
         'matplotlib',
+        'numpy',
+        'openpyxl', # Read Excel files
         'seaborn',
         'tqdm' # Progress bar
     ],

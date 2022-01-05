@@ -133,7 +133,7 @@ def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list,
     """
 
     # Load model
-    sampler.load(model, properties, bisim)
+    sampler.load(model, properties, bisim=bisim)
     
     if type(properties) == tuple:
         num_props = len(properties[1])

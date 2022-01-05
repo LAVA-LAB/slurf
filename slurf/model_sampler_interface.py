@@ -33,7 +33,7 @@ class ModelSamplerInterface:
         self._sample_calls = 0
         self._refined_samples = 0
 
-    def load(self, model, properties):
+    def load(self, model, properties, bisim=True, constants=None):
         """
 
         Initialize sampler with model and properties.
@@ -42,6 +42,8 @@ class ModelSamplerInterface:
         ----------
         model Description file for the (parametric) model.
         properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        bisim Whether to apply bisimulation.
+        constants Constants for graph changing variables in model description (optional)
 
         Returns Dict of all parameters and their bounds (default bounds are [0, infinity)).
         """
@@ -352,13 +354,15 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         super(CtmcReliabilityModelSamplerInterface, self).__init__()
         self._dft = None
 
-    def load(self, model, properties):
+    def load(self, model, properties, bisim=True, constants=None):
         """
 
         Parameters
         ----------
         model A DFT with parametric failure rates.
         properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        bisim Whether to apply bisimulation.
+        constants Constants for graph changing variables in model description (not required for fault trees)
 
         Returns Dictionary of parameters and their bounds.
         -------
@@ -378,7 +382,7 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         sp.set_settings(["--io:exportexplicit", drn_file])
         tmp_prop = sp.parse_properties(f'T=? [ F "failed" ]')[0]
         stormpy.dft.analyze_parametric_dft(self._dft, [tmp_prop.raw_formula])
-        parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file))
+        parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file), bisim=bisim)
         self._time_load = time.process_time() - time_start
         return parameters
 
