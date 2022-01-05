@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 
-def parse_arguments(manualModel=None):
+def parse_arguments(manualModel=None, nobisim=True):
     
     parser = argparse.ArgumentParser(description="Sampling-based verifier for upCTMCs")
     # Scenario problem main arguments
@@ -44,7 +44,8 @@ def parse_arguments(manualModel=None):
     else:
         args.model_type = 'CTMC'
     
-    if not args.bisim:
+    if not args.bisim or nobisim:
+        args.bisim = False
         print('- Bisimulation is disabled')
     
     return args

@@ -15,7 +15,7 @@ def plot_results(root_dir, args, regions, solutions, reliability,
     if reliability:
         # As reliability over time (if properties object is a tuple)
         plot_reliability(timebounds, regions, solutions, args.beta, 
-                         mode=args.curve_plot_mode, plotSamples=True)
+                         mode=args.curve_plot_mode, plotSamples=False)
         
         # Save figure
         exp_file = args.model.rsplit('/', 1)[1] + '_' + \
@@ -38,6 +38,18 @@ def plot_results(root_dir, args, regions, solutions, reliability,
             filename = path(root_dir, "output", exp_file)
             plt.savefig(filename, format='pdf', bbox_inches='tight')
             print(' - 2D plot exported to:',exp_file)
+            
+    # idx_pair = (3, 9)
+            
+    # plot_solution_set_2d(idx_pair, timebounds, regions, solutions, 
+    #                      args.beta, plotSamples=True)
+
+    # # Save figure
+    # exp_file = args.model.rsplit('/', 1)[1] + '_' + \
+    #                str(getDateTime() + '_' + str(idx_pair)+'.pdf')
+    # filename = path(root_dir, "output", exp_file)
+    # plt.savefig(filename, format='pdf', bbox_inches='tight')
+    # print(' - 2D plot exported to:',exp_file)
 
 
 def make_conservative(low, upp):

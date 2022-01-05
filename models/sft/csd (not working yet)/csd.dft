@@ -1,0 +1,17 @@
+param A;
+param B;
+param C;
+param D;
+param E;
+param F;
+toplevel "System";
+"System" or "CommonCauseSealFailure" "SealsFailIndependently";
+"CommonCauseSealFailure" and "ContaminationTapeFails" "CommonCauseSealFailureBE";
+"SealsFailIndependently" and "Metal-To-MetalSealFails" "CompressionSealFailure" "FusedPlugFails";
+"CompressionSealFailure" and "CompressionSeal1Fails" "CompressionSeal2Fails";
+"ContaminationTapeFails" prob=A dorm=0;
+"CommonCauseSealFailureBE" prob=B dorm=0;
+"Metal-To-MetalSealFails" prob=C dorm=0;
+"FusedPlugFails" prob=D dorm=0;
+"CompressionSeal1Fails" prob=E dorm=0;
+"CompressionSeal2Fails" prob=F dorm=0;

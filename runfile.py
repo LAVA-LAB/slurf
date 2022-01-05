@@ -15,8 +15,10 @@ if __name__ == '__main__':
     
     # Interpret arguments provided
     # args = parse_arguments(manualModel="dft/hecs/hecs_2_1.dft")
-    #args = parse_arguments(manualModel="dft/hemps/hemps.dft")
-    #args = parse_arguments(manualModel="dft/rc/rc.1-1-hc.dft")
+    # args = parse_arguments(manualModel="dft/hemps/hemps.dft")
+    # args = parse_arguments(manualModel="ctmc/epidemic/sir100.sm")
+    # args = parse_arguments(manualModel="ctmc/kanban/kanban2.sm")
+    # args = parse_arguments(manualModel="dft/rc/rc.1-1-hc.dft")
     args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
@@ -54,7 +56,7 @@ if __name__ == '__main__':
     print('-----------------------------------------')
     print('MODEL STATISTICS:')
     stats = sampler.get_stats()
-    df = pd.DataFrame.from_dict(stats, orient='index')
+    df = pd.Series(stats)
     print(df)
     print('-----------------------------------------')
     
