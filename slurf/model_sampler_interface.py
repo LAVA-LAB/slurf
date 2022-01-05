@@ -373,6 +373,8 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         self._dft = sp.dft.load_parametric_dft_galileo_file(model)
         # Make DFT well-formed
         self._dft = sp.dft.transform_parametric_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
+        # Check for dependency conflicts -> no conflicts mean CTMC
+        sp.dft.compute_dependency_conflicts_parametric(self._dft, use_smt=False, solver_timeout=0)
 
         # Create properties
         self.prepare_properties(properties)
