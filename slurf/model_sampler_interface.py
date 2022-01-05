@@ -384,8 +384,11 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         # TODO: implement dedicated methods
         drn_file = "tmp_ctmc.drn"
         sp.set_settings(["--io:exportexplicit", drn_file])
-        tmp_prop = sp.parse_properties(f'T=? [ F "failed" ]')[0]
+        # Set temporary property to initiate state space building
+        tmp_prop = sp.parse_properties(f'P=? [ F<=1 "failed" ]')[0]
+        # Analysing the property will fail but we only need the state space anyway
         stormpy.dft.analyze_parametric_dft(self._dft, [tmp_prop.raw_formula])
+        # Load model from DRN file and use standard methods for CTMCs
         parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file), bisim=bisim)
         self._time_load = time.process_time() - time_start
         return parameters
