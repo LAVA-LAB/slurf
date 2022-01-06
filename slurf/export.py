@@ -39,10 +39,12 @@ def plot_results(output_dir, args, regions, solutions, reliability,
             print(' - 2D plot exported to:',exp_file)
 
 
-def save_results(output_path, dfs, modelfile_nosuffix):
+def save_results(output_path, dfs, modelfile_nosuffix, N, beta):
     
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    xlsx_path = path(output_path, "", modelfile_nosuffix+"_results.xlsx")
+    xlsx_file = modelfile_nosuffix + "_N=" + str(N) + "_beta=" \
+                    + str(beta) + "_results.xlsx"
+    xlsx_path = path(output_path, "", xlsx_file)
     writer = pd.ExcelWriter(xlsx_path, engine='xlsxwriter')
     
     # Write each dataframe to a different worksheet.
@@ -102,7 +104,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
         else:
             x_low, x_upp = item['x_low'], item['x_upp']
         
-        plt.fill_between(timebounds, x_low, x_upp, color=color)
+        plt.fill_between(timebounds[:-1], x_low[:-1], x_upp[:-1], color=color)
         
         if annotate:
             j = int( len(timebounds)/2 + 3 - i  )
@@ -119,7 +121,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
                          )
         
     if plotSamples:
-        plt.plot(timebounds, samples.T, color='k', lw=0.3, ls='dotted', alpha=0.5)
+        plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, ls='dotted', alpha=0.5)
         
     plt.xlabel('Time')
     plt.ylabel('Failure probability')

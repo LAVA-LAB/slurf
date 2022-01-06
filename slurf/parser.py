@@ -1,7 +1,7 @@
 import argparse
 import pathlib
 
-def parse_arguments(manualModel=None, nobisim=True):
+def parse_arguments(manualModel=None, nobisim=False):
     
     parser = argparse.ArgumentParser(description="Sampling-based verifier for upCTMCs")
     # Scenario problem main arguments
@@ -9,6 +9,10 @@ def parse_arguments(manualModel=None, nobisim=True):
                         default=100, help="Number of samples to compute")
     parser.add_argument('--beta', type=float, action="store", dest='beta', 
                         default=0.99, help="Number of samples to compute")
+    
+    # Number of validation samples (0 by default, i.e. no validation)
+    parser.add_argument('--Nvalidate', type=int, action="store", dest='Nvalidate', 
+                        default=0, help="Number of samples to validate confidence regions with")
     
     # Argument for model to load
     parser.add_argument('--model', type=str, action="store", dest='model', 

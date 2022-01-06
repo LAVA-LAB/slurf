@@ -1,8 +1,8 @@
 import os
 import pandas as pd
 import time
-from sample_solutions import load_distribution, sample_solutions, \
-    get_parameter_values
+from slurf.sample_solutions import load_distribution, sample_solutions, \
+    get_parameter_values, validate_solutions
 from slurf.scenario_problem import compute_solution_sets
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface, DftReliabilityModelSamplerInterface
@@ -17,12 +17,8 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    # args = parse_arguments(manualModel="dft/hecs/hecs_2_1.dft")
-    # args = parse_arguments(manualModel="dft/hemps/hemps.dft")
-    args = parse_arguments(manualModel="ctmc/epidemic/sir20.sm")
-    # args = parse_arguments(manualModel="ctmc/kanban/kanban2.sm")
-    # args = parse_arguments(manualModel="dft/rc/rc.1-1-hc.dft")
-    # args = parse_arguments()
+    # args = parse_arguments(manualModel="ctmc/epidemic/sir20.sm")
+    args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
     time_start = time.process_time()
@@ -52,11 +48,13 @@ if __name__ == '__main__':
     print("\n===== Sampler initialized at:", getTime(),"=====")
     time_start = time.process_time()
     
+    # Load model
+    file = path(root_dir, "models", model_file)
+    sampler.load(file, properties, bisim=args.bisim)
+    
     # Compute solutions by verifying the instantiated CTMCs
-    sampler, solutions = sample_solutions( sampler = sampler,
+    solutions = sample_solutions( sampler = sampler,
                             Nsamples = args.Nsamples, 
-                            model = path(root_dir, "models", model_file),
-                            bisim = args.bisim,
                             properties = properties,
                             param_list = list(param_dic.keys()),
                             param_values = param_values,
@@ -90,15 +88,36 @@ if __name__ == '__main__':
     time_start = time.process_time()
     
     # Create output folder
-    output_path = create_output_folder(root_dir, args.modelfile_nosuffix)
+    output_folder = args.modelfile_nosuffix + \
+                        "_N=" + str(args.Nsamples) + "_beta=" + str(args.beta)
+    output_path = create_output_folder(root_dir, output_folder)
     
     # Plot results
     plot_results(output_path, args, regions, solutions, reliability, prop_labels, 
                  timebounds)
     
-    timing['2_plotting'] = time.process_time() - time_start
+    timing['6_plotting'] = time.process_time() - time_start
     print("\n===== Plotting completed at:", getTime(),"=====")
+    time_start = time.process_time()
+    
+    # Validation of results
+    if args.Nvalidate > 0:
+
+        print('- Validate confidence regions with',args.Nvalidate,'samples')        
+
+        # Sample new parameter for validation
+        param_values = get_parameter_values(args.Nvalidate, param_dic)
+        
+        Pemp = validate_solutions(sampler, regions, args.Nvalidate, properties, 
+                           list(param_dic.keys()), param_values, root_dir,
+                           cache = args.modelfile_nosuffix+'_cache.pkl')
+        
+        dfs['regions_stats']['Pviolation_empirical'] = Pemp
+    
+    timing['7_validation'] = time.process_time() - time_start
+    print("\n===== Validation completed at:", getTime(),"=====")
     
     # Save raw results in Excel file
     dfs['timing'] = pd.Series(timing)
-    save_results(output_path, dfs, args.modelfile_nosuffix)
+    save_results(output_path, dfs, args.modelfile_nosuffix, 
+                 args.Nsamples, args.beta)

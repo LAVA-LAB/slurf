@@ -111,16 +111,14 @@ def param_gaussian(Nsamples, mean, std):
     return param_values
 
 
-def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list, 
-                     param_values, root_dir, cache=False):
+def sample_solutions(sampler, Nsamples, properties, param_list, 
+                     param_values, root_dir=None, cache=False):
     """
 
     Parameters
     ----------
     sampler Sampler object (for either CTMC of DFT)
     Nsamples Number of samples
-    model File name of the model to load
-    bisim True if bisimulation (strong) is enabled
     properties List of property strings
     param_list Names (labels) of the parameters
     param_values List of values for every parameter
@@ -132,8 +130,7 @@ def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list,
 
     """
 
-    # Load model
-    sampler.load(model, properties, bisim=bisim)
+    
     
     if type(properties) == tuple:
         num_props = len(properties[1])
@@ -142,37 +139,39 @@ def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list,
         
     results = np.zeros((Nsamples, num_props))
     
-    cache_file = os.path.join(root_dir, "samples.pkl")
-    
-    # If cache is activated and cache file exists, try to load samples from it
-    if cache and os.path.isfile(cache_file):
+    # If cache is activated...
+    if cache:
+        cache_path = os.path.join(root_dir, 'cache', cache)
         
-        # Import cache
-        samples_imp = import_sample_cache(cache_file)
+        # If cache file exists, try to load samples from it
+        if os.path.isfile(cache_path):
         
-        # Test if the parameters match
-        params_import = list(samples_imp.get_sample(0).get_valuation().keys())
-        num_properties = len(samples_imp.get_sample(0).get_result())
-        
-        # Only interpret results if the cache file matches the current call
-        if params_import != param_list:
-            print('- Cache incompatible: number of parameters does not match')
-        elif Nsamples != samples_imp.num_samples:
-            print('- Cache incompatible: number of samples does not match')
-        elif num_props != num_properties:
-            print('- Cache incompatible: number of properties does not match')
-        else:
+            # Import cache
+            samples_imp = import_sample_cache(cache_path)
             
-            for n in range(Nsamples):
-                results[n] = samples_imp.get_sample(n).get_result()
+            # Test if the parameters match
+            params_import = list(samples_imp.get_sample(0).get_valuation().keys())
+            num_properties = len(samples_imp.get_sample(0).get_result())
+            
+            # Only interpret results if the cache file matches the current call
+            if params_import != param_list:
+                print('- Cache incompatible: number of parameters does not match')
+            elif Nsamples != samples_imp.num_samples:
+                print('- Cache incompatible: number of samples does not match')
+            elif num_props != num_properties:
+                print('- Cache incompatible: number of properties does not match')
+            else:
                 
-            print('- Samples imported from cache')
-            print('--- List of parameters:',params_import)
-            print('--- Number of samples:',samples_imp.num_samples)
-            print('--- Number of properties:',num_properties)
-            
-            # If results are imported, return here
-            return sampler, results
+                for n in range(Nsamples):
+                    results[n] = samples_imp.get_sample(n).get_result()
+                    
+                print('- Samples imported from cache')
+                print('--- List of parameters:',params_import)
+                print('--- Number of samples:',samples_imp.num_samples)
+                print('--- Number of properties:',num_properties)
+                
+                # If results are imported, return here
+                return results
     
     assert len(param_list) == param_values.shape[1]
 
@@ -195,7 +194,54 @@ def sample_solutions(sampler, Nsamples, model, bisim, properties, param_list,
             cache_samples[n] = sample_cache.add_sample(parameters_dic[n])
             cache_samples[n].set_results(results[n])
         
-        export_sample_cache(sample_cache, cache_file)
+        export_sample_cache(sample_cache, cache_path)
         print('- Samples exported to cache')
 
-    return sampler, results
+    return results
+
+
+def validate_solutions(sampler, regions, Nvalidate, properties, 
+                       param_list, param_values, root_dir, cache):
+    """
+
+    Parameters
+    ----------
+    sampler Sampler object (for either CTMC of DFT)
+    regions Solutions to scenario problems (for multiple values of rho)
+    Nvaliate Number of samples
+    properties List of property strings
+    param_list Names (labels) of the parameters
+    param_values List of values for every parameter
+
+    NOTE: Validation currently only works for rectangular confidence regions
+
+    Returns the empirical violation probability for every value of rho
+    -------
+
+    """
+    
+    # Compute new solutions for validation
+    solutions_V = sample_solutions( sampler = sampler,
+                        Nsamples = Nvalidate,
+                        properties = properties,
+                        param_list = param_list,
+                        param_values = param_values,
+                        root_dir = root_dir,
+                        cache = cache )
+    
+    # Initialize the empirical violation probability
+    empirical_violation  = np.zeros(len(regions))
+    
+    # For every value of rho
+    for i,D in regions.items():
+        # Determine which samples violate the solution (bounding box)
+        violate_low = np.any(solutions_V < D['x_low'], axis=1)
+        violate_upp = np.any(solutions_V > D['x_upp'], axis=1)
+        
+        # Compute the total number of violating samples
+        violation_sum = np.sum(violate_low + violate_upp)
+        
+        # Compute the empirical violation probability 
+        empirical_violation[i] = violation_sum / Nvalidate
+
+    return empirical_violation
