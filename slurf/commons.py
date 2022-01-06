@@ -13,6 +13,15 @@ def path(root_dir, folder, file):
     return os.path.join(root_dir, folder, file)
 
 
+def create_output_folder(root_dir, modelfile):
+    output_root_dir = path(root_dir, "output", "")
+    output_subfolder = modelfile.replace(".", "_") + '_' + getDateTime()
+    output_path = path(output_root_dir, output_subfolder, "")
+    os.mkdir(output_path)
+    
+    return output_path
+
+
 def getTime():
 
     now = datetime.now()

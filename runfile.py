@@ -1,38 +1,46 @@
 import os
 import pandas as pd
+import time
 from sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values
 from slurf.scenario_problem import compute_solution_sets
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface, DftReliabilityModelSamplerInterface
-from slurf.commons import path, getTime
+from slurf.commons import path, getTime, create_output_folder
 from slurf.parser import parse_arguments
-from slurf.plot import plot_results
+from slurf.export import plot_results, save_results
 
 if __name__ == '__main__':
 
     root_dir = os.path.dirname(os.path.abspath(__file__))
+    dfs = {}
+    timing = {}
     
     # Interpret arguments provided
     # args = parse_arguments(manualModel="dft/hecs/hecs_2_1.dft")
     # args = parse_arguments(manualModel="dft/hemps/hemps.dft")
-    # args = parse_arguments(manualModel="ctmc/epidemic/sir100.sm")
+    args = parse_arguments(manualModel="ctmc/epidemic/sir20.sm")
     # args = parse_arguments(manualModel="ctmc/kanban/kanban2.sm")
     # args = parse_arguments(manualModel="dft/rc/rc.1-1-hc.dft")
-    args = parse_arguments()
+    # args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
+    time_start = time.process_time()
     
     # Load probability distribution data
     model_file, param_dic, properties, prop_labels, reliability, timebounds = \
         load_distribution(root_dir, args.model, args.model_type)
     
+    timing['1_load'] = time.process_time() - time_start
     print("\n===== Data loaded at:", getTime(),"=====")
+    time_start = time.process_time()
     
     # Sample parameter values from the probability distribution
     param_values = get_parameter_values(args.Nsamples, param_dic)
     
+    timing['2_param_sampling'] = time.process_time() - time_start
     print("\n===== Parameter values sampled at:", getTime(),"=====")
+    time_start = time.process_time()
     
     # Sample parameter values
     if args.model_type == 'CTMC':
@@ -40,7 +48,9 @@ if __name__ == '__main__':
     else:
         sampler = DftReliabilityModelSamplerInterface()
     
+    timing['3_init_sampler'] = time.process_time() - time_start
     print("\n===== Sampler initialized at:", getTime(),"=====")
+    time_start = time.process_time()
     
     # Compute solutions by verifying the instantiated CTMCs
     sampler, solutions = sample_solutions( sampler = sampler,
@@ -53,23 +63,42 @@ if __name__ == '__main__':
                             root_dir = root_dir,
                             cache = False )
     
+    dfs['solutions'] = pd.DataFrame(solutions)
+    dfs['solutions'].index.names = ['Sample']
+    
+    timing['4_model_sampling'] = time.process_time() - time_start
+    print("\n===== Sampler finished at:", getTime(),"=====")
+    time_start = time.process_time()
+    
     print('-----------------------------------------')
     print('MODEL STATISTICS:')
     stats = sampler.get_stats()
-    df = pd.Series(stats)
-    print(df)
+    dfs['storm_stats'] = pd.Series(stats)
+    print(dfs['storm_stats'])
     print('-----------------------------------------')
     
     # Compute solution set using scenario optimization
-    regions = compute_solution_sets(solutions, 
+    regions, dfs['regions'], dfs['regions_stats'] = compute_solution_sets(
+                                    solutions, 
                                     beta = args.beta, 
                                     rho_min = args.rho_min, 
                                     increment_factor = args.rho_incr,
                                     itermax = args.rho_max_iter)
     
+    timing['5_scenario_problems'] = time.process_time() - time_start
     print("\n===== Scenario problems completed at:", getTime(),"=====")
+    time_start = time.process_time()
     
-    plot_results(root_dir, args, regions, solutions, reliability, prop_labels, 
+    # Create output folder
+    output_path = create_output_folder(root_dir, args.modelfile_nosuffix)
+    
+    # Plot results
+    plot_results(output_path, args, regions, solutions, reliability, prop_labels, 
                  timebounds)
     
+    timing['2_plotting'] = time.process_time() - time_start
     print("\n===== Plotting completed at:", getTime(),"=====")
+    
+    # Save raw results in Excel file
+    dfs['timing'] = pd.Series(timing)
+    save_results(output_path, dfs, args.modelfile_nosuffix)

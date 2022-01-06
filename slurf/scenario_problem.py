@@ -1,5 +1,6 @@
 import numpy as np
 import cvxpy as cp
+import pandas as pd
 
 from slurf.compute_bound import etaLow
 
@@ -174,9 +175,15 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
     tres = 1e-3
     compareAt = np.abs(np.max(samples, axis=0) - np.min(samples, axis=0)) > tres
 
+    df_regions = pd.DataFrame()
+    df_regions.index.names = ['Sample']
+    df_regions_stats = pd.DataFrame(columns = ['rho','complexity','beta',
+                                               'Pviolation','Psatisfaction'])
+
     while len(exterior_ids) > 0 and i < itermax:
 
-        sol, complexity, x_star, exterior_ids, num_interior = problem.solve(compareAt, rho)
+        sol, complexity, x_star, exterior_ids, num_interior = \
+            problem.solve(compareAt, rho)
 
         # If complexity is the same (or even higher) as in previous iteration, 
         # skip or break
@@ -215,9 +222,14 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
             'complexity': complexity,
             'Pviolation': Pviolation
             }
+        
+        # Append results to dataframe
+        df_regions['x_low'+str(i)] = sol['xL']
+        df_regions['x_upp'+str(i)] = sol['xU']
+        df_regions_stats.loc[i] = [rho, complexity, beta, Pviolation, 1-Pviolation]
 
         # Increment
         rho *= increment_factor
         i += 1
 
-    return regions
+    return regions, df_regions, df_regions_stats

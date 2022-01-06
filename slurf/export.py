@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -6,9 +7,9 @@ plt.rcParams['figure.dpi'] = 300
 import seaborn as sns
 import itertools
 
-from slurf.commons import getDateTime, path
+from slurf.commons import path
 
-def plot_results(root_dir, args, regions, solutions, reliability,
+def plot_results(output_dir, args, regions, solutions, reliability,
                  prop_labels=None, timebounds=None):
     
     # Plot the solution set
@@ -18,9 +19,8 @@ def plot_results(root_dir, args, regions, solutions, reliability,
                          mode=args.curve_plot_mode, plotSamples=False)
         
         # Save figure
-        exp_file = args.model.rsplit('/', 1)[1] + '_' + \
-                       str(getDateTime()+'.pdf')
-        filename = path(root_dir, "output", exp_file)
+        exp_file = args.modelfile + '.pdf'
+        filename = path(output_dir, "", exp_file)
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         print(' - Reliability plot exported to:',exp_file)
         
@@ -33,23 +33,28 @@ def plot_results(root_dir, args, regions, solutions, reliability,
                                  args.beta, plotSamples=True)
     
             # Save figure
-            exp_file = args.model.rsplit('/', 1)[1] + '_' + \
-                           str(getDateTime() + '_' + str(idx_pair)+'.pdf')
-            filename = path(root_dir, "output", exp_file)
+            exp_file = args.modelfile + "_" + str(idx_pair) + '.pdf'
+            filename = path(output_dir, "", exp_file)
             plt.savefig(filename, format='pdf', bbox_inches='tight')
             print(' - 2D plot exported to:',exp_file)
-            
-    # idx_pair = (3, 9)
-            
-    # plot_solution_set_2d(idx_pair, timebounds, regions, solutions, 
-    #                      args.beta, plotSamples=True)
 
-    # # Save figure
-    # exp_file = args.model.rsplit('/', 1)[1] + '_' + \
-    #                str(getDateTime() + '_' + str(idx_pair)+'.pdf')
-    # filename = path(root_dir, "output", exp_file)
-    # plt.savefig(filename, format='pdf', bbox_inches='tight')
-    # print(' - 2D plot exported to:',exp_file)
+
+def save_results(output_path, dfs, modelfile_nosuffix):
+    
+    # Create a Pandas Excel writer using XlsxWriter as the engine.
+    xlsx_path = path(output_path, "", modelfile_nosuffix+"_results.xlsx")
+    writer = pd.ExcelWriter(xlsx_path, engine='xlsxwriter')
+    
+    # Write each dataframe to a different worksheet.
+    for name, df in dfs.items():
+        df.to_excel(writer, sheet_name=str(name))
+        
+    # Close the Pandas Excel writer and output the Excel file.
+    writer.save()
+    
+    print('- Results exported to:',xlsx_path)
+    
+    return
 
 
 def make_conservative(low, upp):

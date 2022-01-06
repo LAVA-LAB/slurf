@@ -38,11 +38,15 @@ def parse_arguments(manualModel=None, nobisim=True):
         print('ERROR: No model specified')
         assert False
         
-    args.suffix = pathlib.Path(args.model).suffix
+    _path = pathlib.Path(args.model)
+    args.suffix = _path.suffix
+    args.modelfile_nosuffix = _path.stem
     if args.suffix == '.dft':
         args.model_type = 'DFT'
     else:
         args.model_type = 'CTMC'
+        
+    args.modelfolder, args.modelfile = args.model.rsplit('/', 1)
     
     if not args.bisim or nobisim:
         args.bisim = False
