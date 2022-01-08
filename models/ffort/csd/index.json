@@ -1,0 +1,44 @@
+{
+	"added-on": "2018-11-16",
+	"description": {
+		"imageFile": "other/fault_trees/csd/csd.svg",
+		"paper": {
+			"authors": [
+				"M. Stamatelatos",
+				"W. Vesely",
+				"J. Dugan",
+				"J. Fragola",
+				"J. Minarick",
+				"J. Railsback"
+			],
+			"link": "https://elibrary.gsfc.nasa.gov/_assets/doclibBidder/tech_docs/25.%20NASA_Fault_Tree_Handbook_with_Aerospace_Applications%20-%20Copy.pdf",
+			"title": "Fault tree handbook with aerospace applications",
+			"year": 2002
+		},
+		"text": "This example shows how the fault tree modeling process can be applied to the design of a sealing mechanism for a container that is to return samples to Earth in order to provide containment assurance. The example is used to illustrate how common-cause failures are included using the beta-factor model."
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Discr": 6
+			},
+			"filename": "other/fault_trees/csd/csd.dft",
+			"gateTypes": {
+				"AND": 3,
+				"OR": 1
+			},
+			"repair": false,
+			"results": [
+				{
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u csd/csd.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "1.000000999999e-6",
+					"version": "v1.2.0-cc213f50"
+				}
+			]
+		}
+	],
+	"name": "Container Seal Design Example",
+	"submitted-by": "Muhammad Chenariyan Nakhaee <m.cnakhaee@utwente.nl>"
+}

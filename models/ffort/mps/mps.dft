@@ -1,0 +1,18 @@
+toplevel "System";
+"System" and "IsolationValveIV3RemainsOpenAfterCutoff" "IsolationValveIV2RemainsOpenAfterCutoff";
+"IsolationValveIV3RemainsOpenAfterCutoff" or "EMFContinuesToBeSuppledToIV3AfterCutoff" "PrimaryFailureOfIV3ToCloseAfterCutoff";
+"IsolationValveIV2RemainsOpenAfterCutoff" or "EMFContinuesToBeSuppledToIV2AfterCutoff" "PrimaryFailureOfIV2ToCloseAfterCutoff";
+"EMFContinuesToBeSuppledToIV3AfterCutoff" or "EMFContinuesToBeSuppledToK5AfterCutoff" "PrimaryFailureOfK5RelayToOpenWhenEmfIsRemoved";
+"EMFContinuesToBeSuppledToIV2AfterCutoff" or "EmergencySwitchS3FailsToOpenAfterCutoff" "PrimaryFailureOfK6ToOpenAfterCutoff";
+"EMFContinuesToBeSuppledToK5AfterCutoff" or "EMFContinuesToBeSuppledToK3AfterCutoff" "PrimaryFailureOfK3ToOpenAfterCutoff";
+"EMFContinuesToBeSuppledToK3AfterCutoff" and "EmergencySwitchS3FailsToOpenAfterCutoff" "PrimaryFailureOfK6ToOpenAfterCutoff";
+"EmergencySwitchS3FailsToOpenAfterCutoff" or "PrimaryFailureOfS3ToOpenWhenCommanded" "OperationalFailureOfS3ToOpenWhenCommanded";
+"PrimaryFailureOfK6ToOpenAfterCutoff" or "PrimaryFailureOfK6ToOpenAfterTimingOut" "PrimaryFailureOfK6TimerToTimeOut";
+"PrimaryFailureOfIV3ToCloseAfterCutoff" prob=2.0e-4 dorm=0;
+"PrimaryFailureOfIV2ToCloseAfterCutoff" prob=2.0e-4 dorm=0;
+"PrimaryFailureOfK5RelayToOpenWhenEmfIsRemoved" prob=3.0e-3 dorm=0;
+"PrimaryFailureOfK3ToOpenAfterCutoff" prob=3.0e-3 dorm=0;
+"PrimaryFailureOfS3ToOpenWhenCommanded" prob=5.0e-5 dorm=0;
+"OperationalFailureOfS3ToOpenWhenCommanded" prob=5.0e-5 dorm=0;
+"PrimaryFailureOfK6ToOpenAfterTimingOut" prob=2.0e-2 dorm=0;
+"PrimaryFailureOfK6TimerToTimeOut" prob=2.0e-2 dorm=0;

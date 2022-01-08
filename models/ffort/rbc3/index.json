@@ -1,0 +1,45 @@
+{
+	"added-on": "2019-08-09",
+	"description": {
+		"imageFile": "other/fault_trees/other/fault_trees/rbc3/human_eye.jpg",
+		"paper": {
+			"authors": [
+				"Francesco Flammini",
+				"Nicola Mazzocca",
+				"Mauro Iacono",
+				"Stefano Marrone"
+			],
+			"doi": "10.1109/HASE.2005.26",
+			"title": "Using Repairable Fault Trees for the evaluation of design choices for criticalrepairable systems",
+			"year": 2005
+		},
+		"text": "The Radio Block Center (RBC) is the most important subsystem of The European Railway Traffic Management System / European Train Control System, because it is responsible for guaranteeing a safe outdistancing between trains by  managing the  information received from the  onboardsubsystem (by  means of a GSM-R network) and from the Interlocking (IXL) subsystem (by means of a dedicated Wide Area Network, WAN) in order to compute and send to the trains their movement authorities, which represent the distance the trains are allowed to cover in safe conditions."
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 14
+			},
+			"description": {
+				"text": "In this model, an off-line repair policy is omitted in which a minimal cut of basic elements is repaired when the top level node fails. Moreover, immediate repairs with limited repairmen is omitted as this cannot be expressed in Galileo format."
+			},
+			"filename": "other/fault_trees/other/fault_trees/rbc3/rbc.dft",
+			"gateTypes": {
+				"AND": 5,
+				"OR": 2,
+				"VOT": 1
+			},
+			"name": "RBC without offline repairs",
+			"repair": true,
+			"results": [
+				{
+					"tool": "SHARPE",
+					"type": "Unavailability",
+					"value": "3.39461e-6"
+				}
+			]
+		}
+	],
+	"name": "The Radio Block Centre RFT general model",
+	"submitted-by": "Pim <pims@mail>"
+}

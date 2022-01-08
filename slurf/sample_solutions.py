@@ -6,19 +6,25 @@ from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
 from slurf.commons import path
 
-def load_distribution(root_dir, model_path, model_type):
+def load_distribution(root_dir, model_path, model_type,
+                      parameters_file=None, properties_file=None):
     """
     Helper function to load probability distribution and parameter data
     :model_folder: Subfolder to load the model from
     :model_file: Filename of the model to load
     """
     
+    if not parameters_file:
+        parameters_file = 'parameters.xlsx'
+    if not properties_file:
+        properties_file = 'properties.xlsx'
+    
     # Split path between (sub)folder and filename
     model_folder, model_file = model_path.rsplit('/', 1)
     
-    distr_file = path(root_dir, "models/"+str(model_folder), "parameters.xlsx")
+    param_path = path(root_dir, "models/"+str(model_folder), parameters_file)
     try:
-        open(distr_file)
+        open(param_path)
     except IOError:
         print("ERROR: Parameter distribution file (named 'parameters.xlsx') does not exist")
         
@@ -29,14 +35,16 @@ def load_distribution(root_dir, model_path, model_type):
         print("ERROR: Model file does not exist")
     
     # Read parameter sheet
-    param_df = pd.read_excel(distr_file, sheet_name='Parameters', index_col=0)
+    param_df = pd.read_excel(param_path, sheet_name='Parameters', index_col=0)
     param_dic = param_df.to_dict('index')
+
+    properties_path = path(root_dir, "models/"+str(model_folder), properties_file)
 
     # Interpretation of properties differs between CTMCs and DFTs
     if model_type == 'CTMC':
         
         # Read property sheet
-        property_df = pd.read_excel(distr_file, sheet_name='Properties')
+        property_df = pd.read_excel(properties_path, sheet_name='Properties')
         property_df = property_df[ property_df['enabled'] == True ]
         properties = property_df['property'].to_list()
         prop_labels = property_df['label'].to_list()
@@ -51,7 +59,7 @@ def load_distribution(root_dir, model_path, model_type):
     else:
         
         # Read property sheet
-        property_df = pd.read_excel(distr_file, sheet_name='Properties')
+        property_df = pd.read_excel(properties_path, sheet_name='Properties')
         
         timebounds = tuple(property_df['failed'])        
         properties = ("failed", timebounds)

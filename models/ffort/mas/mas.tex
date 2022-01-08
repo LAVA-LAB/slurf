@@ -1,0 +1,261 @@
+\documentclass{article}
+
+\usepackage{fontspec}
+\setmainfont{Open Sans-Regular}
+\usepackage{tikz}
+\usetikzlibrary{shapes.gates.logic.US}
+\input{dft-tikz}
+\definecolor{normalfillcolor}{gray}{0.7}
+\setlength\paperwidth{40cm}
+\setlength\paperheight{50cm}
+\setlength\hoffset{-1in}
+\newdimen\zigzagvert
+\zigzagvert=4mm % Connections first go this far down, then zig-zag to
+                % their target.
+\pagestyle{empty}
+
+\begin{document}
+\begin{tikzpicture}[
+	rectangle/.style={fill=normalfillcolor, inner sep=5pt},
+	node distance=15mm,
+	every node/.style={outer sep=0pt,font=\Large},
+]
+% Input 1 ignored (would be input count).
+\def\basicevent#1[#2](#3)#4{
+        \node[rectangle, draw, #2, minimum height=5.5mm](#3box){#4};
+        \node[circle, minimum width=12mm, fill=normalfillcolor, draw,
+		anchor=north] at (#3box.south) (#3) {};
+}
+% Input 1: Text in triangle.
+\def\transferevent#1[#2](#3)#4{
+        \node[rectangle, draw, #2, minimum height=5.5mm](#3box){#4};
+	\path[draw, fill=normalfillcolor] (#3box.south)
+		-- ++(-8mm, -15mm) -- ++(16mm, 0) -- (#3box.south);
+	\path (#3box.south) ++ (0, -15mm) node[anchor=south] (#3) {#1};
+}
+\def\seqevent#1[#2](#3)#4{
+        \node[rectangle, draw, #2, minimum height=1cm, minimum width=15mm](#3){};
+	\node[anchor=north] at (#3.north) (#3box) {#4};
+	\draw[->, line width=1mm] (#3.west) -- (#3.east);
+}
+\def\orevent#1[#2](#3)#4{
+        \node[rectangle, draw, #2, minimum height=5.5mm](#3box){#4};
+        \node[or gate US, minimum width=12mm, logic gate inputs=#1, rotate=90, fill=normalfillcolor, draw, anchor=output] at (#3box.south) (#3) {};
+}
+\def\andevent#1[#2](#3)#4{
+        \node[rectangle, draw, #2, minimum height=5.5mm](#3box){#4};
+        \node[and gate US, minimum width=12mm, logic gate inputs=#1, rotate=90, fill=normalfillcolor, draw, anchor=output] at (#3box.south) (#3) {};
+}
+% Input 1: Blank for normal, M for mirrored.
+\def\sparegate#1[#2](#3)#4{
+        \node[spare#1, fill=normalfillcolor, draw, anchor=north, #2]
+		(#3) {};
+	\node[anchor=north] at (#3.north) (#3box) {#4};
+}
+% Input 1 ignored (for consistency).
+\def\fdepgate#1[#2](#3)#4{
+        \node[fdep, fill=normalfillcolor, draw, anchor=north, #2]
+		(#3) {};
+	\node[anchor=north] at (#3.north) (#3box) {#4};
+}
+% \connectZZ{G.input}{vert. distance}{child}.
+% Draw a line from G.input down by 'vert. distance', then zig-zag to
+% child.
+\def\connectcust#1#2#3{
+	\draw[-] (#1) -- ++(0,#2) -| (#3box);
+}
+% \connect{G.input}{child} (Note: Only for vertical connections).
+\def\connect#1#2{
+	\connectcust{#1}{-\zigzagvert}{#2};
+}
+	\orevent{nnnnnn}[](top){System}
+	\andevent{nnn}[below of=top, xshift=-15cm, yshift=-3mm](DB){Module DB}
+	\andevent{nnn}[below of=top, xshift=-10cm, yshift=-3mm](MM){Module MM}
+	\andevent{nnn}[below of=top, xshift=-5cm, yshift=-3mm](VMB){Module VMB}
+	\node at (top.input 5 |- top) (tmp) {};
+	\andevent{nnn}[below of=tmp, yshift=-3mm](ModM){Module M}
+	\orevent{nnn}[below of=top, xshift=8cm, yshift=-3mm](VMS){Module VMS}
+	\connectcust{top.input 1}{-4mm}{DB}
+	\connectcust{top.input 2}{-5mm}{MM}
+	\connectcust{top.input 3}{-6mm}{VMB}
+	\connectcust{top.input 5}{-5mm}{ModM}
+	\connectcust{top.input 6}{-4mm}{VMS}
+
+	\basicevent [below of=DB, xshift=-9mm](DB1){DB 1}
+	\basicevent [below of=DB, yshift=-2cm](DB2){DB 2}
+	\basicevent [below of=DB, xshift=9mm](DB3){DB 3}
+	\connect{DB.input 1}{DB1}
+	\connect{DB.input 2}{DB2}
+	\connect{DB.input 3}{DB3}
+
+	\basicevent [below of=MM, xshift=-11mm](MM1){MM 1}
+	\basicevent [below of=MM, yshift=-2cm](MM2){MM 2}
+	\basicevent [below of=MM, xshift=11mm](MM3){MM 3}
+	\connect{MM.input 1}{MM1}
+	\connect{MM.input 2}{MM2}
+	\connect{MM.input 3}{MM3}
+
+	\basicevent [below of=VMB, xshift=-11mm](VMB1){VMB 1}
+	\basicevent [below of=VMB, xshift=11mm](VMB3){VMB 2}
+	\connect{VMB.input 1}{VMB1}
+	\connect{VMB.input 3}{VMB3}
+
+	\basicevent [below of=ModM, xshift=-11mm](M1){Mem 1}
+	\basicevent [below of=ModM, xshift=11mm](M2){Mem 2}
+	\connect{ModM.input 1}{M1}
+	\connect{ModM.input 3}{M2}
+
+	\andevent{nn}[below of=VMS, xshift=-3cm](VMG1){V. Mgt. 1}
+	\andevent{nn}[below of=VMS, xshift=3cm](VMG2){V. Mgt. 2}
+	\connect{VMS.input 1}{VMG1}
+	\connect{VMS.input 3}{VMG2}
+
+	\sparegate [below of=VMG1, xshift=-15mm, scale=1.8, yshift=-5mm](VMG1a){V. Mgt. 1a}
+	\sparegate [below of=VMG1, xshift=15mm, scale=1.8, yshift=-5mm](VMG1b){V. Mgt. 1b}
+	\connect{VMG1.input 1}{VMG1a}
+	\connect{VMG1.input 2}{VMG1b}
+
+	\sparegate [below of=VMG2, xshift=-15mm, scale=1.8, yshift=-5mm](VMG2a){V. Mgt. 2a}
+	\sparegate [below of=VMG2, xshift=15mm, scale=1.8, yshift=-5mm](VMG2b){V. Mgt. 2b}
+	\connect{VMG2.input 1}{VMG2a}
+	\connect{VMG2.input 2}{VMG2b}
+
+	\node at (VMG1a.P) (tmp) {};
+	\basicevent [below of=tmp](VM1a){VM 1a}
+	\connect{VMG1a.P}{VM1a}
+	\node at (VMG1b.P) (tmp) {};
+	\basicevent [below of=tmp](VM1b){VM 1b}
+	\connect{VMG1b.P}{VM1b}
+	\node at (VMG2a.P) (tmp) {};
+	\basicevent [below of=tmp](VM2a){VM 2a}
+	\connect{VMG2a.P}{VM2a}
+	\node at (VMG2b.P) (tmp) {};
+	\basicevent [below of=tmp](VM2b){VM 2b}
+	\connect{VMG2b.P}{VM2b}
+	\basicevent [below of=VMG1, yshift=-63mm](VMS1){VM S1}
+	\draw[red] (VMG1a.SB) -- ++(0, -35mm) -| (VMS1box.north);
+	\draw[red] (VMG1b.SB) -- ++(0, -35mm) -| (VMS1box.north);
+	\draw[red] (VMG2a.SB) -- ++(0, -35mm) -| (VMS1box.north);
+	\draw[red] (VMG2b.SB) -- ++(0, -35mm) -| (VMS1box.north);
+
+	\basicevent [below of=VMG2, yshift=-63mm](VMS2){VM S2}
+	\draw[blue] (VMG1a.SD) -- ++(0, -38mm) -| (VMS2box.north);
+	\draw[blue] (VMG1b.SD) -- ++(0, -38mm) -| (VMS2box.north);
+	\draw[blue] (VMG2a.SD) -- ++(0, -38mm) -| (VMS2box.north);
+	\draw[blue] (VMG2b.SD) -- ++(0, -38mm) -| (VMS2box.north);
+
+	\orevent{nnnn}[below of=top, xshift=-25mm, yshift=-12cm](L){Lock}
+	\connectcust{top.input 4}{-7mm}{L}
+
+	\andevent{nn}[below of=L, xshift=-125mm, yshift=-2cm](C){Crew}
+	\connectcust{L.input 1}{-4mm}{C}
+	\andevent{nn}[below of=L, xshift=-55mm, yshift=-4cm](BP){Both proc.}
+	\orevent{nn}[below of=L, yshift=-4cm, xshift=-1cm](OP){One proc.}
+	\connectcust{L.input 2}{-6mm}{BP}
+	\andevent{nn}[below of=L, xshift=7cm, yshift=-3mm](SW){Software}
+	\connectcust{L.input 3}{-6mm}{SW}
+	\andevent{nn}[below of=L, xshift=13cm, yshift=-3mm](SM){System Mgmt.}
+	\connectcust{L.input 4}{-4mm}{SM}
+
+	\sparegate [below of=C, xshift=-15mm, scale=1.8, yshift=-5mm](C1){Crew 1a}
+	\sparegate [below of=C, xshift=15mm, scale=1.8, yshift=-5mm](C2){Crew 1b}
+	\connect{C.input 1}{C1}
+	\connect{C.input 2}{C2}
+
+	\node at (C1.P) (tmp) {};
+	\basicevent [below of=tmp](C1a){Crew 1a}
+	\connect{C1.P}{C1a}
+	\node at (C2.P) (tmp) {};
+	\basicevent [below of=tmp](C1b){Crew 1b}
+	\connect{C2.P}{C1b}
+
+	\andevent{nn}[below of=BP, xshift=-1cm, yshift=-5mm](PG){Path gen.}
+	\andevent{nn}[below of=OP, xshift=1cm, yshift=-5mm](SO){S\&O}
+
+	\sparegate [below of=PG, xshift=-15mm, scale=1.8, yshift=-5mm](PG1){P. g. 1a}
+	\sparegate [below of=PG, xshift=15mm, scale=1.8, yshift=-5mm](PG2){P. g. 1b}
+	\connect{PG.input 1}{PG1}
+	\connect{PG.input 2}{PG2}
+
+	\node at (PG1.P) (tmp) {};
+	\basicevent [below of=tmp](PG1a){Path 1a}
+	\connect{PG1.P}{PG1a}
+	\node at (PG2.P) (tmp) {};
+	\basicevent [below of=tmp](PG1b){Path 1b}
+	\connect{PG2.P}{PG1b}
+
+	\sparegate [below of=SO, xshift=-15mm, scale=1.8, yshift=-5mm](SO1){S\&O 1a}
+	\sparegate [below of=SO, xshift=15mm, scale=1.8, yshift=-5mm](SO2){S\&o 1b}
+	\connect{SO.input 1}{SO1}
+	\connect{SO.input 2}{SO2}
+
+	\node at (SO1.P) (tmp) {};
+	\basicevent [below of=tmp](SO1a){S\&O 1a}
+	\connect{SO1.P}{SO1a}
+	\node at (SO2.P) (tmp) {};
+	\basicevent [below of=tmp](SO1b){S\&O 1b}
+	\connect{SO2.P}{SO1b}
+
+	\connect{BP.input 1}{PG}
+	\connect{BP.input 2}{SO}
+	\draw[blue](OP.input 1) -- ++(0, -9mm) -| (PGbox.north);
+	\draw[blue](OP.input 2) -- ++(0, -9mm) -| (SObox.north);
+
+	\sparegate [below of=SW, xshift=-15mm, scale=1.8,
+		yshift=-5mm](SW1){S\&O SW}
+	\sparegate [below of=SW, xshift=15mm, scale=1.8,
+		yshift=-5mm](SW2){Path SW}
+	\connect{SW.input 1}{SW1}
+	\connect{SW.input 2}{SW2}
+
+	\node at (SW1.P) (tmp) {};
+	\basicevent [below of=tmp](SW1a){S\&O Full}
+	\connect{SW1.P}{SW1a}
+	\node at (SW1.SC) (tmp) {};
+	\basicevent [below of=tmp, yshift=-25mm](SW1b){S\&O Min}
+	\connect{SW1.SC}{SW1b}
+	\node at (SW2.P) (tmp) {};
+	\basicevent [below of=tmp](SW2a){Path Full}
+	\connect{SW2.P}{SW2a}
+	\node at (SW2.SC) (tmp) {};
+	\basicevent [below of=tmp, yshift=-25mm](SW2b){Path Min}
+	\connect{SW2.SC}{SW2b}
+
+	\fdepgate [above of=OP, xshift=35mm, yshift=1cm, scale=1.8](FD){Minimize}
+	\draw (FD.T) -| (OPbox.north);
+	\draw (FD.ED) -- ++(0, -7cm) -| (SW1a.south);
+	\draw (FD.EC) -- ++(0, -75mm) -| (SW2a.south);
+
+	\sparegate [below of=SM, xshift=-15mm, scale=1.8, yshift=-5mm](SM1){Sys. M. 1a}
+	\sparegate [below of=SM, xshift=15mm, scale=1.8, yshift=-5mm](SM2){Sys. M. 1b}
+	\connect{SM.input 1}{SM1}
+	\connect{SM.input 2}{SM2}
+
+	\node at (SM1.P) (tmp) {};
+	\basicevent [below of=tmp](SM1a){S. M. 1a}
+	\connect{SM1.P}{SM1a}
+	\node at (SM2.P) (tmp) {};
+	\basicevent [below of=tmp](SM1b){S. M. 1b}
+	\connect{SM2.P}{SM1b}
+
+	\basicevent [below of=BP, yshift=-9cm](S1){S1}
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (C1.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (C2.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (PG1.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (PG2.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (SO1.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (SO2.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (SM1.SC);
+	\draw[red] (S1box.north) -- ++(0, \zigzagvert) -| (SM2.SC);
+
+	\basicevent [below of=BP, yshift=-92mm, xshift=5cm](S2){S2}
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (C1.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (C2.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (PG1.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (PG2.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (SO1.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (SO2.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (SM1.SD);
+	\draw[blue] (S2box.north) -- ++(0, \zigzagvert) -| (SM2.SD);
+\end{tikzpicture}
+\end{document}

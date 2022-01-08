@@ -1,0 +1,57 @@
+{
+	"added-on": "2019-01-03",
+	"description": {
+		"imageFile": "other/fault_trees/pcba/pcba.svg",
+		"paper": {
+			"authors": [
+				"Min-Hung Shu",
+				"Ching-Hsue Cheng",
+				"Jing-Rong Chang"
+			],
+			"doi": "10.1016/j.microrel.2006.01.007",
+			"title": "Using intuitionistic fuzzy sets for fault-tree analysis on printed circuit board assembly",
+			"year": 2006
+		},
+		"text": "Model of a PCB assembly line from a factory in the Industrial park at Hsinchu, Taiwan. The crisp failure probability values (b_i values of the basic events) were turned into standard Galileo probability values, i.e. <i>prob</i> \"constant distributions.\""
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Discr": 35
+			},
+			"filename": "other/fault_trees/pcba/PCBA.dft",
+			"gateTypes": {
+				"AND": 3,
+				"OR": 12
+			},
+			"name": "PCBA_Fault",
+			"repair": false,
+			"results": [
+				{
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u pcba/PCBA.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.055379421676529787143934[3; 4]",
+					"version": "v1.2.0-cc213f50; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-406f9d75-l8"
+				},
+				{
+					"paper": {
+						"authors": [
+							"Min-Hung Shu",
+							"Ching-Hsue Cheng",
+							"Jing-Rong Chang"
+						],
+						"doi": "10.1016/j.microrel.2006.01.007",
+						"title": "Using intuitionistic fuzzy sets for fault-tree analysis on printed circuit board assembly",
+						"year": 2006
+					},
+					"tool": "manual computation",
+					"type": "Unreliability",
+					"value": "0.055379"
+				}
+			]
+		}
+	],
+	"name": "Printed Circuit Board Assembly",
+	"submitted-by": "Carlos E. Budde <c.e.budde@utwente.nl>"
+}

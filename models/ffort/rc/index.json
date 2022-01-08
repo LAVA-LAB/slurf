@@ -1,0 +1,2386 @@
+{
+	"added-on": "2018-11-08",
+	"description": {
+		"paper": {
+			"authors": [
+				"D. Guck",
+				"J.-P. Katoen",
+				"M. I. A. Stoelinga",
+				"T. Luiten",
+				"J. M. T. Romijn"
+			],
+			"doi": "10.4203/ccp.104.299",
+			"title": "Smart Railroad Maintenance Engineering with Stochastic Model Checking",
+			"year": 2014
+		},
+		"references": [
+			{
+				"authors": [
+					"S. Junges",
+					"D. Guck",
+					"J.-P. Katoen",
+					"A. Rensink",
+					"M. I. A. Stoelinga"
+				],
+				"doi": "10.1007/s00165-016-0412-0",
+				"title": "Fault trees on a diet: automated reduction by graph rewriting",
+				"year": 2014
+			}
+		],
+		"text": "Model of a level railway crossing, containing redundant sensors, motors, and a non-redundant controller connected to both. Parameterized versions were introduced in [1], where <em>rc-B-S-C</em> describes a crossing with <em>B</em> barriers (with independent motors), <em>S</em> groups of sensors, and with the controller modelled by a single basic event if <em>C = `sc'</em> or as a hypothetical example computer system if <em>C = `hc'</em>."
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 9
+			},
+			"filename": "other/fault_trees/rc/rc.1-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 2,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 1
+			},
+			"name": "rc-1-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 6.380930905
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 6.380930905
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.07549014393453[5992; 6020]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.07549014393
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 93
+			},
+			"filename": "other/fault_trees/rc/rc.10-10-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 11,
+				"OR": 15,
+				"PAND": 10,
+				"SPARE": 12,
+				"VOT": 11
+			},
+			"name": "rc-10-10-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.506339925
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.38434932
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 81
+			},
+			"filename": "other/fault_trees/rc/rc.10-10-sc.dft",
+			"gateTypes": {
+				"FDEP": 10,
+				"OR": 13,
+				"PAND": 10,
+				"SPARE": 10,
+				"VOT": 10
+			},
+			"name": "rc-10-10-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.456430089
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 1.456430089
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.4024489164
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.4024490175
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 66
+			},
+			"filename": "other/fault_trees/rc/rc.10-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 11,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 11
+			},
+			"name": "rc-10-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.670898778
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 1.670898778
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.3557736052
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.3557737029
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 54
+			},
+			"filename": "other/fault_trees/rc/rc.10-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 10,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 10
+			},
+			"name": "rc-10-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.608226734
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 1.608226734
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.374713234
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1164982602
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.3747134296
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 48
+			},
+			"filename": "other/fault_trees/rc/rc.1-10-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 14,
+				"PAND": 10,
+				"SPARE": 12,
+				"VOT": 2
+			},
+			"name": "rc-1-10-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.683782801
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.683782801
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.08973714373
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.08973728017
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 36
+			},
+			"filename": "other/fault_trees/rc/rc.1-10-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 12,
+				"PAND": 10,
+				"SPARE": 10,
+				"VOT": 1
+			},
+			"name": "rc-1-10-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.419274591
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.419274591
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1164981372
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1164982602
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 63
+			},
+			"filename": "other/fault_trees/rc/rc.1-15-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 19,
+				"PAND": 15,
+				"SPARE": 17,
+				"VOT": 2
+			},
+			"name": "rc-1-15-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.078235695
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.078235695
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1123943768
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1123944401
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 51
+			},
+			"filename": "other/fault_trees/rc/rc.1-15-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 17,
+				"PAND": 15,
+				"SPARE": 15,
+				"VOT": 1
+			},
+			"name": "rc-1-15-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.894131626
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.894131626
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1384892553
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1384893182
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 21
+			},
+			"filename": "other/fault_trees/rc/rc.1-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 4,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 2
+			},
+			"name": "rc-1-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 7.48649004
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 7.48649004
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0474870414024661[7873; 9120]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.0474870414
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 78
+			},
+			"filename": "other/fault_trees/rc/rc.1-20-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 24,
+				"PAND": 20,
+				"SPARE": 22,
+				"VOT": 2
+			},
+			"name": "rc-1-20-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.695096316
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1080841899
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1344876455
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 66
+			},
+			"filename": "other/fault_trees/rc/rc.1-20-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 22,
+				"PAND": 20,
+				"SPARE": 20,
+				"VOT": 1
+			},
+			"name": "rc-1-20-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.554281782
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1343490671
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1599330013
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 93
+			},
+			"filename": "other/fault_trees/rc/rc.1-25-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 29,
+				"PAND": 25,
+				"SPARE": 27,
+				"VOT": 2
+			},
+			"name": "rc-1-25-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 81
+			},
+			"filename": "other/fault_trees/rc/rc.1-25-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 27,
+				"PAND": 25,
+				"SPARE": 25,
+				"VOT": 1
+			},
+			"name": "rc-1-25-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.311365516
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1808429342
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 24
+			},
+			"filename": "other/fault_trees/rc/rc.1-2-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 6,
+				"PAND": 2,
+				"SPARE": 4,
+				"VOT": 2
+			},
+			"name": "rc-1-2-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 6.471760795
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 6.471760795
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0522767298305829[0894; 2641]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.05227672983
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 12
+			},
+			"filename": "other/fault_trees/rc/rc.1-2-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 4,
+				"PAND": 2,
+				"SPARE": 2,
+				"VOT": 1
+			},
+			"name": "rc-1-2-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 5.647044239
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 5.647044239
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0801390194372866[6075; 8005]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.08013901944
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 108
+			},
+			"filename": "other/fault_trees/rc/rc.1-30-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 34,
+				"PAND": 30,
+				"SPARE": 32,
+				"VOT": 2
+			},
+			"name": "rc-1-30-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 96
+			},
+			"filename": "other/fault_trees/rc/rc.1-30-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 32,
+				"PAND": 30,
+				"SPARE": 30,
+				"VOT": 1
+			},
+			"name": "rc-1-30-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.126625976
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.2012324023
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 27
+			},
+			"filename": "other/fault_trees/rc/rc.1-3-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 7,
+				"PAND": 3,
+				"SPARE": 5,
+				"VOT": 2
+			},
+			"name": "rc-1-3-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 5.776014385
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 5.776014385
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0570423334260143[1571; 4222]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.05704233343
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 15
+			},
+			"filename": "other/fault_trees/rc/rc.1-3-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 5,
+				"PAND": 3,
+				"SPARE": 3,
+				"VOT": 1
+			},
+			"name": "rc-1-3-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 5.120279818
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 5.120279818
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0847645181817493[5404; 7952]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.08476451818
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 30
+			},
+			"filename": "other/fault_trees/rc/rc.1-4-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 8,
+				"PAND": 4,
+				"SPARE": 6,
+				"VOT": 2
+			},
+			"name": "rc-1-4-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 5.261512276
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 5.261512276
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.06178379952
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.0617839733
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 18
+			},
+			"filename": "other/fault_trees/rc/rc.1-4-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 6,
+				"PAND": 4,
+				"SPARE": 4,
+				"VOT": 1
+			},
+			"name": "rc-1-4-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.718293613
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.718293613
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0893667577173890[4025; 9414]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.08936675772
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 133
+			},
+			"filename": "other/fault_trees/rc/rc.15-15-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 16,
+				"OR": 20,
+				"PAND": 15,
+				"SPARE": 17,
+				"VOT": 16
+			},
+			"name": "rc-15-15-hc",
+			"repair": false,
+			"results": [
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2423118585
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 121
+			},
+			"filename": "other/fault_trees/rc/rc.15-15-sc.dft",
+			"gateTypes": {
+				"FDEP": 15,
+				"OR": 18,
+				"PAND": 15,
+				"SPARE": 15,
+				"VOT": 15
+			},
+			"name": "rc-15-15-sc",
+			"repair": false,
+			"results": [
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2646240524
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 91
+			},
+			"filename": "other/fault_trees/rc/rc.15-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 16,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 16
+			},
+			"name": "rc-15-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.242339477
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 1.242339477
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.4815735187
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.4815736221
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 79
+			},
+			"filename": "other/fault_trees/rc/rc.15-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 15,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 15
+			},
+			"name": "rc-15-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 1.206893862
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 1.206893862
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.4968148651
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.4968149339
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 33
+			},
+			"filename": "other/fault_trees/rc/rc.1-5-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 2,
+				"OR": 9,
+				"PAND": 5,
+				"SPARE": 7,
+				"VOT": 2
+			},
+			"name": "rc-1-5-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.861463068
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.861463068
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.06650164503
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.06650176995
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 21
+			},
+			"filename": "other/fault_trees/rc/rc.1-5-sc.dft",
+			"gateTypes": {
+				"FDEP": 1,
+				"OR": 7,
+				"PAND": 5,
+				"SPARE": 5,
+				"VOT": 1
+			},
+			"name": "rc-1-5-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.398388532
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.398388532
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.093945855002576[0785; 1373]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.093945855
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 116
+			},
+			"filename": "other/fault_trees/rc/rc.20-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 21,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 21
+			},
+			"name": "rc-20-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2397889137
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 104
+			},
+			"filename": "other/fault_trees/rc/rc.20-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 20,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 20
+			},
+			"name": "rc-20-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 0.9779521266
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2621754185
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.5950733268
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 173
+			},
+			"filename": "other/fault_trees/rc/rc.20-20-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 21,
+				"OR": 25,
+				"PAND": 20,
+				"SPARE": 22,
+				"VOT": 21
+			},
+			"name": "rc-20-20-hc",
+			"repair": false,
+			"results": [
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.309225083
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 161
+			},
+			"filename": "other/fault_trees/rc/rc.20-20-sc.dft",
+			"gateTypes": {
+				"FDEP": 20,
+				"OR": 23,
+				"PAND": 20,
+				"SPARE": 20,
+				"VOT": 20
+			},
+			"name": "rc-20-20-sc",
+			"repair": false,
+			"results": [
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.3295668191
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 26
+			},
+			"filename": "other/fault_trees/rc/rc.2-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 3,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 3
+			},
+			"name": "rc-2-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.975882656
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.975882656
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0879878560778696[4668; 9905]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.08798785608
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 14
+			},
+			"filename": "other/fault_trees/rc/rc.2-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 2,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 2
+			},
+			"name": "rc-2-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.465265348
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.465265348
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.114800267758176[5929; 6212]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1148002678
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 29
+			},
+			"filename": "other/fault_trees/rc/rc.2-2-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 3,
+				"OR": 7,
+				"PAND": 2,
+				"SPARE": 4,
+				"VOT": 3
+			},
+			"name": "rc-2-2-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.597541248
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.597541248
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.0925738871366780[4853; 8511]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.09257388714
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 17
+			},
+			"filename": "other/fault_trees/rc/rc.2-2-sc.dft",
+			"gateTypes": {
+				"FDEP": 2,
+				"OR": 5,
+				"PAND": 2,
+				"SPARE": 2,
+				"VOT": 2
+			},
+			"name": "rc-2-2-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.164285653
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.164285653
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.1192514732518355[5687; 8989]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1192514733
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 32
+			},
+			"filename": "other/fault_trees/rc/rc.2-3-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 3,
+				"OR": 8,
+				"PAND": 3,
+				"SPARE": 5,
+				"VOT": 3
+			},
+			"name": "rc-2-3-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.295207565
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.295207565
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.09713653774
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.09713685745
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 20
+			},
+			"filename": "other/fault_trees/rc/rc.2-3-sc.dft",
+			"gateTypes": {
+				"FDEP": 2,
+				"OR": 6,
+				"PAND": 3,
+				"SPARE": 3,
+				"VOT": 2
+			},
+			"name": "rc-2-3-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.918916377
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.918916377
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.123680295966077[4777; 5153]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.123680296
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 35
+			},
+			"filename": "other/fault_trees/rc/rc.2-4-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 3,
+				"OR": 9,
+				"PAND": 4,
+				"SPARE": 6,
+				"VOT": 3
+			},
+			"name": "rc-2-4-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 4.046238297
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 4.046238297
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1016766436
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.101676883
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 23
+			},
+			"filename": "other/fault_trees/rc/rc.2-4-sc.dft",
+			"gateTypes": {
+				"FDEP": 2,
+				"OR": 7,
+				"PAND": 4,
+				"SPARE": 4,
+				"VOT": 2
+			},
+			"name": "rc-2-4-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.713659712
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.713659712
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.128086848452168[5926; 6341]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1280868485
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 141
+			},
+			"filename": "other/fault_trees/rc/rc.25-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 26,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 26
+			},
+			"name": "rc-25-1-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 129
+			},
+			"filename": "other/fault_trees/rc/rc.25-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 25,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 25
+			},
+			"name": "rc-25-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 0.8274987843
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.6741445212
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 213
+			},
+			"filename": "other/fault_trees/rc/rc.25-25-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 26,
+				"OR": 30,
+				"PAND": 25,
+				"SPARE": 27,
+				"VOT": 26
+			},
+			"name": "rc-25-25-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 201
+			},
+			"filename": "other/fault_trees/rc/rc.25-25-sc.dft",
+			"gateTypes": {
+				"FDEP": 25,
+				"OR": 28,
+				"PAND": 25,
+				"SPARE": 25,
+				"VOT": 25
+			},
+			"name": "rc-25-25-sc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 166
+			},
+			"filename": "other/fault_trees/rc/rc.30-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 31,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 31
+			},
+			"name": "rc-30-1-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 154
+			},
+			"filename": "other/fault_trees/rc/rc.30-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 30,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 30
+			},
+			"name": "rc-30-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 0.7200560723
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.7377752563
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 253
+			},
+			"filename": "other/fault_trees/rc/rc.30-30-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 31,
+				"OR": 35,
+				"PAND": 30,
+				"SPARE": 32,
+				"VOT": 31
+			},
+			"name": "rc-30-30-hc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 241
+			},
+			"filename": "other/fault_trees/rc/rc.30-30-sc.dft",
+			"gateTypes": {
+				"FDEP": 30,
+				"OR": 33,
+				"PAND": 30,
+				"SPARE": 30,
+				"VOT": 30
+			},
+			"name": "rc-30-30-sc",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 31
+			},
+			"filename": "other/fault_trees/rc/rc.3-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 4,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 4
+			},
+			"name": "rc-3-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.83560831
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.83560831
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.1267665776577770[1487; 9675]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1267665777
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 19
+			},
+			"filename": "other/fault_trees/rc/rc.3-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 3,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 3
+			},
+			"name": "rc-3-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.525317343
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.525317343
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.15243892661593[0924; 1018]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1524389266
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 34
+			},
+			"filename": "other/fault_trees/rc/rc.3-2-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 4,
+				"OR": 7,
+				"PAND": 2,
+				"SPARE": 4,
+				"VOT": 4
+			},
+			"name": "rc-3-2-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.640349388
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.640349388
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.131157494
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1311576109
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 22
+			},
+			"filename": "other/fault_trees/rc/rc.3-2-sc.dft",
+			"gateTypes": {
+				"FDEP": 3,
+				"OR": 5,
+				"PAND": 2,
+				"SPARE": 2,
+				"VOT": 3
+			},
+			"name": "rc-3-2-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.362495643
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.362495643
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.1567008670217466[2299; 7717]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.156700867
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 37
+			},
+			"filename": "other/fault_trees/rc/rc.3-3-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 4,
+				"OR": 8,
+				"PAND": 3,
+				"SPARE": 5,
+				"VOT": 4
+			},
+			"name": "rc-3-3-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.473240185
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.473240185
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1355264862
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1355265638
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 25
+			},
+			"filename": "other/fault_trees/rc/rc.3-3-sc.dft",
+			"gateTypes": {
+				"FDEP": 3,
+				"OR": 6,
+				"PAND": 3,
+				"SPARE": 3,
+				"VOT": 3
+			},
+			"name": "rc-3-3-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.221572732
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.221572732
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.160941376363072[5246; 6087]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1609413764
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 40
+			},
+			"filename": "other/fault_trees/rc/rc.3-4-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 4,
+				"OR": 9,
+				"PAND": 4,
+				"SPARE": 6,
+				"VOT": 4
+			},
+			"name": "rc-3-4-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.327990588
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.327990588
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1398732635
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1398735477
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 28
+			},
+			"filename": "other/fault_trees/rc/rc.3-4-sc.dft",
+			"gateTypes": {
+				"FDEP": 3,
+				"OR": 7,
+				"PAND": 4,
+				"SPARE": 4,
+				"VOT": 3
+			},
+			"name": "rc-3-4-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.097924056
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.097924056
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.1651605624054993[2413; 8848]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1651605624
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 36
+			},
+			"filename": "other/fault_trees/rc/rc.4-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 5,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 5
+			},
+			"name": "rc-4-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.16710987
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.16710987
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1638961747
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1638964295
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 24
+			},
+			"filename": "other/fault_trees/rc/rc.4-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 4,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 4
+			},
+			"name": "rc-4-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.952369159
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.952369159
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.188477191134407[0793; 1399]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1884771911
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 39
+			},
+			"filename": "other/fault_trees/rc/rc.4-2-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 5,
+				"OR": 7,
+				"PAND": 2,
+				"SPARE": 4,
+				"VOT": 5
+			},
+			"name": "rc-4-2-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 3.048556129
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 3.048556129
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1681005654
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1681007561
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 27
+			},
+			"filename": "other/fault_trees/rc/rc.4-2-sc.dft",
+			"gateTypes": {
+				"FDEP": 4,
+				"OR": 5,
+				"PAND": 2,
+				"SPARE": 2,
+				"VOT": 4
+			},
+			"name": "rc-4-2-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.850630299
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.850630299
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.19255791399669[6941; 7009]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.192557914
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 42
+			},
+			"filename": "other/fault_trees/rc/rc.4-3-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 5,
+				"OR": 8,
+				"PAND": 3,
+				"SPARE": 5,
+				"VOT": 5
+			},
+			"name": "rc-4-3-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.943135753
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.943135753
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1722837964
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1722839414
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 30
+			},
+			"filename": "other/fault_trees/rc/rc.4-3-sc.dft",
+			"gateTypes": {
+				"FDEP": 4,
+				"OR": 6,
+				"PAND": 3,
+				"SPARE": 3,
+				"VOT": 4
+			},
+			"name": "rc-4-3-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.759506578
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.759506578
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.196618117042541[8287; 9087]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.196618117
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 45
+			},
+			"filename": "other/fault_trees/rc/rc.4-4-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 5,
+				"OR": 9,
+				"PAND": 4,
+				"SPARE": 6,
+				"VOT": 5
+			},
+			"name": "rc-4-4-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.848527407
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.848527407
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.1764459804
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1764460916
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 33
+			},
+			"filename": "other/fault_trees/rc/rc.4-4-sc.dft",
+			"gateTypes": {
+				"FDEP": 4,
+				"OR": 7,
+				"PAND": 4,
+				"SPARE": 4,
+				"VOT": 4
+			},
+			"name": "rc-4-4-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.677212128
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.677212128
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.200657903455343[6827; 7679]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.2006579035
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 41
+			},
+			"filename": "other/fault_trees/rc/rc.5-1-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 6,
+				"OR": 5,
+				"PAND": 1,
+				"SPARE": 3,
+				"VOT": 6
+			},
+			"name": "rc-5-1-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.721020521
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.721020521
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.199447222
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.1994475214
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 29
+			},
+			"filename": "other/fault_trees/rc/rc.5-1-sc.dft",
+			"gateTypes": {
+				"FDEP": 5,
+				"OR": 3,
+				"PAND": 1,
+				"SPARE": 1,
+				"VOT": 5
+			},
+			"name": "rc-5-1-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.560703298
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.560703298
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.222983110019879[8822; 9447]"
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.22298311
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 53
+			},
+			"filename": "other/fault_trees/rc/rc.5-5-hc.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 6,
+				"OR": 10,
+				"PAND": 5,
+				"SPARE": 7,
+				"VOT": 6
+			},
+			"name": "rc-5-5-hc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.442050861
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.442050861
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2154285816
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.2154287088
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 41
+			},
+			"filename": "other/fault_trees/rc/rc.5-5-sc.dft",
+			"gateTypes": {
+				"FDEP": 5,
+				"OR": 8,
+				"PAND": 5,
+				"SPARE": 5,
+				"VOT": 5
+			},
+			"name": "rc-5-5-sc",
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (IMCA)",
+					"type": "MTTF",
+					"value": 2.314953799
+				},
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 2.314953799
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 0.2384943943
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.2384944635
+				}
+			]
+		}
+	],
+	"name": "Railway crossing",
+	"submitted-by": "Enno Ruijters <e.j.j.ruijters@utwente.nl>"
+}

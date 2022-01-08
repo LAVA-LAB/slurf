@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import time
+import numpy as np
 from slurf.sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions
 from slurf.scenario_problem import compute_solution_sets
@@ -12,20 +13,24 @@ from slurf.export import plot_results, save_results
 
 if __name__ == '__main__':
 
+    np.random.seed(10)
+
     root_dir = os.path.dirname(os.path.abspath(__file__))
     dfs = {}
     timing = {}
     
     # Interpret arguments provided
-    # args = parse_arguments(manualModel="ctmc/epidemic/sir20.sm")
-    args = parse_arguments()
+    args = parse_arguments(manualModel="ctmc/embedded/embedded.5.prism")
+    # args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
     time_start = time.process_time()
     
     # Load probability distribution data
     model_file, param_dic, properties, prop_labels, reliability, timebounds = \
-        load_distribution(root_dir, args.model, args.model_type)
+        load_distribution(root_dir, args.model, args.model_type,
+                          parameters_file=args.param_file, 
+                          propertie_file=args.prop_file)
     
     timing['1_load'] = time.process_time() - time_start
     print("\n===== Data loaded at:", getTime(),"=====")

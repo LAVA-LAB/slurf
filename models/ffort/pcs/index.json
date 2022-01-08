@@ -1,0 +1,58 @@
+{
+	"added-on": "2019-02-27",
+	"description": {
+		"paper": {
+			"authors": [
+				"H. Zhu",
+				"S. Zhou",
+				"J.B. Dugan",
+				"K.J. Sullivan"
+			],
+			"doi": "10.1109/RAMS.2001.902447",
+			"title": "A Benchmark for Quantitative Fault Tree Reliability Analysis",
+			"year": 2001
+		},
+		"references": [
+			{
+				"authors": [
+					"Matthias Volk",
+					"Sebastian Junges",
+					"Joost-Pieter Katoen"
+				],
+				"doi": "10.1109/TII.2017.2710316",
+				"title": "Fast Dynamic Fault Tree Analysis by Model Checking Techniques",
+				"year": 2018
+			}
+		],
+		"text": "<p>A power converter subsystem that uses a master/slave configuration.</p><p>Model version as used in [1]. <i>The Galileo version of this model was created by Sebastian Junges for [1].</i></p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 29
+			},
+			"filename": "other/fault_trees/pcs/pcs.dft",
+			"gateTypes": {
+				"AND": 8,
+				"OR": 7,
+				"VOT": 4
+			},
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 0.6153691761
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 0.8777171722
+				}
+			]
+		}
+	],
+	"name": "Power converter subsystem",
+	"submitted-by": "Matthias Volk <matthias.volk@cs.rwth-aachen.de>"
+}

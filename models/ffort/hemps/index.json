@@ -1,0 +1,62 @@
+{
+	"added-on": "2019-02-27",
+	"description": {
+		"paper": {
+			"authors": [
+				"Yong Ou",
+				"Joanne Bechta Dugan"
+			],
+			"doi": "10.1109/TR.2004.837305",
+			"title": "Modular Solution of Dynamic Multi-Phase Systems",
+			"year": 2004
+		},
+		"references": [
+			{
+				"authors": [
+					"Matthias Volk",
+					"Sebastian Junges",
+					"Joost-Pieter Katoen"
+				],
+				"doi": "10.1109/TII.2017.2710316",
+				"title": "Fast Dynamic Fault Tree Analysis by Model Checking Techniques",
+				"year": 2018
+			}
+		],
+		"text": "<p>Hypothetical example multi-phase system (HEMPS) consisting of three different phases.</p><p><i>The Galileo version of this FT was created by Sebastian Junges for [1].</i></p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 11
+			},
+			"filename": "other/fault_trees/hemps/hemps.dft",
+			"gateTypes": {
+				"AND": 2,
+				"FDEP": 1,
+				"OR": 5,
+				"PAND": 2,
+				"SPARE": 2
+			},
+			"repair": false,
+			"results": [
+				{
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -m hemps/hemps.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "MTTF",
+					"value": "31.546196823269[199; 211]",
+					"version": "v1.2.0-cc213f50; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-7dd315a4-l8"
+				},
+				{
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -t 1 hemps/hemps.dft",
+					"time": 1,
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.00163712895512555[362; 412]",
+					"version": "v1.2.0-cc213f50; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-7dd315a4-l8"
+				}
+			]
+		}
+	],
+	"name": "Hypothetical example multi-phase system",
+	"submitted-by": "Matthias Volk <matthias.volk@cs.rwth-aachen.de>"
+}

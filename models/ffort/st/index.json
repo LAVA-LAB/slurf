@@ -1,0 +1,163 @@
+{
+	"added-on": "2019-02-18",
+	"description": {
+		"imageFile": "other/fault_trees/st/st.svg",
+		"paper": {
+			"authors": [
+				"Mohammad Yazdi",
+				"Farzaneh Nikfar",
+				"Mahnaz Nasrabadi"
+			],
+			"doi": "10.1007/s13198-017-0583-y",
+			"title": "Failure probability analysis by employing fuzzy fault tree analysis",
+			"year": 2017
+		},
+		"text": "<p>Study of a storage tank 42D-80001A-D in a petrochemical plant, for homogenising, cooling-down, and mixing the granules produced in the extrusion section of the plant.</p><p>The \"Failure Probability\" values of the BEs computed from their rates or their \"Crisp Failure Possibilities,\" as presented in tables 4 and 12 of the paper, are encoded as probability parameters of constant distributions in  standard Galileo (<b>prob</b>).</p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Discr": 22
+			},
+			"description": {
+				"paper": {
+					"authors": [
+						"Mohammad Yazdi",
+						"Farzaneh Nikfar",
+						"Mahnaz Nasrabadi"
+					],
+					"doi": "10.1007/s13198-017-0583-y",
+					"title": "Failure probability analysis by employing fuzzy fault tree analysis",
+					"year": 2017
+				},
+				"text": "Fault tree of the original paper, describing a \"Liquid Storage Tank Failure.\""
+			},
+			"filename": "other/fault_trees/st/LSTF.dft",
+			"gateTypes": {
+				"AND": 1,
+				"OR": 12
+			},
+			"name": "LSTF",
+			"repair": false,
+			"results": [
+				{
+					"comment": "Based on crisp failure probabilities.",
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u st/LSTF.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.67962610496398820808[0; 1]",
+					"version": "v1.2.0-22030200; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-406f9d75-l8"
+				},
+				{
+					"paper": {
+						"authors": [
+							"Mohammad Yazdi",
+							"Farzaneh Nikfar",
+							"Mahnaz Nasrabadi"
+						],
+						"doi": "10.1007/s13198-017-0583-y",
+						"title": "Failure probability analysis by employing fuzzy fault tree analysis",
+						"year": 2018
+					},
+					"tool": "manual computation",
+					"type": "Unreliability",
+					"value": "0.8525"
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Discr": 22
+			},
+			"description": {
+				"paper": {
+					"authors": [
+						"Mohammad Yazdi"
+					],
+					"doi": "10.1007/s11668-017-0305-4",
+					"title": "Hybrid Probabilistic Risk Assessment Using Fuzzy FTA and Fuzzy AHP in a Process Industry",
+					"year": 2017
+				},
+				"text": "<p>Fault tree of a subsequent paper, describing a \"Granular Storage Tank Failure,\" that uses the same tree structure and  \"Crisp Failure Possibilities\" in the original paper (0.1007/s13198-017-0583-y), but presents new ways to compute the \"Failure Probabilities.\"</p><p>From the paper: \"Boolean algebra is used for both cases to represent the FP of TE. In the conventional model, it is calculated as 2.92E-01 per year, whereas in the new proposed model, the value of FP of the TE is 1.40E-01 per year,\" where \"FP\" and \"TE\" stand for \"Failure Probability\" and \"Top Event\" respectively.\nThe \"Failure Probability\" values of the BEs computed from their rates or their \"Crisp Failure Possibilities,\" as presented in Table 2 of the paper (column \"Old FP\"), are encoded as probability parameters of constant distributions in standard Galileo (<b>prob</b>).</p>"
+			},
+			"filename": "other/fault_trees/st/GSTF_OLD.dft",
+			"gateTypes": {
+				"AND": 1,
+				"OR": 12
+			},
+			"name": "GSTF_OLD",
+			"repair": false,
+			"results": [
+				{
+					"comment": "Based on crisp failure probabilities.",
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u st/GSTF_OLD.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.12914362845417708405[1; 2]",
+					"version": "v1.2.0-22030200; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-406f9d75-l8"
+				},
+				{
+					"paper": {
+						"authors": [
+							"Mohammad Yazdi"
+						],
+						"doi": "10.1007/s11668-017-0305-4",
+						"title": "Hybrid Probabilistic Risk Assessment Using Fuzzy FTA and Fuzzy AHP in a Process Industry",
+						"year": 2017
+					},
+					"tool": "manual computation",
+					"type": "Unreliability",
+					"value": "0.292"
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Discr": 22
+			},
+			"description": {
+				"paper": {
+					"authors": [
+						"Mohammad Yazdi"
+					],
+					"doi": "10.1007/s11668-017-0305-4",
+					"title": "Hybrid Probabilistic Risk Assessment Using Fuzzy FTA and Fuzzy AHP in a Process Industry",
+					"year": 2017
+				},
+				"text": "<p>Fault tree of a subsequent paper, describing a \"Granular Storage Tank Failure,\" using \"Fuzzy Aggregation Data\" to convert the \"Crisp Failure Possibilities\" in the original paper (0.1007/s13198-017-0583-y) to \"Failure Probabilities\" unlike previous results.</p><p>From the paper: \"Boolean algebra is used for both cases to represent the FP of TE. In the conventional model, it is calculated as 2.92E-01 per year, whereas in the new proposed model, the value of FP of the TE is 1.40E-01 per year,\" where \"FP\" and \"TE\" stand for \"Failure Probability\" and \"Top Event\" respectively.\nThe \"Failure Probability\" values of the BEs computed from their rates or their \"Crisp Failure Possibilities,\" as presented in Table 2 of the paper (column \"New FP\"), are encoded as probability parameters of constant distributions in standard Galileo (<b>prob</b>).</p>"
+			},
+			"filename": "other/fault_trees/st/GSTF_NEW.dft",
+			"gateTypes": {
+				"AND": 1,
+				"OR": 12
+			},
+			"name": "GSTF_NEW",
+			"repair": false,
+			"results": [
+				{
+					"comment": "Based on crisp failure probabilities.",
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u st/GSTF_NEW.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.13214833187194554000[6; 7]",
+					"version": "v1.2.0-22030200; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-406f9d75-l8"
+				},
+				{
+					"paper": {
+						"authors": [
+							"Mohammad Yazdi"
+						],
+						"doi": "10.1007/s11668-017-0305-4",
+						"title": "Hybrid Probabilistic Risk Assessment Using Fuzzy FTA and Fuzzy AHP in a Process Industry",
+						"year": 2017
+					},
+					"tool": "manual computation",
+					"type": "Unreliability",
+					"value": "0.14"
+				}
+			]
+		}
+	],
+	"name": "Storage Tank",
+	"submitted-by": "Carlos E. Budde <c.e.budde@utwente.nl>"
+}

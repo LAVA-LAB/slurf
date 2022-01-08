@@ -18,6 +18,14 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--model', type=str, action="store", dest='model', 
                         default=manualModel, help="Model file to load")
     
+    # Set a manual parameter distribution file
+    parser.add_argument('--param_file', type=str, action="store", dest='param_file', 
+                        default=None, help="Parameter distribution Excel file")
+    # Set a manual parameter distribution file
+    parser.add_argument('--prop_file', type=str, action="store", dest='prop_file', 
+                        default=None, help="Properties Excel file")
+    
+    # Enable/disable bisimulation
     parser.add_argument('--no-bisim', dest='bisim', action='store_false',
                         help="Disable bisimulation")
     parser.set_defaults(bisim=True)

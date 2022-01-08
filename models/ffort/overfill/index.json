@@ -1,0 +1,99 @@
+{
+	"added-on": "2019-07-20",
+	"description": {
+		"imageFile": "other/fault_trees/overfill/overfill.svg",
+		"paper": {
+			"authors": [
+				"Ulrich Hauptmanns"
+			],
+			"doi": "10.1016/j.jlp.2004.06.004",
+			"title": "Semi-quantitative fault tree analysis for process plant safety using frequency and probability ranges",
+			"year": 2004
+		},
+		"text": "<p>Example of a tank for liquids, which is dangerous if overfilled. Filling is controlled by a level switch, with backup level and pressure switches providing redundancy.</p><p>The paper specifies failure rates as probability ranges: In the model provided here, considering each range as the support of a uniform PDF, the mean of each range is specified as failure rate of the corresponding element.x</p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 7
+			},
+			"description": {
+				"paper": {
+					"authors": [
+						"Ulrich Hauptmanns"
+					],
+					"doi": "10.1016/j.jlp.2004.06.004",
+					"title": "Semi-quantitative fault tree analysis for process plant safety using frequency and probability ranges",
+					"year": 2004
+				},
+				"text": "Variant introduced in the paper \"excluding events 8 and 9 for a moment\""
+			},
+			"filename": "other/fault_trees/overfill/overfill.dft",
+			"gateTypes": {
+				"AND": 2,
+				"IM": 2,
+				"OR": 2
+			},
+			"name": "Overfill",
+			"repair": true,
+			"results": [
+				{
+					"comment": "This result is provided in the paper as per-year frequency, i.e. 0.0495 yr⁻¹",
+					"paper": {
+						"authors": [
+							"Ulrich Hauptmanns"
+						],
+						"doi": "10.1016/j.jlp.2004.06.004",
+						"title": "Semi-quantitative fault tree analysis for process plant safety using frequency and probability ranges",
+						"year": 2004
+					},
+					"tool": "SQUAFTA",
+					"type": "MTTF",
+					"value": "20.20202"
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 9
+			},
+			"description": {
+				"paper": {
+					"authors": [
+						"Ulrich Hauptmanns"
+					],
+					"doi": "10.1016/j.jlp.2004.06.004",
+					"title": "Semi-quantitative fault tree analysis for process plant safety using frequency and probability ranges",
+					"year": 2004
+				},
+				"text": "<p>Variant introduced in the paper including all events from the tree in Fig. 3.</p><p>The failure rates of the two CCF nodes are the average of the failure rates of which the node is a Common Cause Failure, divided by 10.\nThis was taken from the paper \"a common cause for a twofold redundancy is treated by assigning a class lowered by one to the component in question.\"</p>"
+			},
+			"filename": "other/fault_trees/overfill/overfill_CCF.dft",
+			"gateTypes": {
+				"AND": 2,
+				"IM": 2,
+				"OR": 3
+			},
+			"name": "Overfill with Common Cause Failures",
+			"repair": true,
+			"results": [
+				{
+					"comment": "This result is provided in the paper as per-year frequency, i.e. 0.0923 yr⁻¹",
+					"paper": {
+						"authors": [
+							"Ulrich Hauptmanns"
+						],
+						"doi": "10.1016/j.jlp.2004.06.004",
+						"title": "Semi-quantitative fault tree analysis for process plant safety using frequency and probability ranges",
+						"year": 2004
+					},
+					"tool": "SQUAFTA",
+					"type": "MTTF",
+					"value": "10.83423"
+				}
+			]
+		}
+	],
+	"name": "Tank filling system",
+	"submitted-by": "Enno Ruijters & Carlos E. Budde <e.j.j.ruijters@utwente.nl>"
+}

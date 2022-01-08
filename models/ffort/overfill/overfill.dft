@@ -1,0 +1,14 @@
+toplevel "System";
+"System" and "Filling" "RL";
+"RL" and "RLL" "RLR";
+"RLL" or "LSH1" "V1" "VSOL1";
+"RLR" or "PSH1" "V2" "VSOL2";
+"T1" insp336 "LSH1" "V1" "VSOL1";
+"T2" insp8760 "PSH1" "V2" "VSOL2";
+"Filling" res=1 lambda=5 interval=1;
+"LSH1" lambda=5e-2 interval=1;
+"PSH1" lambda=5e-2 interval=1;
+"V1" lambda=5e-2 interval=1;
+"VSOL1" lambda=5e-2 interval=1;
+"V2" lambda=5e-1 interval=1;
+"VSOL2" lambda=5e-1 interval=1;

@@ -1,0 +1,411 @@
+{
+	"added-on": "2018-10-29",
+	"description": {
+		"imageFile": "other/fault_trees/ftpp/FTPP.svg",
+		"paper": {
+			"authors": [
+				"J. Dugan",
+				"S. Bavuso",
+				"M. Boyd"
+			],
+			"doi": "10.1109/24.159800",
+			"title": "Dynamic fault-tree models for fault-tolerant computer systems",
+			"year": 2002
+		},
+		"references": [
+			{
+				"authors": [
+					"E. Ruijters",
+					"D. Reijsbergen",
+					"P.-T. de Boer",
+					"M.I.A. Stoelinga"
+				],
+				"doi": "10.1007/978-3-319-66266-4_2",
+				"title": "Rare event simulation for dynamic fault trees",
+				"year": 2017
+			}
+		],
+		"text": "<p>Dynamic fault tree modelling a fault-tolerant computer system with multiple processors. The system consists of <em>N</em> groups of 4 independent processors, connected by 4 buses. Failure of a bus disables one processor in each group, and the system fails if all processors in a group have failed.</p><p>This DFT is one of the examples originally used to demonstrate the need for dynamic fault trees, extended version with repairs and Erlang-distributed failure times were introduced in [1].</p><p>Each variation <em>FTPP-N-D</em> represents an FTPP with <em>N</em> groups with <em>D</em>-distributed failure times (exponential or 2-phase Erlang), and <em>FTPP-N-D-repair</em> represents the variant augmented with a periodic inspection and repair.</p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 8
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.1-1.dft",
+			"gateTypes": {
+				"OR": 5,
+				"SPARE": 3,
+				"VOT": 1
+			},
+			"name": "FTPP-1-Exp",
+			"repair": false,
+			"results": [
+				{
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 8898.133545
+				},
+				{
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 8.734201635E-10
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 8
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.1-1-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 5,
+				"SPARE": 3,
+				"VOT": 1
+			},
+			"name": "FTPP-1-Exp-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 2.18303E-10
+				},
+				{
+					"time": 1,
+					"tool": "DFTCalc (IMCA)",
+					"type": "Unreliability",
+					"value": 4.669107871E-10
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 8
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.1-2.dft",
+			"gateTypes": {
+				"OR": 5,
+				"SPARE": 3,
+				"VOT": 1
+			},
+			"name": "FTPP-1-Erl2",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 8
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.1-2-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 5,
+				"SPARE": 3,
+				"VOT": 1
+			},
+			"name": "FTPP-1-Erl2-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 1.76174E-20
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 12
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.2-1.dft",
+			"gateTypes": {
+				"OR": 9,
+				"SPARE": 6,
+				"VOT": 2
+			},
+			"name": "FTPP-2-Exp",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 12
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.2-1-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 9,
+				"SPARE": 6,
+				"VOT": 2
+			},
+			"name": "FTPP-2-Exp-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 2.19861E-10
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 12
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.2-2.dft",
+			"gateTypes": {
+				"OR": 9,
+				"SPARE": 6,
+				"VOT": 2
+			},
+			"name": "FTPP-2-Erl2",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 12
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.2-2-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 9,
+				"SPARE": 6,
+				"VOT": 2
+			},
+			"name": "FTPP-2-Erl2-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 1.76178E-20
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 16
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.3-1.dft",
+			"gateTypes": {
+				"OR": 13,
+				"SPARE": 9,
+				"VOT": 3
+			},
+			"name": "FTPP-3-Exp",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 16
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.3-1-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 13,
+				"SPARE": 9,
+				"VOT": 3
+			},
+			"name": "FTPP-3-Exp-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 2.2142E-10
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 16
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.3-2.dft",
+			"gateTypes": {
+				"OR": 13,
+				"SPARE": 9,
+				"VOT": 3
+			},
+			"name": "FTPP-3-Erl2",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 16
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.3-2-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 13,
+				"SPARE": 9,
+				"VOT": 3
+			},
+			"name": "FTPP-3-Erl2-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"title": "Rare Event Simulation for Dynamic Fault Trees (submitted for publication)",
+						"year": 2018
+					},
+					"tool": "FTRES (95% confidence)",
+					"type": "Unavailability",
+					"value": [1.761E-20, 7.762E-20]
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 20
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.4-1.dft",
+			"gateTypes": {
+				"OR": 17,
+				"SPARE": 12,
+				"VOT": 4
+			},
+			"name": "FTPP-4-Exp",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 20
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.4-1-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 17,
+				"SPARE": 12,
+				"VOT": 4
+			},
+			"name": "FTPP-4-Exp-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"doi": "10.1007/978-3-319-66266-4_2",
+						"title": "Rare Event Simulation for Dynamic Fault Trees",
+						"year": 2017
+					},
+					"tool": "DFTCalc",
+					"type": "Unavailability",
+					"value": 2.2142E-10
+				}
+			]
+		},
+		{
+			"BETypes": {
+				"Exp": 20
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.4-2.dft",
+			"gateTypes": {
+				"OR": 17,
+				"SPARE": 12,
+				"VOT": 4
+			},
+			"name": "FTPP-4-Erl2",
+			"repair": false
+		},
+		{
+			"BETypes": {
+				"Exp": 20
+			},
+			"filename": "other/fault_trees/ftpp/ftpp.4-2-repair.dft",
+			"gateTypes": {
+				"IM": 1,
+				"OR": 17,
+				"SPARE": 12,
+				"VOT": 4
+			},
+			"name": "FTPP-4-Erl2-repair",
+			"repair": true,
+			"results": [
+				{
+					"paper": {
+						"authors": [
+							"E. Ruijters",
+							"D. Reijsbergen",
+							"P.-T. de Boer",
+							"M. I. A. Stoelinga"
+						],
+						"title": "Rare Event Simulation for Dynamic Fault Trees (submitted for publication)",
+						"year": 2018
+					},
+					"tool": "FTRES (95% confidence)",
+					"type": "Unavailability",
+					"value": [1.76E-20, 1.763E-20]
+				}
+			]
+		}
+	],
+	"name": "Fault tolerant parallel processor",
+	"submitted-by": "Enno Ruijters <e.j.j.ruijters@utwente.nl>"
+}

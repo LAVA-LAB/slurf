@@ -1,0 +1,42 @@
+{
+	"added-on": "2018-11-15",
+	"description": {
+		"imageFile": "other/fault_trees/pt/pt.svg",
+		"paper": {
+			"authors": [
+				"M. Stamatelatos",
+				"W. Vesely",
+				"J. Dugan",
+				"J. Fragola",
+				"J. Minarick",
+				"J. Railsback"
+			],
+			"link": "https://elibrary.gsfc.nasa.gov/_assets/doclibBidder/tech_docs/25.%20NASA_Fault_Tree_Handbook_with_Aerospace_Applications%20-%20Copy.pdf",
+			"title": "Fault tree handbook with aerospace applications",
+			"year": 2002
+		},
+		"text": "Static fault tree for a pressure tank-pump-motor device and its associated control system"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Discr": 6
+			},
+			"filename": "other/fault_trees/pt/pt.dft",
+			"gateTypes": {
+				"AND": 1,
+				"OR": 4
+			},
+			"repair": false,
+			"results": [
+				{
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "3.5013348120867[7699; 9733]e-5"
+				}
+			]
+		}
+	],
+	"name": "Pressure Tank Example",
+	"submitted-by": "Muhammad Chenariyan Nakhaee <m.cnakhaee@utwente.nl>"
+}

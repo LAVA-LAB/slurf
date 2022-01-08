@@ -1,0 +1,65 @@
+{
+	"added-on": "2019-02-27",
+	"description": {
+		"paper": {
+			"authors": [
+				"K. Durga Rao",
+				"V. Gopika",
+				"V.V.S. Sanyasi Rao",
+				"H.S. Kushwaha",
+				"A.K. Verma",
+				"A. Srividya"
+			],
+			"doi": "10.1016/j.ress.2008.09.007",
+			"title": "Dynamic fault tree analysis using Monte Carlo simulation in probabilistic safety assessment",
+			"year": 2008
+		},
+		"references": [
+			{
+				"authors": [
+					"Matthias Volk",
+					"Sebastian Junges",
+					"Joost-Pieter Katoen"
+				],
+				"doi": "10.1109/TII.2017.2710316",
+				"title": "Fast Dynamic Fault Tree Analysis by Model Checking Techniques",
+				"year": 2018
+			}
+		],
+		"text": "<p>The dual processor hot standby reactor regulation system (DPHS-RRS) regulates rector power in a nuclear power plant.</p><p><i>The Galileo version of this FT was created by Sebastian Junges for [1].</i></p>"
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Exp": 40
+			},
+			"filename": "other/fault_trees/dphs/dphs_rss.dft",
+			"gateTypes": {
+				"AND": 3,
+				"OR": 7,
+				"PAND": 2,
+				"SEQ": 2
+			},
+			"repair": false,
+			"results": [
+				{
+					"cmdline": "storm-dft --symmetryreduction --expectedtime --dftfile dphs/dphs_rss.dft",
+					"tool": "Storm-DFT",
+					"type": "MTTF",
+					"value": 16371.97119,
+					"version": "1.3.1-47b2cb73"
+				},
+				{
+					"cmdline": "storm-dft --modularisation --symmetryreduction --timebound 1 --dftfile dphs/dphs_rss.dft",
+					"time": 1,
+					"tool": "Storm-DFT",
+					"type": "Unreliability",
+					"value": 8.393455362E-9,
+					"version": "1.3.1-47b2cb73"
+				}
+			]
+		}
+	],
+	"name": "Dual processor reactor regulation system",
+	"submitted-by": "Matthias Volk <matthias.volk@cs.rwth-aachen.de>"
+}

@@ -1,0 +1,141 @@
+<svg id="Laag_1" data-name="Laag 1" xmlns="http://www.w3.org/2000/svg" width="251.0636" height="132.9075" viewBox="0 0 251.0636 132.9075">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #b3b3b3;
+      }
+
+      .cls-2, .cls-6 {
+        fill: none;
+        stroke: #000;
+        stroke-miterlimit: 10;
+        stroke-width: 0.206px;
+      }
+
+      .cls-3, .cls-7 {
+        font-size: 7.4269px;
+      }
+
+      .cls-3, .cls-8 {
+        font-family: TimesNewRomanPSMT, Times New Roman;
+      }
+
+      .cls-4 {
+        letter-spacing: 0.0009em;
+      }
+
+      .cls-5 {
+        letter-spacing: -0.0001em;
+      }
+
+      .cls-6 {
+        stroke-linecap: round;
+      }
+
+      .cls-7, .cls-9 {
+        font-family: TimesNewRomanPS-ItalicMT, Times New Roman;
+        font-style: italic;
+      }
+
+      .cls-8, .cls-9 {
+        font-size: 5.1578px;
+      }
+
+      .cls-10 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <title>hecs</title>
+  <rect class="cls-1" x="74.1378" y="0.103" width="83.6179" height="11.7596"/>
+  <rect class="cls-2" x="74.1378" y="0.103" width="83.6179" height="11.7596"/>
+  <text class="cls-3" transform="translate(77.933 8.8391)">Co<tspan class="cls-4" x="8.667" y="0">mpu</tspan><tspan x="21.8936" y="0">ter system failure</tspan></text>
+  <path class="cls-1" d="M109.501,23.0268a12.8938,12.8938,0,0,1,6.4459-11.1647,12.8936,12.8936,0,0,1,6.4459,11.1647v6.4459a12.8929,12.8929,0,0,0-12.8918,0Z"/>
+  <path class="cls-2" d="M109.501,23.0268a12.8938,12.8938,0,0,1,6.4459-11.1647,12.8936,12.8936,0,0,1,6.4459,11.1647v6.4459a12.8929,12.8929,0,0,0-12.8918,0Z"/>
+  <rect class="cls-1" x="98.9497" y="51.3227" width="31.4161" height="11.6772"/>
+  <rect class="cls-2" x="98.9497" y="51.3227" width="31.4161" height="11.6772"/>
+  <text class="cls-3" transform="translate(101.528 58.9768)">Me<tspan class="cls-4" x="9.9004" y="0">m</tspan><tspan class="cls-5" x="15.6846" y="0">ory</tspan></text>
+  <path class="cls-1" d="M107.2306,75.8642A14.8563,14.8563,0,0,1,114.6575,63a14.8557,14.8557,0,0,1,7.4274,12.8643v7.4269a14.8549,14.8549,0,0,0-14.8543,0Z"/>
+  <path class="cls-2" d="M107.2306,75.8642A14.8563,14.8563,0,0,1,114.6575,63a14.8557,14.8557,0,0,1,7.4274,12.8643v7.4269a14.8549,14.8549,0,0,0-14.8543,0Z"/>
+  <rect class="cls-1" x="8.888" y="52.0449" width="35.4376" height="10.2329"/>
+  <rect class="cls-2" x="8.888" y="52.0449" width="35.4376" height="10.2329"/>
+  <text class="cls-3" transform="translate(12.1683 59.7395)">Processor</text>
+  <path class="cls-1" d="M19.18,69.705a7.4272,7.4272,0,0,1,14.8543,0v11.14H19.18Z"/>
+  <path class="cls-2" d="M19.18,69.705a7.4272,7.4272,0,0,1,14.8543,0v11.14H19.18Z"/>
+  <rect class="cls-1" x="179.4251" y="52.0449" width="17.2161" height="10.2329"/>
+  <rect class="cls-2" x="179.4251" y="52.0449" width="17.2161" height="10.2329"/>
+  <text class="cls-3" transform="translate(182.0036 59.6985)">B<tspan class="cls-4" x="4.9541" y="0">u</tspan><tspan class="cls-5" x="8.6748" y="0">s</tspan></text>
+  <path class="cls-1" d="M180.6063,69.705a7.4272,7.4272,0,0,1,14.8543,0v11.14H180.6063Z"/>
+  <path class="cls-2" d="M180.6063,69.705a7.4272,7.4272,0,0,1,14.8543,0v11.14H180.6063Z"/>
+  <rect class="cls-1" x="215.6439" y="52.0035" width="32.8304" height="10.3157"/>
+  <rect class="cls-2" x="215.6439" y="52.0035" width="32.8304" height="10.3157"/>
+  <text class="cls-3" transform="translate(218.2213 59.7405)">In</text>
+  <text class="cls-3" transform="translate(224.6823 59.7395)">terface</text>
+  <path class="cls-1" d="M224.6317,75.1833a14.8563,14.8563,0,0,1,7.4269-12.8643,14.8555,14.8555,0,0,1,7.4274,12.8643V82.61a14.8543,14.8543,0,0,0-14.8543,0Z"/>
+  <path class="cls-2" d="M224.6317,75.1833a14.8563,14.8563,0,0,1,7.4269-12.8643,14.8555,14.8555,0,0,1,7.4274,12.8643V82.61a14.8543,14.8543,0,0,0-14.8543,0Z"/>
+  <path class="cls-1" d="M22.9378,108.8687v-5.87H11.9315v5.87ZM.9252,101.5308H22.9378M.9252,108.8687H22.9378V94.1934H.9252Z"/>
+  <path class="cls-6" d="M22.9378,108.8687v-5.87H11.9315v5.87ZM.9252,101.5308H22.9378M.9252,108.8687H22.9378V94.1934H.9252Z"/>
+  <path class="cls-1" d="M41.282,108.8687v-5.87H30.2757v5.87Zm-11.0063-7.3379H52.2883m-22.0126,7.3379H52.2883V94.1934H30.2757Z"/>
+  <path class="cls-6" d="M41.282,108.8687v-5.87H30.2757v5.87Zm-11.0063-7.3379H52.2883m-22.0126,7.3379H52.2883V94.1934H30.2757Z"/>
+  <path class="cls-1" d="M12.7541,126.4787a6.3256,6.3256,0,1,0-6.3258,6.3258A6.3258,6.3258,0,0,0,12.7541,126.4787Z"/>
+  <path class="cls-2" d="M12.7541,126.4787a6.3256,6.3256,0,1,0-6.3258,6.3258A6.3258,6.3258,0,0,0,12.7541,126.4787Z"/>
+  <text class="cls-7" transform="translate(2.6676 128.4582)">P</text>
+  <text class="cls-8" transform="translate(7.3551 129.5715)">1</text>
+  <path class="cls-1" d="M53.1107,126.4787a6.3255,6.3255,0,1,0-6.3258,6.3258A6.3257,6.3257,0,0,0,53.1107,126.4787Z"/>
+  <path class="cls-2" d="M53.1107,126.4787a6.3255,6.3255,0,1,0-6.3258,6.3258A6.3257,6.3257,0,0,0,53.1107,126.4787Z"/>
+  <text class="cls-7" transform="translate(43.0231 128.4582)">P</text>
+  <text class="cls-8" transform="translate(47.7116 129.5715)">2</text>
+  <path class="cls-1" d="M32.8582,126.4787A6.2515,6.2515,0,1,0,26.607,132.73,6.2511,6.2511,0,0,0,32.8582,126.4787Z"/>
+  <path class="cls-2" d="M32.8582,126.4787A6.2515,6.2515,0,1,0,26.607,132.73,6.2511,6.2511,0,0,0,32.8582,126.4787Z"/>
+  <text class="cls-7" transform="translate(22.9264 128.4582)">P</text>
+  <text class="cls-9" transform="translate(27.6139 129.5715)">s</text>
+  <path class="cls-2" d="M26.6068,52.0448v-5.87H112.079V28.345M29.0824,80.8455l12.2,13.3479M24.1311,80.8455l-12.2,13.3479m23.8474,14.6752-6.2834,12.064m-12.0608-12.064,6.2833,12.064m23.0672-12.064v11.2843M6.4284,108.8686v11.2843"/>
+  <path class="cls-1" d="M121.898,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,121.898,110.6516Z"/>
+  <path class="cls-2" d="M121.898,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,121.898,110.6516Z"/>
+  <text class="cls-7" transform="translate(109.7213 112.6311)">M</text>
+  <text class="cls-8" transform="translate(116.7575 113.7453)">3</text>
+  <path class="cls-1" d="M140.9756,110.6516a7.24,7.24,0,1,0-7.24,7.2406A7.24,7.24,0,0,0,140.9756,110.6516Z"/>
+  <path class="cls-2" d="M140.9756,110.6516a7.24,7.24,0,1,0-7.24,7.2406A7.24,7.24,0,0,0,140.9756,110.6516Z"/>
+  <text class="cls-7" transform="translate(128.7985 112.6311)">M</text>
+  <text class="cls-8" transform="translate(135.8346 113.7453)">4</text>
+  <path class="cls-1" d="M102.82,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,102.82,110.6516Z"/>
+  <path class="cls-2" d="M102.82,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,102.82,110.6516Z"/>
+  <text class="cls-7" transform="translate(90.6442 112.6311)">M</text>
+  <text class="cls-8" transform="translate(97.6793 113.7453)">2</text>
+  <path class="cls-1" d="M83.7426,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,83.7426,110.6516Z"/>
+  <path class="cls-2" d="M83.7426,110.6516a7.24,7.24,0,1,0-7.2406,7.2406A7.24,7.24,0,0,0,83.7426,110.6516Z"/>
+  <text class="cls-7" transform="translate(71.5661 112.6311)">M</text>
+  <text class="cls-8" transform="translate(78.6022 113.7453)">1</text>
+  <path class="cls-1" d="M160.0533,110.6516a7.24,7.24,0,1,0-7.24,7.2406A7.24,7.24,0,0,0,160.0533,110.6516Z"/>
+  <path class="cls-2" d="M160.0533,110.6516a7.24,7.24,0,1,0-7.24,7.2406A7.24,7.24,0,0,0,160.0533,110.6516Z"/>
+  <text class="cls-7" transform="translate(147.8766 112.6311)">M</text>
+  <text class="cls-8" transform="translate(154.9118 113.7453)">5</text>
+  <polyline class="cls-2" points="114.658 27.811 114.658 42.486 114.658 51.323"/>
+  <polyline class="cls-2" points="109.706 82.158 109.706 98.3 76.502 98.3 76.502 103.411"/>
+  <polyline class="cls-2" points="112.182 81.511 112.182 100.589 95.58 100.589 95.58 103.411"/>
+  <line class="cls-2" x1="114.6576" y1="81.3013" x2="114.6576" y2="103.4112"/>
+  <polyline class="cls-2" points="117.133 81.511 117.133 100.589 133.735 100.589 133.735 103.411"/>
+  <polyline class="cls-2" points="119.609 82.158 119.609 98.3 152.813 98.3 152.813 103.411"/>
+  <rect class="cls-10" x="107.4845" y="84.2365" width="14.3465" height="10.865"/>
+  <text class="cls-3" transform="translate(109.2028 91.5246)">3/5</text>
+  <polyline class="cls-2" points="185.558 80.846 185.558 85.248 176.753 85.248 176.753 99.923"/>
+  <circle class="cls-1" cx="176.7525" cy="99.9234" r="6.6385"/>
+  <circle class="cls-2" cx="176.7525" cy="99.9234" r="6.6385"/>
+  <text class="cls-7" transform="translate(172.5709 101.9026)">B</text>
+  <text class="cls-8" transform="translate(178.0954 103.0168)">1</text>
+  <polyline class="cls-2" points="190.509 80.846 190.509 85.248 199.314 85.248 199.314 99.923"/>
+  <circle class="cls-1" cx="199.3141" cy="99.9234" r="6.6385"/>
+  <circle class="cls-2" cx="199.3141" cy="99.9234" r="6.6385"/>
+  <text class="cls-7" transform="translate(195.1325 101.9026)">B</text>
+  <text class="cls-8" transform="translate(200.6569 103.0168)">2</text>
+  <polyline class="cls-2" points="229.583 80.831 229.583 85.233 220.778 85.233 220.778 99.908"/>
+  <path class="cls-1" d="M229.0464,99.9082a8.2685,8.2685,0,1,0-8.2682,8.2682A8.2679,8.2679,0,0,0,229.0464,99.9082Z"/>
+  <path class="cls-2" d="M229.0464,99.9082a8.2685,8.2685,0,1,0-8.2682,8.2682A8.2679,8.2679,0,0,0,229.0464,99.9082Z"/>
+  <text class="cls-3" transform="translate(214.3151 102.4446)">HW</text>
+  <polyline class="cls-2" points="234.535 80.831 234.535 85.233 243.34 85.233 243.34 99.908"/>
+  <circle class="cls-1" cx="243.3395" cy="99.9082" r="7.621"/>
+  <circle class="cls-2" cx="243.3395" cy="99.9082" r="7.621"/>
+  <text class="cls-3" transform="translate(237.5817 102.4446)"><tspan class="cls-4">S</tspan><tspan x="4.1377" y="0">W</tspan></text>
+  <polyline class="cls-2" points="188.033 52.045 188.033 46.175 117.236 46.175 117.236 27.811"/>
+  <polyline class="cls-2" points="232.059 52.004 232.059 43.199 119.814 43.199 119.814 28.345"/>
+</svg>

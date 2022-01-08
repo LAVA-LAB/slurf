@@ -1,0 +1,41 @@
+{
+	"added-on": "2018-07-16",
+	"description": {
+		"paper": {
+			"authors": [
+				"R. Sadiq",
+				"E. Saint-Martin",
+				"Y. Kleiner"
+			],
+			"doi": "10.1080/15730620802213504",
+			"title": "Predicting risk of water quality failures in distribution networks under uncertainties using fault-tree analysis",
+			"year": 2008
+		},
+		"text": "Proposed fault tree for low water quality, partly based on two majow incidents healt problems due to water contamination in Canada. The original paper specified failure probabilities using fuzzy numbers, the model here uses only the probability with the greatest likelihood in the baseline model."
+	},
+	"models": [
+		{
+			"BETypes": {
+				"Discr": 27
+			},
+			"filename": "other/fault_trees/wqdn/WQDN.dft",
+			"gateTypes": {
+				"AND": 10,
+				"OR": 5
+			},
+			"name": "WQDN",
+			"repair": false,
+			"results": [
+				{
+					"cmdline": "dftcalc -M -p --exact -R -C outputExact -u wqdn/WQDN.dft",
+					"tool": "DFTCalc (Exact)",
+					"type": "Unreliability",
+					"value": "0.16254539595015734248166373164453125",
+					"version": "v1.2.0-ea4946dc; CADP 2019-a; FTRES 0731ea24; IMRMC 1.0-406f9d75-l8"
+				}
+			]
+		}
+	],
+	"name": "Water distribution quality",
+	"submitted-by": "Enno Ruijters <e.j.j.ruijters@utwente.nl>"
+}
