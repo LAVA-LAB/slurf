@@ -11,7 +11,7 @@ const double lambda	= mu/N;
 
 module server
 	
-	s : [1..3]; // station
+	s : [1..N]; // station
 	a : [0..1]; // action: 0=polling, 1=serving
 	
 	[loop1a] (s=1)&(a=0) -> gamma	: (s'=s+1);

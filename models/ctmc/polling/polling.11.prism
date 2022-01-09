@@ -3,7 +3,7 @@
 
 ctmc
 
-const int N = 8;
+const int N = 11;
 
 const double mu; // default 1
 const double gamma; // default 200
@@ -11,7 +11,7 @@ const double lambda	= mu/N;
 
 module server
 	
-	s : [1..8]; // station
+	s : [1..11]; // station
 	a : [0..1]; // action: 0=polling, 1=serving
 	
 	[loop1a] (s=1)&(a=0) -> gamma	: (s'=s+1);
@@ -42,9 +42,21 @@ module server
 	[loop7b] (s=7)&(a=0) -> gamma	: (a'=1);
 	[serve7] (s=7)&(a=1) -> mu		: (s'=s+1)&(a'=0);
 	
-	[loop8a] (s=8)&(a=0) -> gamma	: (s'=1);
+	[loop8a] (s=8)&(a=0) -> gamma	: (s'=s+1);
 	[loop8b] (s=8)&(a=0) -> gamma	: (a'=1);
-	[serve8] (s=8)&(a=1) -> mu		: (s'=1)&(a'=0);
+	[serve8] (s=8)&(a=1) -> mu		: (s'=s+1)&(a'=0);
+	
+	[loop9a] (s=9)&(a=0) -> gamma	: (s'=s+1);
+	[loop9b] (s=9)&(a=0) -> gamma	: (a'=1);
+	[serve9] (s=9)&(a=1) -> mu		: (s'=s+1)&(a'=0);
+	
+	[loop10a] (s=10)&(a=0) -> gamma	: (s'=s+1);
+	[loop10b] (s=10)&(a=0) -> gamma	: (a'=1);
+	[serve10] (s=10)&(a=1) -> mu		: (s'=s+1)&(a'=0);
+	
+	[loop11a] (s=11)&(a=0) -> gamma	: (s'=1);
+	[loop11b] (s=11)&(a=0) -> gamma	: (a'=1);
+	[serve11] (s=11)&(a=1) -> mu		: (s'=1)&(a'=0);
 	
 endmodule
 
@@ -68,6 +80,9 @@ module station5 = station1 [ s1=s5, loop1a=loop5a, loop1b=loop5b, serve1=serve5 
 module station6 = station1 [ s1=s6, loop1a=loop6a, loop1b=loop6b, serve1=serve6 ] endmodule
 module station7 = station1 [ s1=s7, loop1a=loop7a, loop1b=loop7b, serve1=serve7 ] endmodule
 module station8 = station1 [ s1=s8, loop1a=loop8a, loop1b=loop8b, serve1=serve8 ] endmodule
+module station9 = station1 [ s1=s9, loop1a=loop9a, loop1b=loop9b, serve1=serve9 ] endmodule
+module station10 = station1 [ s1=s10, loop1a=loop10a, loop1b=loop10b, serve1=serve10 ] endmodule
+module station11 = station1 [ s1=s11, loop1a=loop11a, loop1b=loop11b, serve1=serve11 ] endmodule
 // (cumulative) rewards
 
 // expected time station 1 is waiting to be served
