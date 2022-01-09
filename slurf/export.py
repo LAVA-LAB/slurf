@@ -16,7 +16,7 @@ def plot_results(output_dir, args, regions, solutions, reliability,
     if reliability:
         # As reliability over time (if properties object is a tuple)
         plot_reliability(timebounds, regions, solutions, args.beta, 
-                         mode=args.curve_plot_mode, plotSamples=True)
+                         mode=args.curve_plot_mode, plotSamples=False)
         
         # Save figure
         exp_file = args.modelfile + '.pdf'
