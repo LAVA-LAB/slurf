@@ -20,7 +20,6 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    # args = parse_arguments(manualModel="ctmc/embedded/embedded.5.prism")
     args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")

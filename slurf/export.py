@@ -124,7 +124,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
         plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, ls='dotted', alpha=0.5)
         
     plt.xlabel('Time')
-    plt.ylabel('Failure probability')
+    plt.ylabel('Value')
 
     ax.set_title("Solution sets over time (confidence beta={}; N={} samples)".
                  format(beta, len(samples)))
