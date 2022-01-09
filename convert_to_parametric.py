@@ -1,22 +1,18 @@
 import os
 import pathlib
 import pandas as pd
+import re
 
 from slurf.commons import path
 
-def convert_dft_to_parametric(model, param_list = None, 
+def convert_dft_to_parametric(root_dir, dft_file, param_list = None, 
                               dist_type = 'gaussian', stdev_factor = 0.1,
                               interval_halfwidth = 0.1):
-
-    # Get root directory
-    root_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Path to model
-    model = 'models/ffort/cabinets/cabinets.2-1.dft'
-    model_path = path(root_dir, '', model)
+    model_path = path(root_dir, '', dft_file)
     
     prefix = []
-    
     param_dic = {}
     
     with open(model_path) as f:
@@ -33,28 +29,30 @@ def convert_dft_to_parametric(model, param_list = None,
         
         BE_name = line.split('"')[1]
         param_name = BE_name.replace('-', '_')
-        BR_rate_mean = float( line.split(split+'=')[1].split(' ')[0] )
         
-        print('Basic event identified:',BE_name)
+        BR_rate_mean = line.split(split+'=')[1].split(';')[0].split(' ')[0]
+        BR_rate_mean_float = float(BR_rate_mean)
         
-        prefix += ['param '+str(param_name)+';']
+        print('-- Basic event identified:',BE_name)
         
-        lines[i] = line.replace(split+'='+str(BR_rate_mean), split+'='+param_name)
+        prefix += ['param '+str(param_name)+';\n']
+        
+        lines[i] = line.replace(split+'='+BR_rate_mean, split+'='+param_name)
         
         if dist_type == 'gaussian':
-            std = stdev_factor * BR_rate_mean
+            std = stdev_factor * BR_rate_mean_float
             
             param_dic[param_name] = {'type': 'gaussian',
-                                     'mean': BR_rate_mean,
+                                     'mean': BR_rate_mean_float,
                                      'std': std,
-                                     'inverse': 'False'}
+                                     'inverse': False}
         elif dist_type == 'normal':
-            lb = BR_rate_mean - interval_halfwidth
-            ub = BR_rate_mean + interval_halfwidth
+            lb = BR_rate_mean_float - interval_halfwidth
+            ub = BR_rate_mean_float + interval_halfwidth
             param_dic[param_name] = {'type': 'interval',
                                      'lb': lb,
                                      'ub': ub,
-                                     'inverse': 'False'}
+                                     'inverse': False}
         else:
             print('ERROR: Wrong parameter distribution provided:',dist_type)
             assert False
@@ -63,7 +61,7 @@ def convert_dft_to_parametric(model, param_list = None,
     output_model = prefix + lines
     
     # Export parametric file
-    _path = pathlib.Path(model)
+    _path = pathlib.Path(dft_file)
     parent_folder = _path.parents[0]
 
     output_filename = _path.stem + '_parametric' + _path.suffix
@@ -93,8 +91,14 @@ def convert_dft_to_parametric(model, param_list = None,
     writer.save()
     
     print('- Parameters Excel file exported to',excel_path)
-    
-    return param_df
    
-model = 'models/ffort/cabinets/cabinets.2-1.dft' 
-param_df = convert_dft_to_parametric(model)
+# Get root directory
+root_dir = os.path.dirname(os.path.abspath(__file__)) 
+directory = 'models/ffort/rc-subset/'
+   
+dft_files = list(pathlib.Path(root_dir, directory).glob('*.dft'))
+
+for file in dft_files:
+    convert_dft_to_parametric(root_dir, file)
+
+

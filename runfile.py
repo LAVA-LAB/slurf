@@ -20,8 +20,8 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    args = parse_arguments(manualModel="ctmc/embedded/embedded.5.prism")
-    # args = parse_arguments()
+    # args = parse_arguments(manualModel="ctmc/embedded/embedded.5.prism")
+    args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
     time_start = time.process_time()
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     model_file, param_dic, properties, prop_labels, reliability, timebounds = \
         load_distribution(root_dir, args.model, args.model_type,
                           parameters_file=args.param_file, 
-                          propertie_file=args.prop_file)
+                          properties_file=args.prop_file)
     
     timing['1_load'] = time.process_time() - time_start
     print("\n===== Data loaded at:", getTime(),"=====")
