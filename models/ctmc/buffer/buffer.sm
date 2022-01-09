@@ -1,0 +1,67 @@
+ctmc
+
+const int max_slow_buffer = 31;
+const int max_fast_buffer = 21;
+
+const double s_rate;
+
+//const double r_fast_rate = 15 [5..30]
+const double r_fast_rate;
+
+//const double s_slow_rate = 15 [5..30]
+const double r_slow_rate;
+const double c_rate;
+
+const double lossProbability = 0.05;
+
+// between 20 and 40
+//const double p_rate;
+const double p_rate;
+
+module Buffer
+  fast : [0..1] init 0;
+  slow : [0..1] init 0;
+  buffer_s : [0..max_slow_buffer] init 0;
+  buffer_f : [0..max_fast_buffer] init 0;
+  consumer : [0..1] init 0;
+ 
+
+  //produce
+  //[] (fast=0) -> send_slow_p*p_rate : (fast'=1);
+  //[] (slow=0) -> (1-send_slow_p)*p_rate : (slow'=1);
+  [] (fast=0) -> p_rate*0.4 : (fast'=1);
+  [] (slow=0) -> p_rate*0.6 : (slow'=1);
+
+  //send
+  // with probability proportional to the slow buffer occupancy, redirect to the fast buffer
+  [] (slow=1) & (buffer_s<max_slow_buffer) -> s_rate : (slow'=0) & (buffer_s' = buffer_s +1);
+  [] (fast=1) & (buffer_f<max_fast_buffer) -> s_rate : (fast'=0) & (buffer_f' = buffer_f +1);
+
+
+  //receive
+  [] (consumer=0) & (buffer_s > 0) -> r_slow_rate : (consumer'=1) & (buffer_s' = buffer_s - 1);
+  [] (consumer=0) & (buffer_f > 0) -> (r_fast_rate + r_slow_rate)*(1-lossProbability) : (consumer'=1) & (buffer_f' = buffer_f - 1);
+  // fast buffer loses the packet
+  [lost] (consumer=0) & (buffer_f > 0) -> (r_fast_rate + r_slow_rate)*lossProbability : (buffer_f' = buffer_f - 1);
+
+  //consume
+  [consume] (consumer=1) ->  c_rate : (consumer'=0);
+endmodule
+
+
+rewards "consume"
+[consume] true: 1;
+endrewards
+
+
+rewards "full"
+ (buffer_s = max_slow_buffer) | (buffer_f = max_fast_buffer): 1;
+endrewards
+
+//rewards "redirect"
+//[redirect] true: 1;
+//endrewards
+
+rewards "lost"
+[lost] true: 1;
+endrewards
