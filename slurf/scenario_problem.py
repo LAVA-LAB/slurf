@@ -10,7 +10,7 @@ class scenarioProblem:
     Functions related to the scenario optimization part.
     """
 
-    def init_problem(self, samples, sample_ids, pareto_pieces=0):
+    def init_problem(self, samples, sample_ids, paretoP=0):
         '''
         
         Parameters
@@ -32,13 +32,19 @@ class scenarioProblem:
             imprecise = False
             self.Nsamples, self.dim = np.shape(self.samples)
 
-        if pareto_pieces > 0: 
+        if paretoP > 0: 
             if self.dim != 2:
                 print('ERROR: Can currently only solve for Pareto-front in 2D')
                 assert False
             
-            self.paretoBase = cp.Variable(pareto_pieces, nonneg=True)
-            self.paretoSlope  = cp.Variable(pareto_pieces, nonneg=True)
+            self.paretoBase = cp.Variable(paretoP, nonneg=True)
+            
+            # Set the different possible sloped of the Pareto-front
+            diff = np.max(samples, axis=0) - np.min(samples, axis=0)
+            coeff = diff[1] / diff[0]
+            self.paretoSlope = coeff * np.array([2**(i-(paretoP-1)/2) 
+                                                 for i in range(paretoP)])
+            
             self.pareto = True
         else:
             self.pareto = False
@@ -58,6 +64,8 @@ class scenarioProblem:
         self.slack = cp.Variable(self.Nsamples)
 
         self.constraints_low = []
+        if self.pareto:
+            self.constraints_low += [self.xL == np.min(samples, axis=0)]
         self.constraints_upp = []
 
         # Add constraints
@@ -76,9 +84,11 @@ class scenarioProblem:
                      self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
                 
                 if self.pareto:
-                    self.constraints_upp += [self.samples[n,1,1] <= 
-                     self.paretoBase - self.paretoSlope * self.samples[n,0,1] + 
-                     cp.multiply(self.param[n], self.slack[n])]
+                    self.constraints_upp += [self.paretoSlope * 
+                         (self.samples[n,0,1] - self.xi[n,0]) + 
+                         (self.samples[n,1,1] - self.xi[n,1]) <=
+                            self.paretoBase + cp.multiply(self.param[n], 
+                                                          self.slack[n])]
                 
             else:
 
@@ -90,12 +100,20 @@ class scenarioProblem:
                      self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
 
                 if self.pareto:
-                    self.constraints_upp += [self.samples[n,1] <= 
-                     self.paretoBase - self.paretoSlope * self.samples[n,0] + 
-                     cp.multiply(self.param[n], self.slack[n])]
+                    self.constraints_upp += [self.paretoSlope * 
+                         (self.samples[n,0] - self.xi[n,0]) + 
+                         (self.samples[n,1] - self.xi[n,1]) <=
+                            self.paretoBase + cp.multiply(self.param[n], 
+                                                          self.slack[n])]
 
         # Objective function
-        self.obj = cp.Minimize(sum(self.xU - self.xL) +
+        if self.pareto:
+            self.obj = cp.Minimize(sum(self.xU - self.xL) +
+                               self.rho * cp.sum(self.xi) +
+                               1e-2 * sum(self.paretoBase))
+            
+        else:             
+            self.obj = cp.Minimize(sum(self.xU - self.xL) +
                                self.rho * cp.sum(self.xi))
 
         self.prob = cp.Problem(self.obj, [self.xU >= self.xL] +
@@ -116,11 +134,12 @@ class scenarioProblem:
             self.prob.solve(warm_start=True)
 
         if self.pareto:
-            paretoBase = self.paretoBase.value
-            paretoSlope = self.paretoSlope.value
+            pareto = {
+                'base': self.paretoBase.value,
+                'slope': self.paretoSlope,
+                }
         else:
-            paretoBase = None
-            paretoSlope = None
+            pareto = {}
 
         # Return solution
         sol = {
@@ -129,11 +148,33 @@ class scenarioProblem:
             'xi': self.xi.value,
             'constraints_low': self.constraints_low,
             'constraints_upp': self.constraints_upp,
-            'paretoBase': paretoBase,
-            'paretoSlope': paretoSlope
+            'pareto': pareto,
+            'halfspaces': self.get_halfspaces()
             }
 
         return self.prob.value, sol
+    
+    def get_halfspaces(self):
+        '''
+        Set halfspace matrix based on the given `base` and `slope` (both 1D arrays)
+        '''
+        
+        if self.dim != 2:
+            return None
+        
+        G = np.array([[-1, 0, self.xL.value[0]],
+                      [0, -1, self.xL.value[1]],
+                      [1, 0, -self.xU.value[0]],
+                      [0, 1, -self.xU.value[1]]])
+        
+        if self.pareto:
+            
+            H = np.vstack((self.paretoSlope, np.ones(len(self.paretoSlope)), 
+                           -self.paretoBase.value)).T
+            G = np.vstack((G, H))
+        
+        return G
+        
 
     def solve(self, compareAt, costOfRegret=1):
 
@@ -150,7 +191,8 @@ class scenarioProblem:
             LB_dual = sol['constraints_low'][i].dual_value
             UB_dual = sol['constraints_upp'][i].dual_value
 
-            if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)):
+            if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)) and \
+                all(np.isclose(sol['xi'][i], 0)):
 
                 interior_mask[i] = True
                 support_mask[i] = False
@@ -170,9 +212,17 @@ class scenarioProblem:
             # Solve the optimization problem
             _, solB = self.solve_instance(disable_mask, costOfRegret)
 
+            if self.pareto:
+                
+                pareto_check = all( np.isclose(sol['pareto']['base'], 
+                                               solB['pareto']['base']) )
+            else:
+                pareto_check = True
+
             # If the objective has not changed, this sample is not of support
             if all( (np.isclose(sol['xL'], solB['xL']))[compareAt] ) and \
-               all( (np.isclose(sol['xU'], solB['xU']))[compareAt] ):
+               all( (np.isclose(sol['xU'], solB['xU']))[compareAt] ) and \
+               pareto_check:
 
                 support_mask[i] = 0
 
@@ -184,6 +234,7 @@ class scenarioProblem:
         exterior_ids = self.sample_ids[~interior_mask]
 
         return sol, complexity, value, exterior_ids, num_interior
+
 
 
 def compute_confidence_region(samples, args):
@@ -249,7 +300,7 @@ def compute_confidence_region(samples, args):
         # If complexity is the same (or even higher) as in previous iteration, 
         # skip or break
         if i > 0 and complexity >= regions[i-1]['complexity']:
-            if complexity < 0.5*Nsamples:
+            if rho > 2: #complexity < 0.5*Nsamples:
                 # If we are already at the outside of the slurf, break overall
                 break
             else:
@@ -270,9 +321,10 @@ def compute_confidence_region(samples, args):
         
         # Reinitialize problem only if we can reduce its size (i.e., if there
         # are samples fully in the interior of the current solution set)
-        if num_interior > 0:
+        # BUT: do not do this step in case of pareto plot
+        if args.pareto_pieces == 0 and num_interior > 0:
             problem.init_problem(samples[exterior_ids], exterior_ids,
-                                 args.pareto_pieces)
+                                  args.pareto_pieces)
 
         Pviolation = np.round(1 - etaLow(Nsamples, complexity, beta), 4)
         print(' - Upper bound on violation probability: {:0.6f}'.format(Pviolation))
@@ -283,7 +335,9 @@ def compute_confidence_region(samples, args):
             'rho': rho,
             'complexity': complexity,
             'Pviolation': Pviolation,
-            'xi': sol['xi']
+            'xi': sol['xi'],
+            'pareto': sol['pareto'],
+            'halfspaces': sol['halfspaces']
             }
         
         # Append results to dataframe

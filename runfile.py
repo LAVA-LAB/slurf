@@ -81,8 +81,6 @@ if __name__ == '__main__':
     print(dfs['storm_stats'])
     print('-----------------------------------------')
     
-    # %%
-    
     # Compute solution set using scenario optimization
     regions, dfs['regions'], dfs['regions_stats'] = compute_confidence_region(
                                     solutions, args)

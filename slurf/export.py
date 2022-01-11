@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 plt.rcParams['figure.dpi'] = 300
 import seaborn as sns
 import itertools
+from scipy.spatial import HalfspaceIntersection, ConvexHull
 
 from slurf.commons import path
 
@@ -29,7 +30,8 @@ def plot_results(output_dir, args, regions, solutions, reliability,
         for idx_pair in itertools.combinations(np.arange(len(prop_labels)), 2):
             # Plot the solution set for every combination of 2 properties
             
-            plot_solution_set_2d(idx_pair, prop_labels, regions, solutions, 
+            # plot_solution_set_2d
+            plot_pareto(idx_pair, prop_labels, regions, solutions, 
                                  args.beta, plotSamples=True)
     
             # Save figure
@@ -128,7 +130,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     plt.xlabel('Time')
     plt.ylabel('Value')
 
-    ax.set_title("Solution sets over time (confidence beta={}; N={} samples)".
+    ax.set_title("Confidence regions over time (confidence beta={}; N={} samples)".
                  format(beta, len(samples)))
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
@@ -155,11 +157,15 @@ def plot_pareto(idxs, prop_names, regions, samples, beta, plotSamples=True,
         
         diff = item['x_upp'] - item['x_low']
         
-        rect = patches.Rectangle(item['x_low'][[X,Y]], diff[X], diff[Y], 
-                                 linewidth=0, edgecolor='none', facecolor=color)
-
-        # Add the patch to the Axes
-        ax.add_patch(rect)
+        # Convert halfspaces to verticers of polygon
+        feasible_point = item['x_low'][[X,Y]] + 1e-6
+        poly_vertices = HalfspaceIntersection(item['halfspaces'], 
+                                              feasible_point).intersections
+        hull = ConvexHull(poly_vertices) 
+        
+        polygon = patches.Polygon(hull.points[hull.vertices], True, 
+                              linewidth=0, edgecolor='none', facecolor=color)
+        ax.add_patch(polygon)
         
     if plotSamples:
         
@@ -193,7 +199,7 @@ def plot_pareto(idxs, prop_names, regions, samples, beta, plotSamples=True,
     plt.xlabel(prop_names[X])
     plt.ylabel(prop_names[Y])
 
-    ax.set_title("Solution sets (confidence beta={}; N={} samples)".
+    ax.set_title("Confidence regions (confidence beta={}; N={} samples)".
                  format(beta, len(samples)))
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
@@ -258,7 +264,7 @@ def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
     plt.xlabel(prop_names[X])
     plt.ylabel(prop_names[Y])
 
-    ax.set_title("Solution sets (confidence beta={}; N={} samples)".
+    ax.set_title("Confidence regions (confidence beta={}; N={} samples)".
                  format(beta, len(samples)))
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
