@@ -37,6 +37,8 @@ def plot_results(output_dir, args, regions, solutions, reliability,
             filename = path(output_dir, "", exp_file)
             plt.savefig(filename, format='pdf', bbox_inches='tight')
             print(' - 2D plot exported to:',exp_file)
+            
+            
 
 
 def save_results(output_path, dfs, modelfile_nosuffix, N, beta):
@@ -136,8 +138,8 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     ax.figure.colorbar(sm, cax=cax)
     
 
-def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
-                         plotSamples=True):
+def plot_pareto(idxs, prop_names, regions, samples, beta, plotSamples=True, 
+                plotSampleID = True):
     
     X, Y = idxs
     
@@ -160,7 +162,98 @@ def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
         ax.add_patch(rect)
         
     if plotSamples:
-        plt.scatter(samples[:,X], samples[:,Y], color='k', s=10, alpha=0.5)
+        
+        # Check if imprecise samples are used
+        if samples.ndim == 3:
+            # If imprecise, plot as boxes
+            for i,sample in enumerate(samples):
+                s_low = sample[:,0]
+                s_upp = sample[:,1]
+                diff  = s_upp - s_low
+                
+                rect = patches.Rectangle(s_low[[X,Y]], diff[X], diff[Y], 
+                                         linewidth=0.5, edgecolor='red', 
+                                         linestyle='dashed', facecolor='none')
+                
+                # Add the patch to the Axes
+                ax.add_patch(rect)
+                
+                if plotSampleID:
+                    plt.text(s_upp[X], s_upp[Y], i, fontsize=6, color='r')
+            
+        else:
+            # Else, plot as points
+            plt.scatter(samples[:,X], samples[:,Y], color='k', s=10, alpha=0.5)
+            
+            if plotSampleID:
+                for i,sample in enumerate(samples):
+                    
+                    plt.text(samples[i,X], samples[i,Y], i, fontsize=6, color='r')
+        
+    plt.xlabel(prop_names[X])
+    plt.ylabel(prop_names[Y])
+
+    ax.set_title("Solution sets (confidence beta={}; N={} samples)".
+                 format(beta, len(samples)))
+    
+    sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
+    sm.set_array([])
+    
+    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
+    ax.figure.colorbar(sm, cax=cax)
+
+
+def plot_solution_set_2d(idxs, prop_names, regions, samples, beta,
+                         plotSamples=True, plotSampleID = True):
+    
+    X, Y = idxs
+    
+    # Create plot
+    fig, ax = plt.subplots()
+
+    # Set colors and markers
+    color_map = sns.color_palette("Blues_r", as_cmap=True)
+    
+    for i, item in sorted(regions.items(), reverse=True):
+        
+        color = color_map(1 - item['Pviolation'])
+        
+        diff = item['x_upp'] - item['x_low']
+        
+        rect = patches.Rectangle(item['x_low'][[X,Y]], diff[X], diff[Y], 
+                                 linewidth=0, edgecolor='none', facecolor=color)
+
+        # Add the patch to the Axes
+        ax.add_patch(rect)
+        
+    if plotSamples:
+        
+        # Check if imprecise samples are used
+        if samples.ndim == 3:
+            # If imprecise, plot as boxes
+            for i,sample in enumerate(samples):
+                s_low = sample[:,0]
+                s_upp = sample[:,1]
+                diff  = s_upp - s_low
+                
+                rect = patches.Rectangle(s_low[[X,Y]], diff[X], diff[Y], 
+                                         linewidth=0.5, edgecolor='red', 
+                                         linestyle='dashed', facecolor='none')
+                
+                # Add the patch to the Axes
+                ax.add_patch(rect)
+                
+                if plotSampleID:
+                    plt.text(s_upp[X], s_upp[Y], i, fontsize=6, color='r')
+            
+        else:
+            # Else, plot as points
+            plt.scatter(samples[:,X], samples[:,Y], color='k', s=10, alpha=0.5)
+            
+            if plotSampleID:
+                for i,sample in enumerate(samples):
+                    
+                    plt.text(samples[i,X], samples[i,Y], i, fontsize=6, color='r')
         
     plt.xlabel(prop_names[X])
     plt.ylabel(prop_names[Y])

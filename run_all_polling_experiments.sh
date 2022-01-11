@@ -1,25 +1,25 @@
 #!/bin/bash
-#python3 runfile.py --model ctmc/polling/polling3.sm --N 50;
-python3 runfile.py --model ctmc/kanban/polling3.sm --N 100;
-#python3 runfile.py --model ctmc/kanban/polling3.sm --N 200;
-#python3 runfile.py --model ctmc/kanban/polling3.sm --N 400;
+#python3 runfile.py --model ctmc/polling/polling.3.prism --N 50;
+python3 runfile.py --model ctmc/polling/polling.3.prism --N 100;
+#python3 runfile.py --model ctmc/polling/polling.3.prism --N 200;
+#python3 runfile.py --model ctmc/polling/polling.3.prism --N 400;
 ###
-#python3 runfile.py --model ctmc/kanban/polling6.sm --N 50;
-python3 runfile.py --model ctmc/kanban/polling6.sm --N 100;
-#python3 runfile.py --model ctmc/kanban/polling6.sm --N 200;
-#python3 runfile.py --model ctmc/kanban/polling6.sm --N 400;
+#python3 runfile.py --model ctmc/polling/polling.6.prism --N 50;
+python3 runfile.py --model ctmc/polling/polling.6.prism --N 100;
+#python3 runfile.py --model ctmc/polling/polling.6.prism --N 200;
+#python3 runfile.py --model ctmc/polling/polling.6.prism --N 400;
 ###
-#python3 runfile.py --model ctmc/kanban/polling9.sm --N 50;
-python3 runfile.py --model ctmc/kanban/polling9.sm --N 100;
-#python3 runfile.py --model ctmc/kanban/polling9.sm --N 200;
-#python3 runfile.py --model ctmc/kanban/polling9.sm --N 400;
+#python3 runfile.py --model ctmc/polling/polling.9.prism --N 50;
+python3 runfile.py --model ctmc/polling/polling.9.prism --N 100;
+#python3 runfile.py --model ctmc/polling/polling.9.prism --N 200;
+#python3 runfile.py --model ctmc/polling/polling.9.prism --N 400;
 ###
-#python3 runfile.py --model ctmc/kanban/polling12.sm --N 50;
-python3 runfile.py --model ctmc/kanban/polling12.sm --N 100;
-#python3 runfile.py --model ctmc/kanban/polling12.sm --N 200;
-#python3 runfile.py --model ctmc/kanban/polling12.sm --N 400;
+#python3 runfile.py --model ctmc/polling/polling.12.prism --N 50;
+python3 runfile.py --model ctmc/polling/polling.12.prism --N 100;
+#python3 runfile.py --model ctmc/polling/polling.12.prism --N 200;
+#python3 runfile.py --model ctmc/polling/polling.12.prism --N 400;
 ###
-#python3 runfile.py --model ctmc/kanban/polling15.sm --N 50;
-python3 runfile.py --model ctmc/kanban/polling15.sm --N 100;
-#python3 runfile.py --model ctmc/kanban/polling15.sm --N 200;
-#python3 runfile.py --model ctmc/kanban/polling15.sm --N 400;
+#python3 runfile.py --model ctmc/polling/polling.15.prism --N 50;
+python3 runfile.py --model ctmc/polling/polling.15.prism --N 100;
+#python3 runfile.py --model ctmc/polling/polling.15.prism --N 200;
+#python3 runfile.py --model ctmc/polling/polling.15.prism --N 400;

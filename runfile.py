@@ -4,7 +4,7 @@ import time
 import numpy as np
 from slurf.sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions
-from slurf.scenario_problem import compute_solution_sets
+from slurf.scenario_problem import compute_confidence_region
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface, DftReliabilityModelSamplerInterface
 from slurf.commons import path, getTime, create_output_folder
@@ -20,7 +20,8 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    args = parse_arguments()
+    args = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
+    # args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
     time_start = time.process_time()
@@ -79,13 +80,13 @@ if __name__ == '__main__':
     print(dfs['storm_stats'])
     print('-----------------------------------------')
     
+    # %%
+    
+    args.pareto_pieces = 2
+    
     # Compute solution set using scenario optimization
-    regions, dfs['regions'], dfs['regions_stats'] = compute_solution_sets(
-                                    solutions, 
-                                    beta = args.beta, 
-                                    rho_min = args.rho_min, 
-                                    increment_factor = args.rho_incr,
-                                    itermax = args.rho_max_iter)
+    regions, dfs['regions'], dfs['regions_stats'] = compute_confidence_region(
+                                    solutions, args)
     
     timing['5_scenario_problems'] = time.process_time() - time_start
     print("\n===== Scenario problems completed at:", getTime(),"=====")

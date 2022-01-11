@@ -10,7 +10,7 @@ class scenarioProblem:
     Functions related to the scenario optimization part.
     """
 
-    def init_problem(self, samples, sample_ids):
+    def init_problem(self, samples, sample_ids, pareto_pieces=0):
         '''
         
         Parameters
@@ -23,7 +23,25 @@ class scenarioProblem:
 
         self.samples = samples
         self.sample_ids = sample_ids
-        self.Nsamples, self.dim = np.shape(self.samples)
+        
+        # Check if imprecise samples are used (means that dimension = 3)
+        if self.samples.ndim == 3:
+            imprecise = True
+            self.Nsamples, self.dim, _ = np.shape(self.samples)
+        else:
+            imprecise = False
+            self.Nsamples, self.dim = np.shape(self.samples)
+
+        if pareto_pieces > 0: 
+            if self.dim != 2:
+                print('ERROR: Can currently only solve for Pareto-front in 2D')
+                assert False
+            
+            self.paretoBase = cp.Variable(pareto_pieces, nonneg=True)
+            self.paretoSlope  = cp.Variable(pareto_pieces, nonneg=True)
+            self.pareto = True
+        else:
+            self.pareto = False
 
         # Define convex optimization program
         self.xU = cp.Variable(self.dim, nonneg=True)
@@ -45,12 +63,36 @@ class scenarioProblem:
         # Add constraints
         for n in range(self.Nsamples):
 
-            self.constraints_low += \
-                [self.samples[n, :] >= self.xL -
-                 self.xi[n, :] - cp.multiply(self.param[n], self.slack[n])]
-            self.constraints_upp += \
-                [self.samples[n, :] <= self.xU +
-                 self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
+            # Switch between precise vs. imprecise samples
+            if imprecise:
+                
+                # For imprecise samples, formulate constraint such that the
+                # whole box sample is contained in the confidence region
+                self.constraints_low += \
+                    [self.samples[n, :, 0] >= self.xL -
+                     self.xi[n, :] - cp.multiply(self.param[n], self.slack[n])]
+                self.constraints_upp += \
+                    [self.samples[n, :, 1] <= self.xU +
+                     self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
+                
+                if self.pareto:
+                    self.constraints_upp += [self.samples[n,1,1] <= 
+                     self.paretoBase - self.paretoSlope * self.samples[n,0,1] + 
+                     cp.multiply(self.param[n], self.slack[n])]
+                
+            else:
+
+                self.constraints_low += \
+                    [self.samples[n, :] >= self.xL -
+                     self.xi[n, :] - cp.multiply(self.param[n], self.slack[n])]
+                self.constraints_upp += \
+                    [self.samples[n, :] <= self.xU +
+                     self.xi[n, :] + cp.multiply(self.param[n], self.slack[n])]
+
+                if self.pareto:
+                    self.constraints_upp += [self.samples[n,1] <= 
+                     self.paretoBase - self.paretoSlope * self.samples[n,0] + 
+                     cp.multiply(self.param[n], self.slack[n])]
 
         # Objective function
         self.obj = cp.Minimize(sum(self.xU - self.xL) +
@@ -73,13 +115,22 @@ class scenarioProblem:
         else:
             self.prob.solve(warm_start=True)
 
+        if self.pareto:
+            paretoBase = self.paretoBase.value
+            paretoSlope = self.paretoSlope.value
+        else:
+            paretoBase = None
+            paretoSlope = None
+
         # Return solution
         sol = {
             'xL': self.xL.value,
             'xU': self.xU.value,
             'xi': self.xi.value,
             'constraints_low': self.constraints_low,
-            'constraints_upp': self.constraints_upp
+            'constraints_upp': self.constraints_upp,
+            'paretoBase': paretoBase,
+            'paretoSlope': paretoSlope
             }
 
         return self.prob.value, sol
@@ -137,8 +188,7 @@ class scenarioProblem:
         return sol, complexity, value, exterior_ids, num_interior
 
 
-def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
-                          itermax=8):
+def compute_confidence_region(samples, args):
     """
 
     Parameters
@@ -156,6 +206,11 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
     ----------
 
     """
+    
+    beta = args.beta, 
+    rho_min = args.rho_min, 
+    increment_factor = args.rho_incr,
+    itermax = args.rho_max_iter
 
     Nsamples = len(samples)
 
@@ -163,7 +218,7 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
-    problem.init_problem(samples, np.arange(Nsamples))
+    problem.init_problem(samples, np.arange(Nsamples), args.pareto_pieces)
 
     # Initialize value of rho (cost of violation)
     rho = rho_min
@@ -173,7 +228,15 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
     # Do not solve problem if difference between max/min is very small (to
     # avoid solver issues)
     tres = 1e-3
-    compareAt = np.abs(np.max(samples, axis=0) - np.min(samples, axis=0)) > tres
+    if samples.ndim == 3:
+        samples_max = np.max(samples, axis=2)
+        samples_min = np.min(samples, axis=2)
+    else:
+        samples_max = samples
+        samples_min = samples
+    
+    compareAt = np.abs(np.max(samples_max, axis=0) - 
+                       np.min(samples_min, axis=0)) > tres
 
     df_regions = pd.DataFrame()
     df_regions.index.names = ['Sample']
@@ -182,8 +245,12 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
 
     while len(exterior_ids) > 0 and i < itermax:
 
+        print('Try rho =',rho)        
+
         sol, complexity, x_star, exterior_ids, num_interior = \
             problem.solve(compareAt, rho)
+
+        print(sol)
 
         # If complexity is the same (or even higher) as in previous iteration, 
         # skip or break
@@ -210,7 +277,8 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
         # Reinitialize problem only if we can reduce its size (i.e., if there
         # are samples fully in the interior of the current solution set)
         if num_interior > 0:
-            problem.init_problem(samples[exterior_ids], exterior_ids)
+            problem.init_problem(samples[exterior_ids], exterior_ids,
+                                 args.pareto_pieces)
 
         Pviolation = np.round(1 - etaLow(Nsamples, complexity, beta), 4)
         print(' - Upper bound on violation probability: {:0.6f}'.format(Pviolation))
@@ -220,7 +288,8 @@ def compute_solution_sets(samples, beta=0.99, rho_min=0.01, increment_factor=2,
             'x_upp': sol['xU'],
             'rho': rho,
             'complexity': complexity,
-            'Pviolation': Pviolation
+            'Pviolation': Pviolation,
+            'xi': sol['xi']
             }
         
         # Append results to dataframe
