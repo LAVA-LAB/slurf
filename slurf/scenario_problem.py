@@ -170,8 +170,6 @@ class scenarioProblem:
             # Solve the optimization problem
             _, solB = self.solve_instance(disable_mask, costOfRegret)
 
-            
-
             # If the objective has not changed, this sample is not of support
             if all( (np.isclose(sol['xL'], solB['xL']))[compareAt] ) and \
                all( (np.isclose(sol['xU'], solB['xU']))[compareAt] ):
@@ -207,9 +205,9 @@ def compute_confidence_region(samples, args):
 
     """
     
-    beta = args.beta, 
-    rho_min = args.rho_min, 
-    increment_factor = args.rho_incr,
+    beta = args.beta
+    rho = args.rho_min
+    increment_factor = args.rho_incr
     itermax = args.rho_max_iter
 
     Nsamples = len(samples)
@@ -218,10 +216,10 @@ def compute_confidence_region(samples, args):
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
+    
     problem.init_problem(samples, np.arange(Nsamples), args.pareto_pieces)
 
     # Initialize value of rho (cost of violation)
-    rho = rho_min
     i = 0
     exterior_ids = [None]
     
@@ -243,14 +241,10 @@ def compute_confidence_region(samples, args):
     df_regions_stats = pd.DataFrame(columns = ['rho','complexity','beta',
                                                'Pviolation','Psatisfaction'])
 
-    while len(exterior_ids) > 0 and i < itermax:
-
-        print('Try rho =',rho)        
+    while len(exterior_ids) > 0 and i < itermax:     
 
         sol, complexity, x_star, exterior_ids, num_interior = \
             problem.solve(compareAt, rho)
-
-        print(sol)
 
         # If complexity is the same (or even higher) as in previous iteration, 
         # skip or break

@@ -20,8 +20,9 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    args = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
-    # args = parse_arguments()
+    # args = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
+    # args = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
+    args = parse_arguments()
     
     print("\n===== Script started at:", getTime(),"=====")
     time_start = time.process_time()
@@ -81,8 +82,6 @@ if __name__ == '__main__':
     print('-----------------------------------------')
     
     # %%
-    
-    args.pareto_pieces = 2
     
     # Compute solution set using scenario optimization
     regions, dfs['regions'], dfs['regions_stats'] = compute_confidence_region(

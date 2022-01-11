@@ -41,6 +41,11 @@ def parse_arguments(manualModel=None, nobisim=False):
     # Plot optional arguments
     parser.add_argument('--curve_plot_mode', type=str, action="store", dest='curve_plot_mode', 
                         default='conservative', help="Plotting mode for reliability curve")
+    
+    # Number of pareto pieces is the number of liens making up the right-top
+    # of the pareto curve
+    parser.add_argument('--pareto_pieces', type=str, action="store", dest='pareto_pieces', 
+                        default=0, help="Number of Pareto-front pieces")
 
     # Now, parse the command line arguments and store the
     # values in the `args` variable
