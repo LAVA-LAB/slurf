@@ -1,5 +1,7 @@
 import argparse
 import pathlib
+from ast import literal_eval
+import statistics
 
 def parse_arguments(manualModel=None, nobisim=False):
     
@@ -7,12 +9,16 @@ def parse_arguments(manualModel=None, nobisim=False):
     # Scenario problem main arguments
     parser.add_argument('--N', type=int, action="store", dest='Nsamples', 
                         default=100, help="Number of samples to compute")
-    parser.add_argument('--beta', type=float, action="store", dest='beta', 
-                        default=0.99, help="Number of samples to compute")
+    parser.add_argument('--beta', type=str, action="store", dest='beta', 
+                        default='[0.9,0.99,0.999]', help="Number of samples to compute")
     
     # Number of validation samples (0 by default, i.e. no validation)
     parser.add_argument('--Nvalidate', type=int, action="store", dest='Nvalidate', 
                         default=0, help="Number of samples to validate confidence regions with")
+    
+    # Number of repetitions
+    parser.add_argument('--repeat', type=int, action="store", dest='repeat', 
+                        default=1, help="Number of repetitions (to compute average results over)")
     
     # Argument for model to load
     parser.add_argument('--model', type=str, action="store", dest='model', 
@@ -50,6 +56,12 @@ def parse_arguments(manualModel=None, nobisim=False):
     # Now, parse the command line arguments and store the
     # values in the `args` variable
     args = parser.parse_args()    
+
+    try:
+        args.beta = [float(args.beta)]
+    except:
+        args.beta = list(literal_eval(args.beta))
+    args.beta2plot = str(statistics.median(args.beta))
 
     if args.model == None:
         print('ERROR: No model specified')

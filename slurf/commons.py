@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import pandas as pd
 
 
 def path(root_dir, folder, file):
@@ -35,3 +36,30 @@ def getDateTime():
     now = datetime.now()
 
     return now.strftime("%Y-%M-%d_%H-%M-%S")
+
+
+def print_stats(stats):
+    
+    print('-----------------------------------------')
+    print('MODEL STATISTICS:')
+    series = pd.Series(stats)
+    print(series)
+    print('-----------------------------------------')
+    
+    return series
+
+
+def set_solution_df(solutions):
+    
+    df = pd.DataFrame(solutions)
+    df.index.names = ['Sample']
+    
+    return df
+
+
+def set_output_path(root_dir, args):
+        
+    output_folder = args.modelfile_nosuffix + "_N=" + str(args.Nsamples)
+    output_path = create_output_folder(root_dir, output_folder)
+        
+    return output_path

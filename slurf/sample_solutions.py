@@ -208,12 +208,13 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     return results
 
 
-def validate_solutions(sampler, regions, Nvalidate, properties, 
-                       param_list, param_values, root_dir, cache):
+def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties, 
+                       param_list, param_values, root_dir=None, cache=None):
     """
 
     Parameters
     ----------
+    val_dfs DataFrame where the validation results are stored over repetitions
     sampler Sampler object (for either CTMC of DFT)
     regions Solutions to scenario problems (for multiple values of rho)
     Nvaliate Number of samples
@@ -238,18 +239,29 @@ def validate_solutions(sampler, regions, Nvalidate, properties,
                         cache = cache )
     
     # Initialize the empirical violation probability
-    empirical_violation  = np.zeros(len(regions))
+    empirical_satprob  = np.zeros(len(regions))
     
     # For every value of rho
     for i,D in regions.items():
         # Determine which samples violate the solution (bounding box)
-        violate_low = np.any(solutions_V < D['x_low'], axis=1)
-        violate_upp = np.any(solutions_V > D['x_upp'], axis=1)
+        sat_low = np.all(solutions_V >= D['x_low'], axis=1)
+        sat_upp = np.all(solutions_V <= D['x_upp'], axis=1)
         
         # Compute the total number of violating samples
-        violation_sum = np.sum(violate_low + violate_upp)
+        sat_sum = np.sum(sat_low * sat_upp)
         
         # Compute the empirical violation probability 
-        empirical_violation[i] = violation_sum / Nvalidate
+        empirical_satprob[i] = sat_sum / Nvalidate
+        
+    for i, item in regions.items():
+        
+        rho = np.round(item['rho'], 4)
+        series = regions[i]['eta_series']
+        series['emp'] = empirical_satprob[i]
+        
+        if rho in val_dfs:
+            val_dfs[rho] = val_dfs[rho].append(series, ignore_index=True)
+        else:
+            val_dfs[rho] = pd.DataFrame(series).T
 
-    return empirical_violation
+    return empirical_satprob, val_dfs

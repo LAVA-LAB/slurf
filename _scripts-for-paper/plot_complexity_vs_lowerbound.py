@@ -11,18 +11,22 @@ from slurf.compute_bound import etaLow
 
 def create_plot_csv(Nlist, betaList, file):
     
+    df = {}
+    
     for N in Nlist:
         
         betaStrList = ['b'+str(beta) for beta in betaList]
         cList = np.arange(0, N)
-        df = pd.DataFrame(index=cList, columns=betaStrList)
+        df[N] = pd.DataFrame(index=cList, columns=betaStrList)
         
         for c in cList:
             print('- Compute for N='+str(N)+' and complexity c='+str(c))
             
             for beta,betaStr in zip(betaList,betaStrList):
-                df[betaStr][c] = etaLow(N, c, beta)
+                df[N][betaStr][c] = etaLow(N, c, beta)
                 
-        df.to_csv(file+'_N='+str(N)+'.csv', sep=';')
+        df[N].to_csv(file+'_N='+str(N)+'.csv', sep=';')
+        
+    return df
     
-create_plot_csv([10,25,50,100,250], [0.9, 0.99, 0.999], 'satprob-bounds')
+df = create_plot_csv([200], [0.9, 0.99, 0.999], 'satprob-bounds')
