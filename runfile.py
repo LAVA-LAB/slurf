@@ -151,6 +151,7 @@ if __name__ == '__main__':
         cases.add_eta_row(q, args, regions, emp_satprob)
         cases.add_time_row(args, timing['5_scenario_problems'])
     
-    ###
+        cases.write_time()
     
-    cases.write_time()    
+    ###
+        
