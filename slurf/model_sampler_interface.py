@@ -369,27 +369,29 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
 
         """
         time_start = time.process_time()
+        print(' - Load DFT from Galileo file')
         # Load DFT from Galileo file
         self._dft = sp.dft.load_parametric_dft_galileo_file(model)
         # Make DFT well-formed
-        self._dft = sp.dft.transform_parametric_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
+        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
         # Check for dependency conflicts -> no conflicts mean CTMC
-        sp.dft.compute_dependency_conflicts_parametric(self._dft, use_smt=False, solver_timeout=0)
+        sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
 
         # Create properties
         self.prepare_properties(properties)
 
-        # Use the first property to generate the CTMC state space
-        # Obtain CTMC by exporting to DRN format and loading again
-        # TODO: implement dedicated methods
-        drn_file = "tmp_ctmc.drn"
-        sp.set_settings(["--io:exportexplicit", drn_file])
-        # Set temporary property to initiate state space building
-        tmp_prop = sp.parse_properties(f'P=? [ F<=1 "failed" ]')[0]
-        # Analysing the property will fail but we only need the state space anyway
-        stormpy.dft.analyze_parametric_dft(self._dft, [tmp_prop.raw_formula])
-        # Load model from DRN file and use standard methods for CTMCs
-        parameters = self.init_from_model(sp.build_parametric_model_from_drn(drn_file), bisim=bisim)
+        # Build CTMC from DFT
+        print(' - Start building state space')
+        # Set empty symmetry as rates can change which destroys symmetries
+        empty_sym = sp.dft.DFTSymmetries()
+        model = sp.dft.build_model(self._dft, empty_sym)
+        print(' - Finished building model')
+
+        if model.model_type == sp.ModelType.MA:
+            print("ERROR: Resulting model is MA instead of CTMC")
+            assert False
+
+        parameters = self.init_from_model(model, bisim=bisim)
         self._time_load = time.process_time() - time_start
         return parameters
 
