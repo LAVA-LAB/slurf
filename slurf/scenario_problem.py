@@ -309,6 +309,8 @@ def compute_confidence_region(samples, args):
     compareAt = np.abs(np.max(samples_max, axis=0) - 
                        np.min(samples_min, axis=0)) > tres
 
+    print('- Number of dimensions below threshold:',sum(~compareAt))
+
     df_regions = pd.DataFrame()
     df_regions.index.names = ['Sample']
     

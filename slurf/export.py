@@ -8,7 +8,7 @@ import seaborn as sns
 import itertools
 from scipy.spatial import HalfspaceIntersection, ConvexHull
 
-from slurf.commons import path
+from slurf.commons import path, append_new_line
 
 def plot_results(output_dir, args, regions, solutions, reliability,
                  prop_labels=None, timebounds=None):
@@ -76,29 +76,83 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
     return
 
 
-def save_validation_results(args, output_path, val_dfs):
-    '''
-    Export the average empirical validation results into a .csv file
-    '''
+class Cases():
     
-    for rho, df in val_dfs.items():    
+    def __init__(self, root_dir):
         
-        if len(df) < args.repeat:
-            continue
-
-        prob_list = list(np.mean(df, axis=0))
-
-        csv_file = 'validation_' + '{:.4f}'.format(rho) + '.csv'
-        csv_path = path(output_path,'',csv_file)
+        self.root_dir = root_dir
+    
+    def init_eta(self, eta_csv, eta_cols):
         
-        with open(csv_path,'w') as file:
+        self.eta_csv = path(self.root_dir, 'output', eta_csv)
+        self.eta_df = pd.DataFrame(columns = eta_cols)
+        
+        append_new_line(self.eta_csv, ';'.join(self.eta_df.columns))
+        
+    def add_eta_row(self, q, args, regions, emp_satprob):
+        
+        for i, region in regions.items():
             
-            prob = ' & '.join('{:.3f}'.format(float(i)) for i in prob_list)
-            string = 'N='+str(args.Nsamples)+' & '+prob+' \\\\'
-            file.write(string)
+            self.eta_df.loc[q, 'N'] = args.Nsamples
+            self.eta_df.loc[q, '#'] = q
+            self.eta_df.loc[q, 'seed'] = args.seeds
+            self.eta_df.loc[q, 'rho'] = np.round(region['rho'], 5)
             
-    print('- Validatoin results exported to:',csv_path)
+            betas = list(map(str, args.beta))
+            self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 5)
+            
+            self.eta_df.loc[q, 'empirical'] = emp_satprob[i]
+                
+            row = self.eta_df.loc[q]
+            
+            # Write row to file
+            append_new_line(self.eta_csv, ';'.join(map(str, row)))
+        
+    def init_time(self, time_csv, time_cols):
+        
+        self.time_csv = path(self.root_dir, 'output', time_csv)
+        self.time_df = pd.DataFrame(columns = time_cols)
+        self.time_df.index.name = '#'
+        
+    def add_time_row(self, args, time):
+        
+        self.time_df.loc[args.seeds, str(args.Nsamples)] = np.round(time, 5)
+        
+    def write_time(self):
+        
+        # Write DataFrame to file
+        self.time_df.to_csv(self.time_csv, sep=';')
 
+# def save_validation_results(q, args, eta_csv, eta_df, regions, emp_satprob):
+#     '''
+#     Export the results on the satisfaction probability to a .csv file
+#     '''
+    
+#     for i, region in regions.items():
+        
+#         eta_df.loc[q, 'N'] = args.Nsamples
+#         eta_df.loc[q, '#'] = q
+#         eta_df.loc[q, 'seed'] = args.seeds
+#         eta_df.loc[q, 'rho'] = np.round(region['rho'], 5)
+        
+#         betas = list(map(str, args.beta))
+#         eta_df.loc[q, betas] = np.round(list(region['eta_series']), 5)
+        
+#         eta_df.loc[q, 'empirical'] = emp_satprob[i]
+            
+#         row = eta_df.loc[q]
+#         append_new_line(eta_csv, ';'.join(map(str, row)))
+            
+#     return eta_df
+
+# def save_scenario_time_results(seed, args, time_csv, time_df, time):
+#     '''
+#     Export the scenario problem timing to a .csv file
+#     '''
+     
+#     time_df.loc[seed, str(args.Nsamples)] = np.round(time, 5)
+    
+#     return time_df
 
 def make_conservative(low, upp):
     '''
@@ -213,8 +267,6 @@ def plot_2D(args, idxs, prop_names, regions, samples, R=None,
                                                   feasible_point).intersections
             hull = ConvexHull(poly_vertices) 
             vertices = hull.points[hull.vertices]
-            
-            print(vertices)
             
             polygon = patches.Polygon(vertices, True, 
                                   linewidth=0, edgecolor='none', facecolor=color)

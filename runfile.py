@@ -2,6 +2,8 @@ import os
 import pandas as pd
 import time
 import numpy as np
+import itertools
+import copy
 
 from slurf.sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions
@@ -9,40 +11,63 @@ from slurf.scenario_problem import compute_confidence_region
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface, DftReliabilityModelSamplerInterface
 from slurf.commons import path, getTime, print_stats, set_solution_df, \
-    set_output_path
+    set_output_path, getDateTime
 from slurf.parser import parse_arguments
-from slurf.export import plot_results, save_results, save_validation_results
+from slurf.export import plot_results, save_results, Cases
 
 if __name__ == '__main__':
 
-    np.random.seed(10)
     root_dir = os.path.dirname(os.path.abspath(__file__))
     dfs = {}
     val_dfs = {}
     timing = {}
     
     # Interpret arguments provided
-    args = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
-    # args = parse_arguments()
+    # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
+    ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
     
-    args.pareto_pieces = 9
+    # ARGS.Nsamples = [25,50,100]
+    # ARGS.pareto_pieces = 9
+    # ARGS.seeds = 2
     
-    print("\n===== Script started at:", getTime(),"=====")
-    time_start = time.process_time()
+    ARGS = parse_arguments()
     
-    # Load probability distribution data
-    model_file, param_dic, properties, prop_labels, reliability, timebounds = \
-        load_distribution(root_dir, args.model, args.model_type,
-                          parameters_file=args.param_file, 
-                          properties_file=args.prop_file)
+    # Define dictionary over which to iterate
+    iterate_dict = {'N': ARGS.Nsamples,
+                    'seeds': np.arange(ARGS.seeds)}
+    keys, values = zip(*iterate_dict.items())
+    iterator = [dict(zip(keys, v)) for v in itertools.product(*values)]
     
-    timing['1_load'] = time.process_time() - time_start
-    print("\n===== Data loaded at:", getTime(),"=====")
+    cases = Cases(root_dir)
+    cases.init_eta('multi_iter_etas_'+str(getDateTime())+'.csv',
+               ['#', 'N','seed','rho','empirical'] + list(map(str, ARGS.beta)))
+    cases.init_time('multi_iter_ScenProbTime_'+str(getDateTime())+'.csv',
+                    list(map(str, ARGS.Nsamples)))
     
-    # Create output folder 
-    output_path = set_output_path(root_dir, args)
-    
-    for rep in range(args.repeat):
+    for q, itr in enumerate(iterator):
+        
+        args = copy.copy(ARGS)
+        args.Nsamples = int(itr['N'])
+        args.seeds = int(itr['seeds'])
+        
+        # Set random seed according to the iteration
+        np.random.seed(itr['seeds'])
+        
+        print("\n===== Script started at:", getTime(),"=====")
+        time_start = time.process_time()
+        
+        # Load probability distribution data
+        model_file, param_dic, properties, prop_labels, reliability, timebounds = \
+            load_distribution(root_dir, args.model, args.model_type,
+                              parameters_file=args.param_file, 
+                              properties_file=args.prop_file)
+        
+        timing['1_load'] = time.process_time() - time_start
+        print("\n===== Data loaded at:", getTime(),"=====")
+        
+        # Create output folder 
+        output_path = set_output_path(root_dir, args)
+        
         time_start = time.process_time()
         
         # Sample parameter values from the probability distribution
@@ -104,10 +129,15 @@ if __name__ == '__main__':
             # Sample new parameter for validation
             param_values = get_parameter_values(args.Nvalidate, param_dic)
             
-            dfs['regions_stats']['Emp_satprob'], val_dfs = \
+            emp_satprob, val_dfs = \
                 validate_solutions(val_dfs, sampler, regions, args.Nvalidate, 
                    properties, list(param_dic.keys()), param_values)
                                 #args.modelfile_nosuffix+'_cache.pkl')
+                                
+            dfs['regions_stats']['Emp_satprob'] = emp_satprob
+                                
+        else:
+            emp_satprob = [None]*len(regions)
             
         timing['7_validation'] = time.process_time() - time_start
         print("\n===== Validation completed at:", getTime(),"=====")
@@ -117,10 +147,10 @@ if __name__ == '__main__':
         save_results(output_path, dfs, args.modelfile_nosuffix, 
                      args.Nsamples)
     
+        # Export validation results to csv (for easy plotting to paper)
+        cases.add_eta_row(q, args, regions, emp_satprob)
+        cases.add_time_row(args, timing['5_scenario_problems'])
+    
     ###
     
-    # Export validation results to csv (for easy plotting to paper)
-    if args.Nvalidate > 0:        
-        save_validation_results(args, output_path, val_dfs)
-    
-        
+    cases.write_time()    
