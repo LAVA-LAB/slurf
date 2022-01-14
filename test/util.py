@@ -1,4 +1,5 @@
 import os
+import math
 
 testfile_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources")
 
@@ -19,3 +20,7 @@ mini_pctmc = _path("", "mini.sm")
 tandem_pctmc_jani = _path("", "tandem.jani")
 dft_and = _path("", "and_param.dft")
 nonmonotonic_dft = _path("", "nonmonotonic_param.dft")
+
+
+def inbetween(a, b, c):
+    return (math.isclose(a, b) or a < b) and (math.isclose(c, b) or b < c)

@@ -344,15 +344,28 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         return samples
 
 
-class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
+class DftModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
     """
-    This simple interface builds a parametric DFT, generates the corresponding parametric CTMC
-    and then uses an instantiation checker to check the model.
+    General class for DFT sampler interface.
     """
 
     def __init__(self):
         super(CtmcReliabilityModelSamplerInterface, self).__init__()
         self._dft = None
+
+    def get_stats(self):
+        stats = super(CtmcReliabilityModelSamplerInterface, self).get_stats()
+        stats["dft_be"] = self._dft.nr_be()
+        stats["dft_elements"] = self._dft.nr_elements()
+        stats["dft_dynamic"] = self._dft.nr_dynamic()
+        return stats
+
+
+class DftParametricModelSamplerInterface(DftModelSamplerInterface):
+    """
+    This simple interface builds a parametric DFT, generates the corresponding parametric CTMC
+    and then uses an instantiation checker to check the model.
+    """
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -395,9 +408,108 @@ class DftReliabilityModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
         self._time_load = time.process_time() - time_start
         return parameters
 
-    def get_stats(self):
-        stats = super(CtmcReliabilityModelSamplerInterface, self).get_stats()
-        stats["dft_be"] = self._dft.nr_be()
-        stats["dft_elements"] = self._dft.nr_elements()
-        stats["dft_dynamic"] = self._dft.nr_dynamic()
-        return stats
+
+class DftApproximationModelSamplerInterface(DftModelSamplerInterface):
+    """
+    The approximation sampler does not build one parametric model but a partial model for each parameter valuation.
+    Refinement can be done by exploring more of the state space.
+    """
+
+    def load(self, model, properties, bisim=True, constants=None):
+        """
+        Note that load() only constructs the DFT. The state space is built for each sample individually.
+
+        Parameters
+        ----------
+        model A DFT with parametric failure rates.
+        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        bisim Whether to apply bisimulation.
+        constants Constants for graph changing variables in model description (not required for fault trees)
+
+        Returns Dictionary of parameters and their bounds.
+        -------
+
+        """
+        time_start = time.process_time()
+        print(' - Load DFT from Galileo file')
+        # Load DFT from Galileo file
+        self._dft = sp.dft.load_parametric_dft_galileo_file(model)
+        # Make DFT well-formed
+        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
+        # Check for dependency conflicts -> no conflicts mean CTMC
+        sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
+
+        self._inst_checker_approx = sp.dft.DFTInstantiator(self._dft)
+
+        # Create properties
+        self.prepare_properties(properties)
+
+        # Create sample cache
+        self._samples = SampleCache()
+
+        # Get parameters
+        self._parameters = {p.name: p for p in sp.dft.get_parameters(self._dft)}
+        self._time_load = time.process_time() - time_start
+        return self._parameters
+
+    def _sample(self, sample_point):
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Instantiate parametric DFT
+        sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
+
+        # Compute approximation from DFT
+        print(' - Start building state space')
+        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+
+        it = 0
+        while True:
+            builder.build(it, 1.0)
+            self._model = builder.get_partial_model(True, False)
+            self._init_state = self._model.initial_states[0]
+            if self._model.model_type == sp.ModelType.MA:
+                print("ERROR: Resulting model is MA instead of CTMC")
+                assert False
+            it += 1
+            # TODO find better stopping criteria
+            if self._model.nr_states > 1000 or it >= 3:
+                break
+        print(' - Finished building model')
+
+        model_up = builder.get_partial_model(False, False)
+        init_up = model_up.initial_states[0]
+        results = []
+        for prop in self._properties:
+            result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
+            result_up = stormpy.model_checking(model_up, prop).at(init_up)
+            results.append((result_low, result_up))
+
+        sample_point.set_results(results, refined=False)
+        return sample_point
+
+    def _refine(self, sample_point):
+        assert not sample_point.is_refined()
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Instantiate parametric DFT
+        sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
+
+        # Build CTMC from DFT
+        print(' - Start building state space')
+        self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
+        self._init_state = self._model.initial_states[0]
+        print(' - Finished building model')
+
+        if self._model.model_type == sp.ModelType.MA:
+            print("ERROR: Resulting model is MA instead of CTMC")
+            assert False
+
+        results = []
+        for prop in self._properties:
+            # Check CTMC
+            results.append(sp.model_checking(self._model, prop).at(self._init_state))
+
+        sample_point.set_results(results, refined=True)
+        return sample_point
