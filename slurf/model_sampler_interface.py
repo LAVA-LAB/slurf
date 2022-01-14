@@ -409,7 +409,7 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
         return parameters
 
 
-class DftApproximationModelSamplerInterface(DftModelSamplerInterface):
+class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
     """
     The approximation sampler does not build one parametric model but a partial model for each parameter valuation.
     Refinement can be done by exploring more of the state space.

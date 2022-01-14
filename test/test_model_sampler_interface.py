@@ -1,4 +1,4 @@
-from slurf.model_sampler_interface import CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftApproximationModelSamplerInterface
+from slurf.model_sampler_interface import CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
 from . import util as testutils
 
 import math
@@ -55,7 +55,7 @@ class TestModelSampler:
         assert math.isclose(result[2], 0.9865695059)
 
     def test_dft_approximation_sampler(self):
-        sampler = DftApproximationModelSamplerInterface()
+        sampler = DftConcreteApproximationSamplerInterface()
         parameters_with_bounds = sampler.load(testutils.dft_and, ("failed", [1, 5, 10]))
         assert "x" in parameters_with_bounds
         sample = sampler.sample({"x": 0.5})

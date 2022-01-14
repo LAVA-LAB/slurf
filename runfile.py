@@ -9,7 +9,7 @@ from slurf.sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions
 from slurf.scenario_problem import compute_confidence_region
 from slurf.model_sampler_interface import \
-    CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftApproximationModelSamplerInterface
+    CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
 from slurf.commons import path, getTime, print_stats, set_solution_df, \
     set_output_path, getDateTime
 from slurf.parser import parse_arguments
@@ -82,7 +82,7 @@ if __name__ == '__main__':
             sampler = CtmcReliabilityModelSamplerInterface()
         else:
             sampler = DftParametricModelSamplerInterface() # Builds parametric model once and samples on CTMC
-            #sampler = DftApproximationModelSamplerInterface() # Builds partial models for each sample
+            #sampler = DftConcreteApproximationSamplerInterface() # Builds partial models for each sample
 
         timing['3_init_sampler'] = time.process_time() - time_start
         print("\n===== Sampler initialized at:", getTime(),"=====")
