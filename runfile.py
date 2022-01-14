@@ -24,7 +24,7 @@ if __name__ == '__main__':
     
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
-    ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
+    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
     
     # ARGS.Nsamples = [25,50,100]
     # ARGS.pareto_pieces = 9
@@ -51,7 +51,7 @@ if __name__ == '__main__':
         args.seeds = int(itr['seeds'])
         
         # Set random seed according to the iteration
-        np.random.seed(itr['seeds'])
+        np.random.seed(10+itr['seeds'])
         
         print("\n===== Script started at:", getTime(),"=====")
         time_start = time.process_time()

@@ -337,6 +337,7 @@ def compute_confidence_region(samples, args):
         # informative (violation probability is one), so skip to next rho
         if complexity == Nsamples:
             rho *= increment_factor
+            i += 1
             continue
         
         print('\nScenario problem solved of size {}; rho = {:0.4f}'.\
