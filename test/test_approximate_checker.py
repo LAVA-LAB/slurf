@@ -1,4 +1,5 @@
 from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
+import slurf.util as util
 from . import util as testutils
 import stormpy as sp
 import pycarl as pc
@@ -16,4 +17,4 @@ class TestApproximateChecker:
         instance = {p: pc.cln.Rational(0.5) for p in pars}
         checker.specify_formula(properties[0].raw_formula)
         lb, ub = checker.check(instance, 0)
-        assert testutils.inbetween(lb, 0.6996164004519213, ub)
+        assert util.is_inbetween(lb, 0.6996164004519213, ub)

@@ -1,4 +1,5 @@
 from slurf.model_sampler_interface import CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
+import slurf.util as util
 from . import util as testutils
 
 import math
@@ -12,9 +13,9 @@ class TestModelSampler:
         assert "p" in parameters_with_bounds
         sample = sampler.sample({"p": 0.3})
         result = sample.get_result()
-        assert testutils.inbetween(result[0][0], 0.1734083474, result[0][1])
-        assert testutils.inbetween(result[1][0], 0.9427719189, result[1][1])
-        assert testutils.inbetween(result[2][0], 0.9987049333, result[2][1])
+        assert util.is_inbetween(result[0][0], 0.1734083474, result[0][1])
+        assert util.is_inbetween(result[1][0], 0.9427719189, result[1][1])
+        assert util.is_inbetween(result[2][0], 0.9987049333, result[2][1])
 
         sample = sampler.refine(sample.get_id())
         result = sample.get_result()
@@ -61,9 +62,9 @@ class TestModelSampler:
         sample = sampler.sample({"x": 0.5})
         assert not sample.is_refined()
         result = sample.get_result()
-        assert testutils.inbetween(result[0][0], 0.1548181217, result[0][1])
-        assert testutils.inbetween(result[1][0], 0.8425679498, result[1][1])
-        assert testutils.inbetween(result[2][0], 0.9865695059, result[2][1])
+        assert util.is_inbetween(result[0][0], 0.1548181217, result[0][1])
+        assert util.is_inbetween(result[1][0], 0.8425679498, result[1][1])
+        assert util.is_inbetween(result[2][0], 0.9865695059, result[2][1])
 
     def test_non_monotonic_dft(self):
         sampler = DftParametricModelSamplerInterface()

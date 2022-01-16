@@ -1,5 +1,6 @@
 from slurf.sample_cache import SampleCache
 from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
+import slurf.util as util
 
 import stormpy as sp
 import stormpy.pars
@@ -551,6 +552,7 @@ class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterf
             self._inst_checker_approx.specify_formula(prop.raw_formula)
             # Check CTMC
             lb, ub = self._inst_checker_approx.check(storm_valuation, sample_point.get_id())
+            assert util.leq(lb, ub)
             results.append((lb, ub))
         # Add result
         sample_point.set_results(results, refined=False)
