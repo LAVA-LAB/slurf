@@ -1,5 +1,5 @@
 from slurf.sample_cache import SampleCache
-from slurf.approximate_ctmc_checker import ApproximateChecker
+from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
 
 import stormpy as sp
 import stormpy.pars
@@ -513,3 +513,94 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         sample_point.set_results(results, refined=True)
         return sample_point
+
+
+class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterface):
+    """
+    The approximation sampler builds the complete parametric model and tries to use only partial models for sampling.
+    """
+
+    def __init__(self, cluster_max_distance):
+        super(DftParametricModelSamplerInterface, self).__init__()
+        self._clusters = dict()
+        self._cluster_max_distance = cluster_max_distance
+
+    def _sample(self, sample_point):
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Find possible cluster
+        absorbing_states = self._find_cluster(sample_point)
+        if absorbing_states is None:
+            # Compute states to remove
+            absorbing_states = self._compute_absorbing_states(storm_valuation)
+            print("- Use new cluster")
+            # Store cluster
+            self._clusters[sample_point] = absorbing_states
+        else:
+            print("- Use existing cluster")
+
+        options = ApproximationOptions()
+        options.set_fixed_states_absorbing(absorbing_states)
+        self._inst_checker_approx = ApproximateChecker(self._model, options)
+
+        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+        results = []
+        for prop in self._properties:
+            # Specify formula
+            self._inst_checker_approx.specify_formula(prop.raw_formula)
+            # Check CTMC
+            lb, ub = self._inst_checker_approx.check(storm_valuation)
+            results.append((lb, ub))
+        # Add result
+        sample_point.set_results(results, refined=False)
+        return sample_point
+
+    def _refine(self, sample_point):
+        assert not sample_point.is_refined()
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Parameter valuation must be graph preserving
+        self._inst_checker_exact.set_graph_preserving(True)
+
+        env = sp.Environment()
+        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+        results = []
+        for prop in self._properties:
+            # Specify formula
+            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
+            # Check CTMC
+            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
+        # Add result
+        sample_point.set_results(results, True)
+        return sample_point
+
+    def _find_cluster(self, sample_point):
+        for point, absorbing in self._clusters.items():
+            distance = sample_point.get_distance(point)
+            if distance <= self._cluster_max_distance:
+                # Found nearby cluster
+                return absorbing
+        # No cluster is close enough
+        return None
+
+    def _compute_absorbing_states(self, storm_valuation):
+        # Check expected time on CTMC to as heuristic for important/unimportant states
+        prop = sp.parse_properties('T=? [F "failed"]')[0]
+
+        # Check CTMC
+        self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, False))  # Get result for all states
+        env = sp.Environment()
+        result = self._inst_checker_exact.check(env, storm_valuation)
+        assert result.result_for_all_states
+
+        # Compute absorbing states
+        result = dict(zip(range(self._model.nr_states), result.get_values()))
+        res_reference = result[self._init_state] / 2.0
+        return [i for i, res in result.items() if res < res_reference]
+
+    def get_stats(self):
+        stats = super(DftParametricModelSamplerInterface, self).get_stats()
+        stats["no_approx_clusters"] = len(self._clusters)
+        return stats

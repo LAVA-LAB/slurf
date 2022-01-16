@@ -1,3 +1,6 @@
+import math
+
+
 class Sample:
 
     def __init__(self, sample_id, valuation):
@@ -11,6 +14,15 @@ class Sample:
 
     def get_valuation(self):
         return self._valuation
+
+    def get_distance(self, other):
+        # Euclidean distance between two valuations
+        point1 = []
+        point2 = []
+        for p, val in self.get_valuation().items():
+            point1.append(val)
+            point2.append(other.get_valuation()[p])
+        return math.dist(point1, point2)
 
     def set_results(self, results, refined=False):
         self._results = results
