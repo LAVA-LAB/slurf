@@ -24,6 +24,10 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--model', type=str, action="store", dest='model', 
                         default=manualModel, help="Model file to load")
     
+    # Argument for model to load
+    parser.add_argument('--exact', type=int, action="store", dest='exact', 
+                        default=1, help="Switch between exact and approximate results")
+    
     # Set a manual parameter distribution file
     parser.add_argument('--param_file', type=str, action="store", dest='param_file', 
                         default=None, help="Parameter distribution Excel file")

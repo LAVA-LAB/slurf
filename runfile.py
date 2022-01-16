@@ -25,6 +25,8 @@ if __name__ == '__main__':
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
+    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
+    # ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
     
     # ARGS.Nsamples = [25,50,100]
     # ARGS.pareto_pieces = 9
@@ -100,9 +102,16 @@ if __name__ == '__main__':
                                 param_list = list(param_dic.keys()),
                                 param_values = param_values,
                                 root_dir = root_dir,
-                                cache = False )
+                                cache = False, 
+                                exact = args.exact)
         
-        dfs['solutions'] = set_solution_df(solutions)
+        if not args.exact:
+            solutions_2D = [[tuple(solutions[i,j,:]) 
+                            for j in range(solutions.shape[1])] 
+                           for i in range(solutions.shape[0])]
+            dfs['solutions'] = set_solution_df(solutions_2D)
+        else:
+            dfs['solutions'] = set_solution_df(solutions)
         
         timing['4_model_sampling'] = time.process_time() - time_start
         print("\n===== Sampler finished at:", getTime(),"=====")

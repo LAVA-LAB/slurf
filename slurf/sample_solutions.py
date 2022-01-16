@@ -120,7 +120,7 @@ def param_gaussian(Nsamples, mean, std):
 
 
 def sample_solutions(sampler, Nsamples, properties, param_list, 
-                     param_values, root_dir=None, cache=False):
+                     param_values, root_dir=None, cache=False, exact=False):
     """
 
     Parameters
@@ -145,7 +145,11 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     else:
         num_props = len(properties)
         
-    results = np.zeros((Nsamples, num_props))
+    # If we compute imprecise solutions, results array is 3D (to store upp/low)
+    if exact:
+        results = np.zeros((Nsamples, num_props))
+    else:
+        results = np.zeros((Nsamples, num_props, 2))
     
     # If cache is activated...
     if cache:
@@ -186,7 +190,9 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     parameters_dic = [{param: row[i] for i,param in enumerate(param_list)} 
                       for row in param_values]
 
-    sampleIDs = sampler.sample_batch(parameters_dic, exact=True)
+    sampleIDs = sampler.sample_batch(parameters_dic, exact)
+
+    print(sampleIDs[0].get_result())
 
     for n in range(Nsamples):
 
