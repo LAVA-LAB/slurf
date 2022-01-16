@@ -83,9 +83,9 @@ if __name__ == '__main__':
         if args.model_type == 'CTMC':
             sampler = CtmcReliabilityModelSamplerInterface()
         else:
-            sampler = DftParametricModelSamplerInterface() # Builds parametric model once and samples on CTMC
+            #sampler = DftParametricModelSamplerInterface() # Builds parametric model once and samples on CTMC
             #sampler = DftConcreteApproximationSamplerInterface() # Builds partial models for each sample
-            #sampler = DftParametricApproximationSamplerInterface(cluster_max_distance=1e-4) # Builds parametric model once and uses partial models for sampling
+            sampler = DftParametricApproximationSamplerInterface(cluster_max_distance=1e-4) # Builds parametric model once and uses partial models for sampling # TODO use better max_distance
 
         timing['3_init_sampler'] = time.process_time() - time_start
         print("\n===== Sampler initialized at:", getTime(),"=====")

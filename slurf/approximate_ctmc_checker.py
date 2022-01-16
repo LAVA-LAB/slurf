@@ -4,10 +4,12 @@ import stormpy.logic
 
 import math
 
+
 class ApproximationOptions:
     """
     Sets the hyperparameters used for approximation.
     """
+
     def __init__(self):
         self._fixed_states_absorbing = []
         self._max_depth_of_considered_states = 10
@@ -24,6 +26,7 @@ class ApproximateChecker:
     """
     For a given pCTMC, check CTMC by approximating the CTMC.
     """
+
     def __init__(self, pctmc, options=ApproximationOptions()):
         self._original_model = pctmc
         self._abort_label = "deadl"
@@ -33,12 +36,12 @@ class ApproximateChecker:
         self._ub_formula = None
         self._options = options
 
-    def check(self, instantiation):
+    def check(self, instantiation, inst_id):
         # TODO use an instantiation checker that yields transient probabilities
-        checker, initial_state = self._get_submodel_instantiation_checker(instantiation)
+        checker, submodel, initial_state = self._get_submodel_instantiation_checker(instantiation, inst_id)
         checker.specify_formula(sp.ParametricCheckTask(self._lb_formula, True))  # Only initial states
         lb = checker.check(self._environment, instantiation).at(initial_state)
-        if self._original_model.labeling.contains_label(self._abort_label):
+        if submodel.labeling.contains_label(self._abort_label):
             checker.specify_formula(sp.ParametricCheckTask(self._ub_formula, True))  # Only initial states
             ub = checker.check(self._environment, instantiation).at(initial_state)
         else:
@@ -50,19 +53,20 @@ class ApproximateChecker:
         # TODO once instantiation checker yields transient probabilities, this is no longer necessary
         assert type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula
         old_label = formula.subformula.right_subformula.label
-        self._ub_formula = stormpy.parse_properties(str(self._lb_formula).replace("\"" + old_label + "\"", "(\"" + old_label + "\" | \"" + self._abort_label + "\")"))[0].raw_formula
+        self._ub_formula = stormpy.parse_properties(str(self._lb_formula).replace("\"" + old_label + "\"", "(\"" + old_label + "\" | \"" + self._abort_label + "\")"))[
+            0].raw_formula
 
-    def _get_submodel_instantiation_checker(self, instantiation):
-        if "all" in self._subcheckers:
-            # TODO Check whether we can use a previous approximation.
-            subchecker, init_state = self._subcheckers["all"]
+    def _get_submodel_instantiation_checker(self, instantiation, inst_id):
+        if inst_id in self._subcheckers:
+            # Use existing approximation for the same instantiation
+            return self._subcheckers[inst_id]
         else:
             submodel = self._build_submodel(instantiation)
             assert len(submodel.initial_states) == 1
             init_state = submodel.initial_states[0]
             subchecker = sp.pars.PCtmcInstantiationChecker(submodel)
-            self._subcheckers["all"] = (subchecker, init_state)
-        return subchecker, init_state
+            self._subcheckers[inst_id] = (subchecker, submodel, init_state)
+        return subchecker, submodel, init_state
 
     def _build_submodel(self, instantiation):
         selected_outgoing_transitions = self._select_states(instantiation)

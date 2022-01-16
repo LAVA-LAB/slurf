@@ -15,5 +15,5 @@ class TestApproximateChecker:
         checker = ApproximateChecker(model, options)
         instance = {p: pc.cln.Rational(0.5) for p in pars}
         checker.specify_formula(properties[0].raw_formula)
-        lb, ub = checker.check(instance)
+        lb, ub = checker.check(instance, 0)
         assert testutils.inbetween(lb, 0.6996164004519213, ub)
