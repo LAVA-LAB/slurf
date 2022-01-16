@@ -37,7 +37,8 @@ setup(
         'numpy',
         'openpyxl', # Read Excel files
         'seaborn',
-        'tqdm' # Progress bar
+        'tqdm', # Progress bar
+        'xlsxwriter' # Write Excel files
     ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
