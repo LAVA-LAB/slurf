@@ -92,8 +92,8 @@ if __name__ == '__main__':
             sampler = CtmcReliabilityModelSamplerInterface()
         else:
             #sampler = DftParametricModelSamplerInterface() # Builds parametric model once and samples on CTMC
-            #sampler = DftConcreteApproximationSamplerInterface() # Builds partial models for each sample
-            sampler = DftParametricApproximationSamplerInterface(cluster_max_distance=1e-4) # Builds parametric model once and uses partial models for sampling # TODO use better max_distance
+            sampler = DftConcreteApproximationSamplerInterface() # Builds partial models for each sample
+            #sampler = DftParametricApproximationSamplerInterface(cluster_max_distance=1e-4) # Builds parametric model once and uses partial models for sampling # TODO use better max_distance
 
         timing['3_init_sampler'] = time.process_time() - time_start
         print("\n===== Sampler initialized at:", getTime(),"=====")
@@ -142,9 +142,11 @@ if __name__ == '__main__':
             # Plot results
             toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
             print('Refine samples:', toRefine)
-            
+            # TODO make precision choosable
+            precision = 0.5
+            ind_precision = dict()
             if len(toRefine) > 0:            
-                solutions = refine_solutions(sampler, sampleObj, solutions, toRefine)
+                solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, precision, ind_precision)
             else:
                 done = True
                 
