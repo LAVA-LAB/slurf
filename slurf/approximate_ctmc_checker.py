@@ -48,7 +48,7 @@ class ApproximateChecker:
             ub = lb
         return lb, ub
 
-    def specify_formula(self, formula, model_desc):
+    def specify_formula(self, formula, model_desc=None):
         self._lb_formula = formula
         # TODO once instantiation checker yields transient probabilities, this is no longer necessary
         if type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula:
