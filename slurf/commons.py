@@ -49,7 +49,12 @@ def print_stats(stats):
     return series
 
 
-def set_solution_df(solutions):
+def set_solution_df(exact, solutions):
+    
+    if not exact:
+        solutions = [[tuple(solutions[i,j,:]) 
+                      for j in range(solutions.shape[1])] 
+                      for i in range(solutions.shape[0])]
     
     df = pd.DataFrame(solutions)
     df.index.names = ['Sample']
@@ -76,3 +81,9 @@ def append_new_line(file_name, text_to_append):
             file_object.write("\n")
         # Append text at the end of file
         file_object.write(text_to_append)
+        
+def intersect(i1, i2):
+    '''
+    Check if two intervals i1, i2 intersect.
+    '''
+    return max(i1[0], i2[0]) < min(i1[1], i2[1])

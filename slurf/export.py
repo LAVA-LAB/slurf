@@ -27,6 +27,19 @@ def plot_results(output_dir, args, regions, solutions, reliability,
         
         plt.show()
         
+        if args.plot_propID:
+            
+            idx_pair   = (timebounds.index(args.plot_propID[0]),
+                          timebounds.index(args.plot_propID[1]))
+        
+            # Plot 2D confidence regions
+            plot_2D(args, idx_pair, prop_labels[idx_pair], regions, solutions, 
+                    regions, plotSamples=True, plotSampleID=True)
+
+        # exp_file = args.modelfile + "_" + str(idx_pair)
+        
+        plt.show()
+        
     else:
         # As a solution set (if properties object is a list of properties)    
         for idx_pair in itertools.combinations(np.arange(len(prop_labels)), 2):
@@ -37,10 +50,10 @@ def plot_results(output_dir, args, regions, solutions, reliability,
             else:
                 region_list = [None]
             for R in region_list:
-            
+                
                 # Plot 2D confidence regions
-                plot_2D(args, idx_pair, prop_labels, regions, solutions, 
-                        R, plotSamples=True, plotSampleID=True)
+                plot_2D(args, idx_pair, prop_labels[list(idx_pair)], regions, 
+                        solutions, R, plotSamples=True, plotSampleID=True)
         
                 exp_file = args.modelfile + "_" + str(idx_pair)
                 if R != None:
@@ -231,7 +244,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     ax.figure.colorbar(sm, cax=cax)
     
 
-def plot_2D(args, idxs, prop_names, regions, samples, R=None,
+def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             plotSamples=True, plotSampleID=True, title=False):
     
     beta = args.beta2plot
@@ -289,17 +302,23 @@ def plot_2D(args, idxs, prop_names, regions, samples, R=None,
         if samples.ndim == 3:
             # If imprecise, plot as boxes
             for i,sample in enumerate(samples):
+                
                 s_low = sample[:,0]
                 s_upp = sample[:,1]
                 diff  = s_upp - s_low
                 
-                rect = patches.Rectangle(s_low[[X,Y]], diff[X], diff[Y], 
-                                         linewidth=0.5, edgecolor='red', 
-                                         linestyle='dashed', facecolor='none')
-                
-                # Add the patch to the Axes
-                ax.add_patch(rect)
-                
+                # Still plot as point if the samples is fully refined
+                if all(diff == 0):
+                    plt.scatter(s_upp[X], s_upp[Y], color='k', s=10, alpha=0.5)
+                    
+                else:
+                    rect = patches.Rectangle(s_low[[X,Y]], diff[X], diff[Y], 
+                                             linewidth=0.5, edgecolor='red', 
+                                             linestyle='dashed', facecolor='none')
+                    
+                    # Add the patch to the Axes
+                    ax.add_patch(rect)
+                    
                 if plotSampleID:
                     plt.text(s_upp[X], s_upp[Y], i, fontsize=6, color='r')
             
@@ -317,8 +336,8 @@ def plot_2D(args, idxs, prop_names, regions, samples, R=None,
                     
                     plt.text(samples[i,X], samples[i,Y], i, fontsize=6, color='r')
         
-    plt.xlabel(prop_names[X], fontsize=24)
-    plt.ylabel(prop_names[Y], fontsize=24)
+    plt.xlabel(prop_labels[0], fontsize=24)
+    plt.ylabel(prop_labels[1], fontsize=24)
 
     plt.xticks(fontsize=22)
     plt.yticks(fontsize=22)
@@ -328,6 +347,9 @@ def plot_2D(args, idxs, prop_names, regions, samples, R=None,
         plt.gca().set_ylim(bottom=np.min(samples[:,1]))
         
         plt.xticks([260, 300, 340, 380, 420])
+
+    plt.gca().set_xlim(0.2, 0.7)
+    plt.gca().set_ylim(0.4, 1.0)
 
     if title:
         if pareto:

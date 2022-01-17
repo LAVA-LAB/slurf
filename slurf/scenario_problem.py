@@ -1,9 +1,10 @@
 import numpy as np
 import cvxpy as cp
 import pandas as pd
+import copy
 
 from slurf.compute_bound import etaLow
-
+from slurf.commons import intersect
 
 class scenarioProblem:
     """
@@ -28,10 +29,10 @@ class scenarioProblem:
         
         # Check if imprecise samples are used (means that dimension = 3)
         if self.samples.ndim == 3:
-            imprecise = True
+            self.exact = False
             self.Nsamples, self.dim, _ = np.shape(self.samples)
         else:
-            imprecise = False
+            self.exact = True
             self.Nsamples, self.dim = np.shape(self.samples)
 
         # Check if number of Pareto-front linear pieces is nonzero
@@ -78,7 +79,7 @@ class scenarioProblem:
         for n in range(self.Nsamples):
 
             # Switch between precise vs. imprecise samples
-            if imprecise:
+            if not self.exact:
                 
                 # For imprecise samples, formulate constraint such that the
                 # whole box sample is contained in the confidence region
@@ -183,7 +184,7 @@ class scenarioProblem:
         return G
         
 
-    def solve(self, compareAt, costOfRegret=1):
+    def solve(self, compareAt, costOfRegret=1, all_solutions=None):
 
         # Solve initial problem with all constraints
         mask = np.zeros(self.Nsamples)
@@ -249,17 +250,83 @@ class scenarioProblem:
             del disable_mask
 
         # Compute complexity and store critical sample set
-        complexity = sum(support_mask)
+        
         critical_set = self.sample_ids[support_mask]
+        
+        if self.exact:
+            complexity = sum(support_mask)
+            boundary_set = []
+        
+        else:
+            boundary_mask = np.zeros(self.Nsamples, dtype=bool)
+            refine_mask = np.zeros(self.Nsamples, dtype=bool)
+            
+            for i in range(self.Nsamples):
+                    
+                # If any xi_i is zero but the solution is in the support mask,
+                # it must be on the boundary of the confidence region
+                if any(np.isclose(sol['xi'][i], 0)) and support_mask[i]:
+                    boundary_mask[i] = True
+    
+            boundary_set = self.sample_ids[boundary_mask]
+            print( 'Samples on boundary:', boundary_set )
+            intersect_mask = np.zeros(len(all_solutions), dtype=bool)
+            
+            for j in np.where(boundary_mask)[0]:
+                
+                for i,I in enumerate(intersect_mask):
+                    
+                    # If already on the boundary, set to True and skip
+                    if i in boundary_set:
+                        #intersect_mask[i] = True
+                        continue
+                    
+                    # Otherwise, check if sample intersects with (affine 
+                    # extensions of) the boundary
+                    if any([intersect(all_solutions[i,d,:],self.samples[j,d,:]) 
+                            for d in range(self.dim)]):
+                        intersect_mask[i] = True
+                        
+                        # Select this solution on the boundary for refinement
+                        refine_mask[j] = True
+                        
+                        # If we already have an intersecting solution, we can
+                        # break the inner for-loop
+                        break
+            
+            refine_set = np.union1d(self.sample_ids[refine_mask], boundary_set)
+            
+            # for i,I in enumerate(intersect_mask):
+                
+            #     # If already on the boundary, set to True and skip
+            #     if i in boundary_set:
+            #         intersect_mask[i] = True
+            #         continue
+                
+            #     # Otherwise, check if sample intersects with (affine extensions
+            #     # of) the boundary
+            #     for j,J in enumerate(boundary_mask):
+            #         if any([ intersect(all_solutions[i,d,:], self.samples[j,d,:]) 
+            #                  for d in range(self.dim)]):
+            #             intersect_mask[i] = True
+            #             # If we already have an intersecting solution, we can
+            #             # break the inner for-loop
+            #             break
+                    
+            intersect_set = np.where(intersect_mask)[0]
+            # print('Samples intersecting with the boundary:', intersect_set)
+            
+            complexity = len(np.union1d(critical_set, intersect_set))
 
         # Compute IDs of the samples which are in the interior
         exterior_ids = self.sample_ids[~interior_mask]
 
-        return sol, complexity, critical_set, exterior_ids, num_interior
+        return sol, complexity, critical_set, exterior_ids, num_interior, \
+                refine_set
 
 
 
-def compute_confidence_region(samples, args):
+def compute_confidence_region(samples, args, rho_list):
     """
 
     Parameters
@@ -279,21 +346,14 @@ def compute_confidence_region(samples, args):
     """
     
     beta = args.beta
-    rho = args.rho_min
-    increment_factor = args.rho_incr
-    itermax = args.rho_max_iter
-
     Nsamples = len(samples)
 
     regions = {}
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
-    
     problem.init_problem(samples, np.arange(Nsamples), args.pareto_pieces)
 
-    # Initialize value of rho (cost of violation)
-    i = 0
     exterior_ids = [None]
     
     # Do not solve problem if difference between max/min is very small (to
@@ -317,27 +377,25 @@ def compute_confidence_region(samples, args):
     cols = ['rho','complexity'] + ['satprob_beta='+str(b) for b in beta]
     df_regions_stats = pd.DataFrame(columns = cols)
 
-    while len(exterior_ids) > 0 and i < itermax:     
+    refineID = np.array([], dtype=int)
 
-        sol, complexity, critical_set, exterior_ids, num_interior = \
-            problem.solve(compareAt, rho)
+    for i,rho in enumerate(rho_list):    
 
+        sol, complexity, critical_set, exterior_ids, num_interior, \
+            refine_set = problem.solve(compareAt, rho, all_solutions=samples)
+
+        '''
         # If complexity is the same (or even higher) as in previous iteration, 
         # skip or break
         if i > 0 and complexity >= regions[i-1]['complexity']:
             if rho > 2: #complexity < 0.5*Nsamples:
                 # If we are already at the outside of the slurf, break overall
                 break
-            else:
-                # If we are still at the inside, increase rho and continue
-                rho *= increment_factor
-                continue
-        
-        # If complexity is equal to number of samples, the bound is not
-        # informative (violation probability is one), so skip to next rho
-        if complexity == Nsamples:
-            rho *= increment_factor
-            continue
+            # else:
+            #     # If we are still at the inside, increase rho and continue
+            #     rho *= increment_factor
+            #     continue
+        '''
         
         print('\nScenario problem solved of size {}; rho = {:0.4f}'.\
               format(problem.Nsamples, rho))
@@ -359,8 +417,11 @@ def compute_confidence_region(samples, args):
             'critical_set': critical_set,
             'xi': sol['xi'],
             'pareto': sol['pareto'],
-            'halfspaces': sol['halfspaces']
+            'halfspaces': sol['halfspaces'],
+            'refine_set': refine_set
             }
+        
+        refineID = np.union1d(refineID, refine_set)
         
         Psat = []
         for b in beta:
@@ -378,8 +439,4 @@ def compute_confidence_region(samples, args):
         df_regions['x_upp'+str(i)] = sol['xU']
         df_regions_stats.loc[i] = [rho, complexity] + Psat
 
-        # Increment
-        rho *= increment_factor
-        i += 1
-
-    return regions, df_regions, df_regions_stats
+    return regions, df_regions, df_regions_stats, refineID

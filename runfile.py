@@ -6,7 +6,7 @@ import itertools
 import copy
 
 from slurf.sample_solutions import load_distribution, sample_solutions, \
-    get_parameter_values, validate_solutions
+    get_parameter_values, validate_solutions, refine_solutions
 from slurf.scenario_problem import compute_confidence_region
 from slurf.model_sampler_interface import \
     CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface, DftParametricApproximationSamplerInterface
@@ -25,12 +25,13 @@ if __name__ == '__main__':
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
+    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban2.sm')
     # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
     # ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
     
-    # ARGS.Nsamples = [25,50,100]
-    # ARGS.pareto_pieces = 9
-    # ARGS.seeds = 2
+    # ARGS.exact = False
+    # ARGS.Nsamples = [50]
+    # ARGS.bisim = False
     
     ARGS = parse_arguments()
     
@@ -96,7 +97,8 @@ if __name__ == '__main__':
         sampler.load(file, properties, bisim=args.bisim)
         
         # Compute solutions by verifying the instantiated CTMCs
-        solutions = sample_solutions( sampler = sampler,
+        sampleObj, solutions = sample_solutions( 
+                                sampler = sampler,
                                 Nsamples = args.Nsamples, 
                                 properties = properties,
                                 param_list = list(param_dic.keys()),
@@ -105,13 +107,7 @@ if __name__ == '__main__':
                                 cache = False, 
                                 exact = args.exact)
         
-        if not args.exact:
-            solutions_2D = [[tuple(solutions[i,j,:]) 
-                            for j in range(solutions.shape[1])] 
-                           for i in range(solutions.shape[0])]
-            dfs['solutions'] = set_solution_df(solutions_2D)
-        else:
-            dfs['solutions'] = set_solution_df(solutions)
+        dfs['solutions'] = set_solution_df(args.exact, solutions)
         
         timing['4_model_sampling'] = time.process_time() - time_start
         print("\n===== Sampler finished at:", getTime(),"=====")
@@ -119,10 +115,24 @@ if __name__ == '__main__':
         
         dfs['storm_stats'] = print_stats(sampler.get_stats())
         
-        # Compute solution set using scenario optimization
-        regions, dfs['regions'], dfs['regions_stats'] = compute_confidence_region(
-                                        solutions, args)
+        rho_list = [1.5] #np.round([1/(n+0.5) for n in range(0, args.Nsamples)], 3)[::-1]
         
+        done = False
+        while not done:
+            # Compute solution set using scenario optimization
+            regions, dfs['regions'], dfs['regions_stats'], refineID = \
+                compute_confidence_region(solutions, args, rho_list)
+            
+            # Plot results
+            toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
+            
+            print('Refine samples:', toRefine)
+            
+            if len(toRefine) > 0:            
+                solutions = refine_solutions(sampler, sampleObj, solutions, toRefine)
+            else:
+                done = True
+            
         timing['5_scenario_problems'] = time.process_time() - time_start
         print("\n===== Scenario problems completed at:", getTime(),"=====")
         time_start = time.process_time()

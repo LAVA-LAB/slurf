@@ -137,8 +137,6 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     -------
 
     """
-
-    
     
     if type(properties) == tuple:
         num_props = len(properties[1])
@@ -190,13 +188,11 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     parameters_dic = [{param: row[i] for i,param in enumerate(param_list)} 
                       for row in param_values]
 
-    sampleIDs = sampler.sample_batch(parameters_dic, exact)
-
-    print(sampleIDs[0].get_result())
+    sampleObj = sampler.sample_batch(parameters_dic, exact)
 
     for n in range(Nsamples):
 
-        results[n] = sampleIDs[n].get_result()
+        results[n] = sampleObj[n].get_result()
         
     # If cache is activated, export samples
     if cache:
@@ -211,7 +207,33 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
         export_sample_cache(sample_cache, cache_path)
         print('- Samples exported to cache')
 
-    return results
+    return sampleObj, results
+
+
+def refine_solutions(sampler, sampleObj, solutions, idx):
+    '''
+    Refine imprecise solutions for the given indices
+
+    Parameters
+    ----------
+    sampler Sampler object (for either CTMC of DFT)
+    solutions 3D np.array with solutions
+    idx List of indices to refine
+    
+    Returns
+    -------
+    solutions Updated solutions array
+    '''
+    
+    samples = sampler.refine_batch(idx)
+    for i, n in enumerate(idx):
+        sol = samples[i].get_result()
+        solutions[n,:,0] = sol
+        solutions[n,:,1] = sol
+        
+        sampleObj[n] = samples[i]
+    
+    return solutions
 
 
 def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties, 
