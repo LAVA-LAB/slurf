@@ -19,6 +19,7 @@ class ModelSamplerInterface:
 
     def __init__(self):
         self._model = None
+        self._symb_desc = None
         self._init_state = None
         self._properties = None
         self._parameters = None
@@ -178,14 +179,13 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Return all parameters each with range (0 infinity)
         return {p: (0, math.inf) for p in self._parameters.keys()}
 
-    def prepare_properties(self, properties, model_desc=None):
+    def prepare_properties(self, properties):
         """
         Set properties.
 
         Parameters
         ----------
         properties Properties either given as a tuple (event, [time bounds]) or a list of properties.
-        model_desc Model description as either Prism program or Jani model (optional).
         -------
 
         """
@@ -198,13 +198,12 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             # Todo: use less hackish way to distinguish between expression and label
             ev_str = event if "=" in event else f'"{event}"'
             property_string = ";".join([f'P=? [ F<={float(t)} {ev_str} ]' for t in time_bounds])
-        if model_desc is not None:
-            symb_desc = stormpy.SymbolicModelDescription(model_desc)
-            if symb_desc.is_prism_program:
-                self._properties = sp.parse_properties_for_prism_program(property_string, model_desc)
+        if self._symb_desc is not None:
+            if self._symb_desc.is_prism_program:
+                self._properties = sp.parse_properties_for_prism_program(property_string, self._symb_desc.as_prism_program())
             else:
-                assert symb_desc.is_jani_model
-                self._properties = sp.parse_properties_for_jani_model(property_string, model_desc)
+                assert self._symb_desc.is_jani_model
+                self._properties = sp.parse_properties_for_jani_model(property_string, self._symb_desc.as_jani_model())
         else:
             self._properties = sp.parse_properties(property_string)
 
@@ -237,8 +236,9 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         else:
             # Parse Prism program
             model_desc = sp.parse_prism_program(model, prism_compat=True)
+        self._symb_desc = stormpy.SymbolicModelDescription(model_desc)
         # Create properties
-        self.prepare_properties(properties, model_desc)
+        self.prepare_properties(properties)
         # Build (sparse) CTMC
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
         model = sp.build_sparse_parametric_model_with_options(model_desc, options)
@@ -254,7 +254,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         results = []
         for prop in self._properties:
             # Specify formula
-            self._inst_checker_approx.specify_formula(prop.raw_formula)
+            self._inst_checker_approx.specify_formula(prop.raw_formula, self._symb_desc)
             # Check CTMC
             lb, ub = self._inst_checker_approx.check(storm_valuation, sample_point.get_id())
             results.append((lb, ub))
@@ -535,11 +535,11 @@ class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterf
         if absorbing_states is None:
             # Compute states to remove
             absorbing_states = self._compute_absorbing_states(storm_valuation)
-            print("- Use new cluster")
+            print("  - Use new cluster")
             # Store cluster
             self._clusters[sample_point] = absorbing_states
         else:
-            print("- Use existing cluster")
+            print("  - Use existing cluster")
 
         options = ApproximationOptions()
         options.set_fixed_states_absorbing(absorbing_states)

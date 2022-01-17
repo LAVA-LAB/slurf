@@ -48,13 +48,24 @@ class ApproximateChecker:
             ub = lb
         return lb, ub
 
-    def specify_formula(self, formula):
+    def specify_formula(self, formula, model_desc):
         self._lb_formula = formula
         # TODO once instantiation checker yields transient probabilities, this is no longer necessary
-        assert type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula
-        old_label = formula.subformula.right_subformula.label
-        self._ub_formula = stormpy.parse_properties(str(self._lb_formula).replace("\"" + old_label + "\"", "(\"" + old_label + "\" | \"" + self._abort_label + "\")"))[
-            0].raw_formula
+        if type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula:
+            old_label = formula.subformula.right_subformula.label
+            self._ub_formula = stormpy.parse_properties(str(self._lb_formula).replace("\"" + old_label + "\"", "(\"" + old_label + "\" | \"" + self._abort_label + "\")"))[
+                0].raw_formula
+        else:
+            assert type(formula.subformula.right_subformula) == sp.logic.AtomicExpressionFormula
+            assert model_desc is not None
+            old_expression = str(formula.subformula.right_subformula.get_expression())
+            new_formula = str(self._lb_formula).replace(old_expression, "(" + old_expression + " | \"" + self._abort_label + "\")")
+            if model_desc.is_prism_program:
+                properties = sp.parse_properties_for_prism_program(new_formula, model_desc.as_prism_program())
+            else:
+                assert model_desc.is_jani_model
+                properties = sp.parse_properties_for_jani_model(new_formula, model_desc.as_jani_model())
+            self._ub_formula = properties[0].raw_formula
 
     def _get_submodel_instantiation_checker(self, instantiation, inst_id):
         if inst_id in self._subcheckers:
