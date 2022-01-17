@@ -210,7 +210,7 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     return sampleObj, results
 
 
-def refine_solutions(sampler, sampleObj, solutions, idx):
+def refine_solutions(sampler, sampleObj, solutions, idx, precision, ind_precision):
     '''
     Refine imprecise solutions for the given indices
 
@@ -219,13 +219,16 @@ def refine_solutions(sampler, sampleObj, solutions, idx):
     sampler Sampler object (for either CTMC of DFT)
     solutions 3D np.array with solutions
     idx List of indices to refine
+    precision Maximal allowed distance between upper and lower bounds on results.
+    ind_precision Dictionary with individual precisions for given properties. If property is not given,
+            the default precision is used.
     
     Returns
     -------
     solutions Updated solutions array
     '''
-    
-    samples = sampler.refine_batch(idx)
+
+    samples = sampler.refine_batch(idx, precision, ind_precision)
     for i, n in enumerate(idx):
         sol = samples[i].get_result()
         solutions[n,:,0] = sol

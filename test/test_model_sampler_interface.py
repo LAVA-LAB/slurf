@@ -17,7 +17,7 @@ class TestModelSampler:
         assert util.is_inbetween(result[1][0], 0.9427719189, result[1][1])
         assert util.is_inbetween(result[2][0], 0.9987049333, result[2][1])
 
-        sample = sampler.refine(sample.get_id())
+        sample = sampler.refine(sample.get_id(), 1e-10)
         result = sample.get_result()
         assert math.isclose(result[0], 0.1734083474)
         assert math.isclose(result[1], 0.9427719189)
@@ -125,7 +125,7 @@ class TestModelSampler:
         samples = sampler.sample_batch([{"p": 0.3}, {"p": 0.5}, {"p": 0.7}])
         assert len(samples) == 3
 
-        samples_refined = sampler.refine_batch([samples[0].get_id(), samples[2].get_id()])
+        samples_refined = sampler.refine_batch([samples[0].get_id(), samples[2].get_id()], 1e-10)
         sample0 = samples_refined[0]
         assert sample0.is_refined()
         result0 = sample0.get_result()

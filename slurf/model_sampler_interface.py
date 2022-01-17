@@ -76,27 +76,32 @@ class ModelSamplerInterface:
         A dictionary of results corresponding to the names of the sample points.
         """
 
-    def refine(self, sample_id):
+    def refine(self, sample_id, precision, ind_precision=dict()):
         """
         Refine sample point and obtain exact result.
 
         Parameters
         ----------
         sample_id Id of sample to refine.
+        precision Maximal allowed distance between upper and lower bound.
+        ind_precision Dictionary with individual precisions for given properties. If property is not given,
+            the default precision is used.
 
         Returns
         -------
         Sample point containing the refined result.
         """
 
-    def refine_batch(self, sample_ids):
+    def refine_batch(self, sample_ids, precision, ind_precision=dict()):
         """
         Refine sample points and obtain exact result.
 
         Parameters
         ----------
         sample_ids Ids of samples to refine.
-
+        precision Maximal allowed distance between upper and lower bound.
+        ind_precision Dictionary with individual precisions for given properties. If property is not given,
+            the default precision is used.
         Returns
         -------
         A dictionary of results corresponding to the names of the sample points.
@@ -134,6 +139,13 @@ class ModelSamplerInterface:
             if param not in self._parameters:
                 print("ERROR: parameter {} is not given in valuation".format(param))
                 assert False
+
+    def is_precise_enough(self, lb, ub, precision, ind_precisions, prop):
+        rel_error = 2 * (ub - lb) / (ub + lb)
+        if prop in ind_precisions:
+            return rel_error <= ind_precisions[prop]
+        else:
+            return rel_error <= precision
 
 
 class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
@@ -269,7 +281,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         sample_point = self._samples.add_sample(valuation)
 
         if exact:
-            return self._refine(sample_point)
+            return self._refine(sample_point, 1e-10)
 
         time_start = time.process_time()
         sample_point = self._sample(sample_point)
@@ -286,7 +298,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         if exact:
             # TODO: more efficient
-            return self.refine_batch([s.get_id() for s in sample_points])
+            return self.refine_batch([s.get_id() for s in sample_points], 1e-10)
 
         time_start = time.process_time()
         results = dict()
@@ -298,7 +310,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._sample_calls += len(samples)
         return results
 
-    def _refine(self, sample_point):
+    def _refine(self, sample_point, precision, ind_precisions=dict()):
         assert not sample_point.is_refined()
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
@@ -318,19 +330,19 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         sample_point.set_results(results, True)
         return sample_point
 
-    def refine(self, sample_id):
+    def refine(self, sample_id, precision, ind_precisions=dict()):
         time_start = time.process_time()
 
         # Get corresponding sample point
         sample = self._samples.get_sample(sample_id)
         # Refine sample
-        self._refine(sample)
+        self._refine(sample, precision, ind_precisions)
 
         self._time_sample += time.process_time() - time_start
         self._refined_samples += 1
         return sample
 
-    def refine_batch(self, sample_ids):
+    def refine_batch(self, sample_ids, precision, ind_precisions=dict()):
         time_start = time.process_time()
 
         # Get corresponding sample points
@@ -338,7 +350,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         for sample in tqdm(samples):
             # Refine sample
-            self._refine(sample)
+            self._refine(sample, precision, ind_precisions)
 
         self._time_sample += time.process_time() - time_start
         self._refined_samples += len(samples)
@@ -489,7 +501,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         sample_point.set_results(results, refined=False)
         return sample_point
 
-    def _refine(self, sample_point):
+    def _refine(self, sample_point, precision, ind_precision=dict()):
         assert not sample_point.is_refined()
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
@@ -497,22 +509,47 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         # Instantiate parametric DFT
         sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
 
-        # Build CTMC from DFT
+        # Compute approximation from DFT
         print(' - Start building state space')
-        self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
-        self._init_state = self._model.initial_states[0]
-        print(' - Finished building model')
+        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
 
-        if self._model.model_type == sp.ModelType.MA:
-            print("ERROR: Resulting model is MA instead of CTMC")
-            assert False
+        it = 0
+        iterating = True
+        while iterating:
+            builder.build(it, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
+            self._model = builder.get_partial_model(True, False)
+            self._init_state = self._model.initial_states[0]
+            if self._model.model_type == sp.ModelType.MA:
+                print("ERROR: Resulting model is MA instead of CTMC")
+                assert False
 
-        results = []
-        for prop in self._properties:
-            # Check CTMC
-            results.append(sp.model_checking(self._model, prop).at(self._init_state))
+            model_up = builder.get_partial_model(False, False)
+            init_up = model_up.initial_states[0]
+            results = []
+            iterating = False
 
-        sample_point.set_results(results, refined=True)
+            # Try longest timebound first for faster abortion
+            prop_last = self._properties[-1]
+            result_last_low = stormpy.model_checking(self._model, prop_last).at(self._init_state)
+            result_last_up = stormpy.model_checking(model_up, prop_last).at(init_up)
+            print("   - Iteration {}: {}, {}".format(it, result_last_low, result_last_up))
+            if not self.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
+                iterating = True
+                it += 1
+                continue
+
+            for prop in self._properties[:-1]:
+                result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
+                result_up = stormpy.model_checking(model_up, prop).at(init_up)
+                print("   - Iteration {}: {}, {}".format(it, result_low, result_up))
+                if not self.is_precise_enough(result_low, result_up, precision, ind_precision, prop):
+                    iterating = True
+                    it += 1
+                    break
+                results.append((result_low, result_up))
+            results.append((result_last_low, result_last_up))
+        print(' - Finished building model after {} iterations'.format(it))
+        sample_point.set_results(results, refined=False)
         return sample_point
 
 
