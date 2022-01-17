@@ -64,7 +64,7 @@ def load_distribution(root_dir, model_path, model_type,
         timebounds = tuple(property_df['failed'])        
         properties = ("failed", timebounds)
         
-        prop_labels = None
+        prop_labels = ["failed[t<="+str(t)+"]" for t in timebounds]
         reliability = True
     
     return model_file, param_dic, properties, prop_labels, reliability, timebounds
@@ -193,6 +193,11 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     for n in range(Nsamples):
 
         results[n] = sampleObj[n].get_result()
+        
+        if not exact:
+            if all(np.isclose(results[n,:,0], results[n,:,1])):
+                sampleObj[n]._refined = True
+                print('Sample',n,'is already precise!')
         
     # If cache is activated, export samples
     if cache:

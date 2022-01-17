@@ -24,16 +24,23 @@ if __name__ == '__main__':
     
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
-    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
-    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban2.sm')
-    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
-    # ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
     
-    # ARGS.exact = False
-    # ARGS.Nsamples = [50]
+    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
+    # ARGS.plot_timebounds = [120, 160]
+    
+    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban2.sm')
     # ARGS.bisim = False
     
-    ARGS = parse_arguments()
+    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
+    # ARGS.plot_timebounds = [0.6, 1]
+    
+    ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
+    ARGS.plot_timebounds = [6000, 16000]
+    
+    ARGS.exact = False
+    ARGS.Nsamples = [100]
+    
+    # ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -113,25 +120,35 @@ if __name__ == '__main__':
         print("\n===== Sampler finished at:", getTime(),"=====")
         time_start = time.process_time()
         
-        dfs['storm_stats'] = print_stats(sampler.get_stats())
-        
         rho_list = [1.5] #np.round([1/(n+0.5) for n in range(0, args.Nsamples)], 3)[::-1]
         
+        i = 0
+        plotEvery = 20
         done = False
         while not done:
             # Compute solution set using scenario optimization
             regions, dfs['regions'], dfs['regions_stats'], refineID = \
                 compute_confidence_region(solutions, args, rho_list)
             
+            # If we compute exact results, break the while loop directly
+            if args.exact:
+                break
+            
+            # Occasionally plot (intermediate) results
+            if i % plotEvery == 0:
+                plot_results(output_path, args, regions, solutions, reliability, 
+                             prop_labels, timebounds)
+            
             # Plot results
             toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
-            
             print('Refine samples:', toRefine)
             
             if len(toRefine) > 0:            
                 solutions = refine_solutions(sampler, sampleObj, solutions, toRefine)
             else:
                 done = True
+                
+            i += 1
             
         timing['5_scenario_problems'] = time.process_time() - time_start
         print("\n===== Scenario problems completed at:", getTime(),"=====")
@@ -162,6 +179,8 @@ if __name__ == '__main__':
             
         timing['7_validation'] = time.process_time() - time_start
         print("\n===== Validation completed at:", getTime(),"=====")
+        
+        dfs['storm_stats'] = print_stats(sampler.get_stats())
         
         # Save raw results in Excel file
         dfs['timing'] = pd.Series(timing)

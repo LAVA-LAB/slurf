@@ -40,13 +40,16 @@ def parse_arguments(manualModel=None, nobisim=False):
                         help="Disable bisimulation")
     parser.set_defaults(bisim=True)
         
-    # Scenario problem optional arguments
-    parser.add_argument('--rho_min', type=float, action="store", dest='rho_min', 
-                        default=0.0001, help="Minimum cost of violation")
-    parser.add_argument('--rho_incr', type=float, action="store", dest='rho_incr', 
-                        default=1.5, help="Increment factor for the cost of violation")
-    parser.add_argument('--rho_max_iter', type=int, action="store", dest='rho_max_iter', 
-                        default=20, help="Maximum number of iterations to perform")
+    # # Scenario problem optional arguments
+    # parser.add_argument('--rho_min', type=float, action="store", dest='rho_min', 
+    #                     default=0.0001, help="Minimum cost of violation")
+    # parser.add_argument('--rho_incr', type=float, action="store", dest='rho_incr', 
+    #                     default=1.5, help="Increment factor for the cost of violation")
+    # parser.add_argument('--rho_max_iter', type=int, action="store", dest='rho_max_iter', 
+    #                     default=20, help="Maximum number of iterations to perform")
+    
+    parser.add_argument('--plot-timebounds', type=str, action="store", dest='plot_timebounds', 
+                        default=None, help="List of two timebounds to create 2D plot for")
     
     # Plot optional arguments
     parser.add_argument('--curve_plot_mode', type=str, action="store", dest='curve_plot_mode', 
@@ -62,6 +65,12 @@ def parse_arguments(manualModel=None, nobisim=False):
     args = parser.parse_args()    
 
     # Interprete some arguments as lists
+    if args.plot_timebounds:
+        try:
+            args.plot_timebounds = [float(args.plot_timebounds)]
+        except:
+            args.plot_timebounds = list(literal_eval(args.plot_timebounds))
+    
     try:
         args.beta = [float(args.beta)]
     except:

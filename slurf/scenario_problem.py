@@ -256,6 +256,7 @@ class scenarioProblem:
         if self.exact:
             complexity = sum(support_mask)
             boundary_set = []
+            refine_set = None
         
         else:
             boundary_mask = np.zeros(self.Nsamples, dtype=bool)
@@ -290,9 +291,6 @@ class scenarioProblem:
                         # Select this solution on the boundary for refinement
                         refine_mask[j] = True
                         
-                        # If we already have an intersecting solution, we can
-                        # break the inner for-loop
-                        break
             
             refine_set = np.union1d(self.sample_ids[refine_mask], boundary_set)
             

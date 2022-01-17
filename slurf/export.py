@@ -27,13 +27,15 @@ def plot_results(output_dir, args, regions, solutions, reliability,
         
         plt.show()
         
-        if args.plot_propID:
+        if args.plot_timebounds:
             
-            idx_pair   = (timebounds.index(args.plot_propID[0]),
-                          timebounds.index(args.plot_propID[1]))
+            idx_pair   = (timebounds.index(args.plot_timebounds[0]),
+                          timebounds.index(args.plot_timebounds[1]))
+            
+            idx_prop = [prop_labels[idx_pair[0]]] + [prop_labels[idx_pair[1]]]
         
             # Plot 2D confidence regions
-            plot_2D(args, idx_pair, prop_labels[idx_pair], regions, solutions, 
+            plot_2D(args, idx_pair, idx_prop, regions, solutions, 
                     regions, plotSamples=True, plotSampleID=True)
 
         # exp_file = args.modelfile + "_" + str(idx_pair)
@@ -51,8 +53,10 @@ def plot_results(output_dir, args, regions, solutions, reliability,
                 region_list = [None]
             for R in region_list:
                 
+                idx_prop = [prop_labels[idx_pair[0]]] + [prop_labels[idx_pair[1]]]
+                
                 # Plot 2D confidence regions
-                plot_2D(args, idx_pair, prop_labels[list(idx_pair)], regions, 
+                plot_2D(args, idx_pair, idx_prop, regions, 
                         solutions, R, plotSamples=True, plotSampleID=True)
         
                 exp_file = args.modelfile + "_" + str(idx_pair)
@@ -348,7 +352,7 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         
         plt.xticks([260, 300, 340, 380, 420])
 
-    plt.gca().set_xlim(0.2, 0.7)
+    plt.gca().set_xlim(0.15, 0.75)
     plt.gca().set_ylim(0.4, 1.0)
 
     if title:
