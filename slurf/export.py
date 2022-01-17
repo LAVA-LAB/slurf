@@ -352,8 +352,8 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         
         plt.xticks([260, 300, 340, 380, 420])
 
-    plt.gca().set_xlim(0.15, 0.75)
-    plt.gca().set_ylim(0.4, 1.0)
+    # plt.gca().set_xlim(0.15, 0.75)
+    # plt.gca().set_ylim(0.4, 1.0)
 
     if title:
         if pareto:

@@ -41,6 +41,8 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.set_defaults(bisim=True)
         
     # # Scenario problem optional arguments
+    parser.add_argument('--rho', type=float, action="store", dest='rho_list', 
+                        default=None, help="Minimum cost of violation")
     # parser.add_argument('--rho_min', type=float, action="store", dest='rho_min', 
     #                     default=0.0001, help="Minimum cost of violation")
     # parser.add_argument('--rho_incr', type=float, action="store", dest='rho_incr', 
@@ -65,6 +67,12 @@ def parse_arguments(manualModel=None, nobisim=False):
     args = parser.parse_args()    
 
     # Interprete some arguments as lists
+    if args.rho_list:
+        try:
+            args.rho_list = [float(args.rho_list)]
+        except:
+            args.rho_list = list(literal_eval(args.rho_list))
+    
     if args.plot_timebounds:
         try:
             args.plot_timebounds = [float(args.plot_timebounds)]

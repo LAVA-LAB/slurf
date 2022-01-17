@@ -419,7 +419,8 @@ def compute_confidence_region(samples, args, rho_list):
             'refine_set': refine_set
             }
         
-        refineID = np.union1d(refineID, refine_set)
+        if not args.exact:
+            refineID = np.union1d(refineID, refine_set)
         
         Psat = []
         for b in beta:

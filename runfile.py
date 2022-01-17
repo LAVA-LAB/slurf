@@ -28,19 +28,26 @@ if __name__ == '__main__':
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
     # ARGS.plot_timebounds = [120, 160]
     
-    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban2.sm')
+    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban3.sm')
     # ARGS.bisim = False
+    # ARGS.Nsamples = [50]
+    # ARGS.Nvalidate = 25
+    
     
     # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
     # ARGS.plot_timebounds = [0.6, 1]
     
-    ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
-    ARGS.plot_timebounds = [6000, 16000]
+    # ARGS = parse_arguments(manualModel='dft/hecs_for_approx/hecs_2_2.dft')
+    # ARGS.plot_timebounds = [2000, 8000]
     
-    ARGS.exact = False
-    ARGS.Nsamples = [100]
+    # ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
+    # ARGS.plot_timebounds = [6000, 16000]
     
-    # ARGS = parse_arguments()
+    # ARGS.exact = True
+    # ARGS.Nsamples = [100]
+    # ARGS.Nvalidate = 100
+    
+    ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -120,10 +127,14 @@ if __name__ == '__main__':
         print("\n===== Sampler finished at:", getTime(),"=====")
         time_start = time.process_time()
         
-        rho_list = [1.5] #np.round([1/(n+0.5) for n in range(0, args.Nsamples)], 3)[::-1]
+        ls = map(int, np.linspace(0, args.Nsamples, min(args.Nsamples,10)))
+        if args.rho_list:
+            rho_list = args.rho_list
+        else:
+            rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)[::-1]
         
         i = 0
-        plotEvery = 20
+        plotEvery = 1
         done = False
         while not done:
             # Compute solution set using scenario optimization
@@ -143,7 +154,7 @@ if __name__ == '__main__':
             toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
             print('Refine samples:', toRefine)
             # TODO make precision choosable
-            precision = 0.5
+            precision = 0.01
             ind_precision = dict()
             if len(toRefine) > 0:            
                 solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, precision, ind_precision)
@@ -171,8 +182,8 @@ if __name__ == '__main__':
             
             emp_satprob, val_dfs = \
                 validate_solutions(val_dfs, sampler, regions, args.Nvalidate, 
-                   properties, list(param_dic.keys()), param_values)
-                                #args.modelfile_nosuffix+'_cache.pkl')
+                   properties, list(param_dic.keys()), param_values,
+                   root_dir=root_dir, cache=args.modelfile_nosuffix+'_seed'+str(args.seeds)+'_cache.pkl')
                                 
             dfs['regions_stats']['Emp_satprob'] = emp_satprob
                                 

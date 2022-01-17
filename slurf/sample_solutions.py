@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
+import copy
 
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
@@ -120,7 +121,7 @@ def param_gaussian(Nsamples, mean, std):
 
 
 def sample_solutions(sampler, Nsamples, properties, param_list, 
-                     param_values, root_dir=None, cache=False, exact=False):
+                     param_values, root_dir=None, cache=False, exact=True):
     """
 
     Parameters
@@ -148,9 +149,11 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
         results = np.zeros((Nsamples, num_props))
     else:
         results = np.zeros((Nsamples, num_props, 2))
+        cache = False
     
     # If cache is activated...
     if cache:
+        
         cache_path = os.path.join(root_dir, 'cache', cache)
         
         # If cache file exists, try to load samples from it
@@ -181,7 +184,7 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
                 print('--- Number of properties:',num_properties)
                 
                 # If results are imported, return here
-                return results
+                return None, results
     
     assert len(param_list) == param_values.shape[1]
 
@@ -236,8 +239,13 @@ def refine_solutions(sampler, sampleObj, solutions, idx, precision, ind_precisio
     samples = sampler.refine_batch(idx, precision, ind_precision)
     for i, n in enumerate(idx):
         sol = samples[i].get_result()
-        solutions[n,:,0] = sol
-        solutions[n,:,1] = sol
+        
+        if type(sol[0]) == tuple:
+            solutions[n,:,:] = np.array(sol)
+            
+        else:
+            solutions[n,:,0] = sol
+            solutions[n,:,1] = sol
         
         sampleObj[n] = samples[i]
     
@@ -266,7 +274,8 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
     """
     
     # Compute new solutions for validation
-    solutions_V = sample_solutions( sampler = sampler,
+    _, solutions_V = sample_solutions( 
+                        sampler = sampler,
                         Nsamples = Nvalidate,
                         properties = properties,
                         param_list = param_list,
@@ -279,9 +288,10 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
     
     # For every value of rho
     for i,D in regions.items():
+        
         # Determine which samples violate the solution (bounding box)
-        sat_low = np.all(solutions_V >= D['x_low'], axis=1)
-        sat_upp = np.all(solutions_V <= D['x_upp'], axis=1)
+        sat_low = np.all(solutions_V >= np.array(D['x_low']), axis=1)
+        sat_upp = np.all(solutions_V <= np.array(D['x_upp']), axis=1)
         
         # Compute the total number of violating samples
         sat_sum = np.sum(sat_low * sat_upp)
@@ -292,7 +302,7 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
     for i, item in regions.items():
         
         rho = np.round(item['rho'], 4)
-        series = regions[i]['eta_series']
+        series = copy.copy(regions[i]['eta_series'])
         series['emp'] = empirical_satprob[i]
         
         if rho in val_dfs:
