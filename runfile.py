@@ -10,6 +10,7 @@ from slurf.sample_solutions import load_distribution, sample_solutions, \
 from slurf.scenario_problem import compute_confidence_region
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.dft_sampler import DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
+from slurf.approximate_ctmc_checker import ApproxHeuristic
 from slurf.commons import path, getTime, print_stats, set_solution_df, \
     set_output_path, getDateTime
 from slurf.parser import parse_arguments
@@ -103,7 +104,7 @@ if __name__ == '__main__':
             #sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
             sampler = DftConcreteApproximationSamplerInterface()  # Builds partial models for each sample
         sampler.set_max_cluster_distance(1e-4)
-        sampler.set_approximation_heuristic("expected_time")
+        sampler.set_approximation_heuristic(ApproxHeuristic.REACH_PROB)
 
         timing['3_init_sampler'] = time.process_time() - time_start
         print("\n===== Sampler initialized at:", getTime(),"=====")

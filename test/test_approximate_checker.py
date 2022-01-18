@@ -16,5 +16,6 @@ class TestApproximateChecker:
         sample_cache = SampleCache()
         sample = sample_cache.add_sample({"p": 0.5})
         instance = {p: pc.cln.Rational(0.5) for p in pars}
-        results = checker.check(sample, instance, properties, precision=10)
+        results, exact = checker.check(sample, instance, properties, precision=10)
+        assert not exact
         assert util.is_inbetween(results[0][0], 0.6996164004519213, results[0][1])

@@ -4,6 +4,15 @@ import stormpy as sp
 import stormpy.pars
 import stormpy.logic
 
+from queue import Queue
+import math
+from enum import Enum
+
+
+class ApproxHeuristic(Enum):
+    EXPECTED_TIME = 1
+    REACH_PROB = 2
+
 
 def find_nearby_cluster(clusters, sample_point, max_distance):
     if sample_point in clusters:
@@ -25,7 +34,7 @@ class ApproximationOptions:
 
     def __init__(self):
         self._cluster_max_distance = 0
-        self._heuristic = "expected_time"
+        self._heuristic = ApproxHeuristic.EXPECTED_TIME
 
     def set_cluster_max_distance(self, max_distance):
         self._cluster_max_distance = max_distance
@@ -39,14 +48,27 @@ class SubModelInfo:
     Stores relevant information for each submodel.
     """
 
-    def __init__(self, submodel):
+    def __init__(self):
+        self._model = None
+        self._init_state = None
+        self._inst_checker = None
+        self._absorbing_states = None
+        self._iteration = 0
+        self._exact = False
+        self._state_expected_times = []
+        self._state_reach_probabilities = []
+
+    def set_absorbing_states(self, absorbing_states):
+        self._absorbing_states = absorbing_states
+
+    def get_absorbing_states(self):
+        return self._absorbing_states
+
+    def update_model(self, submodel):
         self._model = submodel
         assert len(self._model.initial_states) == 1
         self._init_state = self._model.initial_states[0]
         self._inst_checker = sp.pars.PCtmcInstantiationChecker(self._model)
-        self._absorbing_states = None
-        self._iteration = 0
-        self._exact = False
 
 
 class ApproximateChecker:
@@ -89,14 +111,15 @@ class ApproximateChecker:
         # Find possible cluster
         cluster_point = find_nearby_cluster(self._clusters, sample_point, self._options._cluster_max_distance)
         if cluster_point is not None:
-            print("  - Use existing cluster")
+            print("   - Use existing cluster")
             submodel_info = self._clusters[cluster_point]
         else:
             # No cluster is close enough -> create new submodel info
-            print("  - Use new cluster")
+            print("   - Use new cluster")
             cluster_point = sample_point
-            absorbing_states = self._compute_initial_absorbing_states(instantiation, self._reach_label, self._options._heuristic)
-            submodel_info = ApproximateChecker.build_submodel(self._original_model, absorbing_states, self._abort_label)
+            submodel_info = SubModelInfo()
+            submodel_info = self._compute_initial_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
+            submodel_info = ApproximateChecker.build_submodel(submodel_info, self._original_model, self._abort_label)
 
         while True:
             if submodel_info._exact:
@@ -106,23 +129,16 @@ class ApproximateChecker:
                     results.append(self._compute_formula(submodel_info, instantiation, lb_formula))
                 break
             else:
-                print("Iteration start" + str(submodel_info._iteration))
                 results = self.compute_bounds(submodel_info, instantiation, self._formulas, precision)
                 if results is None:
                     # Refine further
                     submodel_info = self._refine_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
-                    print("Iteration refine" + str(submodel_info._iteration))
                 else:
                     # Precise enough
                     break
+        print("   - Use model with {}/{} states".format(submodel_info._model.nr_states, self._original_model.nr_states))
         # Store cluster
-        print("Iteration end" + str(submodel_info._iteration))
-
         self._clusters[cluster_point] = submodel_info
-        if submodel_info._exact:
-            print("Results for exact model: {}".format(results))
-        else:
-            print("Results for iteration {}: {}".format(submodel_info._iteration, results))
 
         return results, submodel_info._exact
 
@@ -172,54 +188,110 @@ class ApproximateChecker:
         return properties[0].raw_formula
 
     @staticmethod
-    def build_submodel(model, absorbing_states, abort_label):
+    def build_submodel(submodel_info, orig_model, abort_label):
         # Set outgoing transition to keep
-        selected_outgoing_transitions = sp.BitVector(model.nr_states, True)
-        for id in absorbing_states:
+        selected_outgoing_transitions = sp.BitVector(orig_model.nr_states, True)
+        for id in submodel_info.get_absorbing_states():
             selected_outgoing_transitions.set(id, False)
 
         # Now build the submodel
         options = sp.SubsystemBuilderOptions()
         options.fix_deadlocks = True
-        submodel_result = sp.construct_submodel(model, sp.BitVector(model.nr_states, True), selected_outgoing_transitions, False, options)
-        submodel = submodel_result.model
+        submodel_result = sp.construct_submodel(orig_model, sp.BitVector(orig_model.nr_states, True), selected_outgoing_transitions, False, options)
+        submodel_info.update_model(submodel_result.model)
         # sp.export_to_drn(submodel, "test_ctmc.drn")
         assert submodel_result.deadlock_label is None or abort_label == submodel_result.deadlock_label
-        return SubModelInfo(submodel)
+        if len(submodel_info.get_absorbing_states()) == 0:
+            submodel_info._exact = True
+        return submodel_info
 
-    def _compute_initial_absorbing_states(self, instantiation, reach_label, heuristic):
-        if heuristic == "expected_time":
-            return self._get_absorbing_states_by_expected_time(instantiation, reach_label, 1)
+    def _compute_initial_absorbing_states(self, submodel_info, instantiation, reach_label, heuristic):
+        if heuristic == ApproxHeuristic.EXPECTED_TIME:
+            return self._absorbing_states_by_expected_time(submodel_info, instantiation, reach_label, 1)
+        elif heuristic == ApproxHeuristic.REACH_PROB:
+            return self._absorbing_states_by_reachability_probability(submodel_info, instantiation, 0.05)
         else:
             print("ERROR: heuristic not known")
             assert False
 
     def _refine_absorbing_states(self, submodel_info, instantiation, reach_label, heuristic):
         # Get absorbing states
-        if heuristic == "expected_time":
-            absorbing_states = self._get_absorbing_states_by_expected_time(instantiation, reach_label, submodel_info._iteration + 1)
+        if heuristic == ApproxHeuristic.EXPECTED_TIME:
+            submodel_info = self._absorbing_states_by_expected_time(submodel_info, instantiation, reach_label, submodel_info._iteration + 1)
+        elif heuristic == ApproxHeuristic.REACH_PROB:
+            submodel_info = self._absorbing_states_by_reachability_probability(submodel_info, instantiation, 0.05 * math.pow(2, -submodel_info._iteration))
         else:
             print("ERROR: heuristic not known")
             assert False
 
         # Create new submodel
-        new_info = ApproximateChecker.build_submodel(self._original_model, absorbing_states, self._abort_label)
-        new_info._iteration = submodel_info._iteration + 1
-        if not absorbing_states:
-            new_info._exact = True
-        return new_info
+        submodel_info = ApproximateChecker.build_submodel(submodel_info, self._original_model, self._abort_label)
+        submodel_info._iteration += 1
+        return submodel_info
 
-    def _get_absorbing_states_by_expected_time(self, instantiation, reach_label, threshold):
+    def _absorbing_states_by_expected_time(self, submodel_info, instantiation, reach_label, threshold):
         # Check expected time on CTMC to as heuristic for important/unimportant states
-        formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
+        if len(submodel_info._state_expected_times) == 0:
+            # Initially compute expected times
+            formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
 
-        # Check CTMC
-        self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
-        env = sp.Environment()
-        result = self._inst_checker_exact.check(env, instantiation)
-        assert result.result_for_all_states
+            # Check CTMC
+            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
+            env = sp.Environment()
+            result = self._inst_checker_exact.check(env, instantiation)
+            assert result.result_for_all_states
+            submodel_info._state_expected_times = result.get_values()
 
         # Compute absorbing states
-        result = dict(zip(range(self._original_model.nr_states), result.get_values()))
-        res_reference = result[self._original_init_state] / (2 * threshold)
-        return [i for i, res in result.items() if res < res_reference]
+        res_reference = submodel_info._state_expected_times[self._original_init_state] / (2 * threshold)
+        submodel_info.set_absorbing_states([i for i, res in enumerate(submodel_info._state_expected_times) if res < res_reference])
+        return submodel_info
+
+    def _absorbing_states_by_reachability_probability(self, submodel_info, instantiation, threshold):
+        # Compute reachability probability for each state as heuristic
+        if len(submodel_info._state_reach_probabilities) == 0:
+            # Initialize reachability probabilities by graph search
+            instantiator = stormpy.pars.ModelInstantiator(self._original_model)
+            inst_model = instantiator.instantiate(instantiation)
+
+            submodel_info._state_reach_probabilities = [0] * inst_model.nr_states
+            visited = sp.storage.BitVector(inst_model.nr_states)
+            queue = Queue()
+            # Start with initial state
+            assert len(inst_model.initial_states) == 1
+            init_state = inst_model.initial_states[0]
+            queue.put(init_state)
+            # Initial state is reachable with probability 1
+            submodel_info._state_reach_probabilities[init_state] = 1
+            while not queue.empty():
+                current_state = queue.get()
+                if visited.get(current_state):
+                    continue
+                visited.set(current_state, True)
+                current_prob = submodel_info._state_reach_probabilities[current_state]
+                #  Iterate through successor states
+                s = inst_model.states[current_state]
+                actions = s.actions
+                assert len(actions) == 1
+                action = actions[0]
+                # Need two iterations: first compute exit rate
+                exit_rate = 0
+                for transition in action.transitions:
+                    exit_rate += transition.value()
+                # Then perform regular graph traversal
+                for transition in action.transitions:
+                    successor = transition.column
+                    if successor == current_state:
+                        # Ignore self-loops
+                        continue
+                    prob = transition.value() / exit_rate
+                    # Update reachability probability
+                    submodel_info._state_reach_probabilities[successor] += prob * current_prob
+                    # Add state to queue if not visited
+                    if not visited.get(successor):
+                        queue.put(successor)
+
+        for val in submodel_info._state_reach_probabilities:
+            assert slurf.util.leq(val, 1)
+        submodel_info.set_absorbing_states([i for i, prob in enumerate(submodel_info._state_reach_probabilities) if prob < threshold])
+        return submodel_info
