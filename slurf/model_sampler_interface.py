@@ -281,7 +281,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         sample_point = self._samples.add_sample(valuation)
 
         if exact:
-            return self._refine(sample_point, 1e-10)
+            return self._refine(sample_point, precision=0)
 
         time_start = time.process_time()
         sample_point = self._sample(sample_point)
@@ -298,7 +298,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         if exact:
             # TODO: more efficient
-            return self.refine_batch([s.get_id() for s in sample_points], 1e-10)
+            return self.refine_batch([s.get_id() for s in sample_points], precision=0)
 
         time_start = time.process_time()
         results = dict()
@@ -314,6 +314,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         assert not sample_point.is_refined()
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # TODO: allow for approximation
 
         # Parameter valuation must be graph preserving
         self._inst_checker_exact.set_graph_preserving(True)
@@ -509,8 +511,26 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         # Instantiate parametric DFT
         sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
 
+        if precision == 0:
+            # Build complete CTMC from DFT
+            print(' - Start building complete state space')
+            self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
+            self._init_state = self._model.initial_states[0]
+            print(' - Finished building complete model')
+
+            if self._model.model_type == sp.ModelType.MA:
+                print("ERROR: Resulting model is MA instead of CTMC")
+                assert False
+
+            results = []
+            for prop in self._properties:
+                # Check CTMC
+                results.append(sp.model_checking(self._model, prop).at(self._init_state))
+            sample_point.set_results(results, refined=True)
+            return sample_point
+
         # Compute approximation from DFT
-        print(' - Start building state space')
+        print(' - Start building partial state space')
         builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
 
         it = 0
@@ -532,7 +552,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
             prop_last = self._properties[-1]
             result_last_low = stormpy.model_checking(self._model, prop_last).at(self._init_state)
             result_last_up = stormpy.model_checking(model_up, prop_last).at(init_up)
-            print("   - Iteration {}: {}, {}".format(it, result_last_low, result_last_up))
+            print("   - Iteration {} ({} states): {}, {}".format(it, self._model.nr_states, result_last_low, result_last_up))
             if not self.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
                 iterating = True
                 it += 1
@@ -548,7 +568,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
                     break
                 results.append((result_low, result_up))
             results.append((result_last_low, result_last_up))
-        print(' - Finished building model after {} iterations'.format(it))
+        print(' - Finished building partial model after {} iterations'.format(it))
         sample_point.set_results(results, refined=False)
         return sample_point
 
@@ -595,13 +615,15 @@ class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterf
         sample_point.set_results(results, refined=False)
         return sample_point
 
-    def _refine(self, sample_point):
+    def _refine(self, sample_point, precision, ind_precisions=dict()):
         assert not sample_point.is_refined()
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
         # Parameter valuation must be graph preserving
         self._inst_checker_exact.set_graph_preserving(True)
+
+        # TODO: allow approximation
 
         env = sp.Environment()
         # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
