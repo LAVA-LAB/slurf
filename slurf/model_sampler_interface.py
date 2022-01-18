@@ -475,6 +475,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         # Instantiate parametric DFT
         sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
+        sp.dft.compute_dependency_conflicts(sample_dft, use_smt=False, solver_timeout=0)  # Needed as instantiation looses this information
 
         # Create new builder
         assert sample_point not in self._builders
@@ -518,6 +519,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         # Instantiate parametric DFT
         sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
+        sp.dft.compute_dependency_conflicts(sample_dft, use_smt=False, solver_timeout=0)  # Needed as instantiation looses this information
 
         if precision == 0:
             # Build complete CTMC from DFT
