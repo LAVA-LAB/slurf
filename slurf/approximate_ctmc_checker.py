@@ -3,6 +3,19 @@ import stormpy.pars
 import stormpy.logic
 
 
+def find_nearby_cluster(clusters, sample_point, max_distance):
+    if sample_point in clusters:
+        return sample_point
+    best_point, best_distance = None, None
+    for point in clusters.keys():
+        distance = sample_point.get_distance(point)
+        if distance <= max_distance:
+            # Found nearby cluster
+            if best_point is None or best_distance > distance:
+                best_point, best_distance = point, distance
+    return best_point
+
+
 class ApproximationOptions:
     """
     Sets the hyperparameters used for approximation.
@@ -85,7 +98,7 @@ class ApproximateChecker:
             return self._subcheckers[sample_point.get_id()]
 
         # Find possible cluster
-        cluster_point = self._find_nearby_cluster(sample_point)
+        cluster_point = find_nearby_cluster(self._clusters, sample_point, self._options._cluster_max_distance)
         if cluster_point is not None:
             print("  - Use existing cluster")
             absorbing_states = self._clusters[cluster_point]
@@ -115,19 +128,9 @@ class ApproximateChecker:
         options.fix_deadlocks = True
         submodel_result = sp.construct_submodel(model, sp.BitVector(model.nr_states, True), selected_outgoing_transitions, False, options)
         submodel = submodel_result.model
-        sp.export_to_drn(submodel, "test_ctmc.drn")
+        # sp.export_to_drn(submodel, "test_ctmc.drn")
         assert submodel_result.deadlock_label is None or abort_label == submodel_result.deadlock_label
         return submodel
-
-    def _find_nearby_cluster(self, sample_point):
-        best_point, best_distance = None, None
-        for point in self._clusters.keys():
-            distance = sample_point.get_distance(point)
-            if distance <= self._options._cluster_max_distance:
-                # Found nearby cluster
-                if best_point is None or best_distance > distance:
-                    best_point, best_distance = point, distance
-        return best_point
 
     def _compute_absorbing_states(self, storm_valuation, reach_label):
         # Check expected time on CTMC to as heuristic for important/unimportant states
