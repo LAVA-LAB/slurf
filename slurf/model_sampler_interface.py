@@ -1,5 +1,5 @@
 from slurf.sample_cache import SampleCache
-from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
+from slurf.approximate_ctmc_checker import ApproximateChecker
 import slurf.util as util
 
 import stormpy as sp
@@ -428,6 +428,10 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
     Refinement can be done by exploring more of the state space.
     """
 
+    def __init__(self):
+        super(DftModelSamplerInterface, self).__init__()
+        self._builders = dict()
+
     def load(self, model, properties, bisim=True, constants=None):
         """
         Note that load() only constructs the DFT. The state space is built for each sample individually.
@@ -472,23 +476,29 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         # Instantiate parametric DFT
         sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
 
-        # Compute approximation from DFT
-        print(' - Start building state space')
+        # Create new builder
+        assert sample_point not in self._builders
         builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+        iteration = 0
 
-        it = 0
-        while True:
-            builder.build(it, 1.0)
+        # Refine approximation from DFT
+        print(' - Start refining state space')
+        iterating = True
+        while iterating:
+            builder.build(iteration, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
             self._model = builder.get_partial_model(True, False)
             self._init_state = self._model.initial_states[0]
             if self._model.model_type == sp.ModelType.MA:
                 print("ERROR: Resulting model is MA instead of CTMC")
                 assert False
-            it += 1
             # TODO find better stopping criteria
-            if self._model.nr_states > 1000 or it >= 3:
-                break
-        print(' - Finished building model')
+            if self._model.nr_states > 1000 or iteration >= 5:
+                iterating = False
+            else:
+                iteration += 1
+        print(' - Finished building model after iteration {}'.format(iteration))
+        # Store builder in cache
+        self._builders[sample_point] = (builder, iteration)
 
         model_up = builder.get_partial_model(False, False)
         init_up = model_up.initial_states[0]
@@ -528,13 +538,23 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
             return sample_point
 
         # Compute approximation from DFT
-        print(' - Start building partial state space')
-        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+        # Get existing builder
+        assert sample_point in self._builders
+        builder, iteration = self._builders[sample_point]
+        print("  - Use existing builder with iteration {}".format(iteration))
 
-        it = 0
+        # Segfault occurs when trying to reuse builder
+        # -> temporary solution is to rebuild to given iteration without model checking inbetween
+        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+        for i in range(iteration + 1):
+            builder.build(i, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
+
+        iteration += 1  # Next iteration
+        print(' - Refine partial state space from iteration {}'.format(iteration))
         iterating = True
         while iterating:
-            builder.build(it, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
+            self._model = builder.get_partial_model(True, False)
+            builder.build(iteration, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
             self._model = builder.get_partial_model(True, False)
             self._init_state = self._model.initial_states[0]
             if self._model.model_type == sp.ModelType.MA:
@@ -550,23 +570,26 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
             prop_last = self._properties[-1]
             result_last_low = stormpy.model_checking(self._model, prop_last).at(self._init_state)
             result_last_up = stormpy.model_checking(model_up, prop_last).at(init_up)
-            print("   - Iteration {} ({} states): {}, {}".format(it, self._model.nr_states, result_last_low, result_last_up))
+            print("   - Iteration {} ({} states): {}, {}".format(iteration, self._model.nr_states, result_last_low, result_last_up))
             if not self.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
                 iterating = True
-                it += 1
+                iteration += 1
                 continue
 
             for prop in self._properties[:-1]:
                 result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
                 result_up = stormpy.model_checking(model_up, prop).at(init_up)
-                print("   - Iteration {}: {}, {}".format(it, result_low, result_up))
+                print("   - Iteration {}: {}, {}".format(iteration, result_low, result_up))
                 if not self.is_precise_enough(result_low, result_up, precision, ind_precision, prop):
                     iterating = True
-                    it += 1
+                    iteration += 1
                     break
                 results.append((result_low, result_up))
             results.append((result_last_low, result_last_up))
-        print(' - Finished building partial model after {} iterations'.format(it))
+        print(' - Finished building partial model after {} iterations'.format(iteration))
+        # Store builder in cache
+        self._builders[sample_point] = (builder, iteration)
+
         sample_point.set_results(results, refined=False)
         return sample_point
 
@@ -614,8 +637,3 @@ class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterf
         # Add result
         sample_point.set_results(results, True)
         return sample_point
-
-    def get_stats(self):
-        stats = super(DftParametricModelSamplerInterface, self).get_stats()
-        stats["no_approx_clusters"] = len(self._clusters)
-        return stats
