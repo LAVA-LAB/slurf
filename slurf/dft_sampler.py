@@ -1,5 +1,6 @@
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.sample_cache import SampleCache
+import slurf.util
 
 import stormpy as sp
 import stormpy.pars
@@ -224,7 +225,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
             result_last_low = stormpy.model_checking(self._model, prop_last).at(self._init_state)
             result_last_up = stormpy.model_checking(model_up, prop_last).at(init_up)
             print("   - Iteration {} ({} states): {}, {}".format(iteration, self._model.nr_states, result_last_low, result_last_up))
-            if not self.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
+            if not slurf.util.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
                 iterating = True
                 iteration += 1
                 continue
@@ -233,7 +234,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
                 result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
                 result_up = stormpy.model_checking(model_up, prop).at(init_up)
                 print("   - Iteration {}: {}, {}".format(iteration, result_low, result_up))
-                if not self.is_precise_enough(result_low, result_up, precision, ind_precision, prop):
+                if not slurf.util.is_precise_enough(result_low, result_up, precision, ind_precision, prop):
                     iterating = True
                     iteration += 1
                     break

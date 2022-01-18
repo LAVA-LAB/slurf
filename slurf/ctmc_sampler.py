@@ -1,6 +1,5 @@
 from slurf.model_sampler_interface import ModelSamplerInterface
-from slurf.approximate_ctmc_checker import ApproximateChecker
-import slurf.util as util
+from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
 
 import stormpy as sp
 import stormpy.pars
@@ -46,7 +45,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         # Create instantiation model checkers
         self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._model)
-        self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc)
+        self._approx_options = ApproximationOptions(self._max_cluster_distance)
+        self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc, self._approx_options)
 
         # Return all parameters each with range (0 infinity)
         return {p: (0, math.inf) for p in self._parameters.keys()}
@@ -122,15 +122,11 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Check CTMC
-            lb, ub = self._inst_checker_approx.check(sample_point, storm_valuation, prop.raw_formula)
-            assert util.leq(lb, ub)
-            results.append((lb, ub))
+        # Check CTMC using approximation checker
+        precision = 10
+        results, exact = self._inst_checker_approx.check(sample_point, storm_valuation, self._properties, precision)
         # Add result
-        sample_point.set_results(results, refined=False)
+        sample_point.set_results(results, refined=exact)
         return sample_point
 
     def _refine(self, sample_point, precision, ind_precisions=dict()):
@@ -138,19 +134,25 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
-        # TODO: allow for approximation
+        if precision == 0:
+            # Compute exact results
+            # Parameter valuation must be graph preserving
+            self._inst_checker_exact.set_graph_preserving(True)
 
-        # Parameter valuation must be graph preserving
-        self._inst_checker_exact.set_graph_preserving(True)
+            env = sp.Environment()
+            # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+            results = []
+            for prop in self._properties:
+                # Specify formula
+                self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
+                # Check CTMC
+                results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
+            # Add result
+            sample_point.set_results(results, refined=True)
+            return sample_point
 
-        env = sp.Environment()
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Specify formula
-            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
-            # Check CTMC
-            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
+        # Compute precise enough results using approximation checker
+        results, exact = self._inst_checker_approx.check(sample_point, storm_valuation, self._properties, precision, ind_precisions)
         # Add result
-        sample_point.set_results(results, True)
+        sample_point.set_results(results, refined=exact)
         return sample_point

@@ -102,6 +102,7 @@ if __name__ == '__main__':
         else:
             #sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
             sampler = DftConcreteApproximationSamplerInterface()  # Builds partial models for each sample
+        sampler.set_max_cluster_distance(1e-4)
 
         timing['3_init_sampler'] = time.process_time() - time_start
         print("\n===== Sampler initialized at:", getTime(),"=====")

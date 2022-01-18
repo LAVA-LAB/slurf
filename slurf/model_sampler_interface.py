@@ -16,8 +16,10 @@ class ModelSamplerInterface:
         self._properties = None
         self._parameters = None
         self._inst_checker_approx = None
+        self._approx_options = None
         self._inst_checker_exact = None
         self._samples = SampleCache()
+        self._max_cluster_distance = 0
 
         # Statistics
         self._states_orig = 0
@@ -27,6 +29,9 @@ class ModelSamplerInterface:
         self._time_sample = 0
         self._sample_calls = 0
         self._refined_samples = 0
+
+    def set_max_cluster_distance(self, max_distance):
+        self._max_cluster_distance = max_distance
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -193,11 +198,3 @@ class ModelSamplerInterface:
             if param not in self._parameters:
                 print("ERROR: parameter {} is not given in valuation".format(param))
                 assert False
-
-    @staticmethod
-    def is_precise_enough(lb, ub, precision, ind_precisions, prop):
-        rel_error = 2 * (ub - lb) / (ub + lb)
-        if prop in ind_precisions:
-            return rel_error <= ind_precisions[prop]
-        else:
-            return rel_error <= precision
