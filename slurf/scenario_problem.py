@@ -190,6 +190,15 @@ class scenarioProblem:
         mask = np.zeros(self.Nsamples)
         value, sol = self.solve_instance(mask, costOfRegret)
 
+        # If upper bound equals lower bound, we can already conclude that
+        # the complexity equals the number of samples
+        if self.exact and not self.pareto and \
+          all(np.isclose(sol['xL'], sol['xU'])):
+            print(' >> Solution is a point, so skip to next problem iteration')
+            
+            return sol, len(self.samples), self.sample_ids, self.sample_ids, 0, \
+                    None
+
         # Initialize masks
         interior_mask = np.zeros(self.Nsamples, dtype=bool)
         support_mask = np.ones(self.Nsamples, dtype=bool)

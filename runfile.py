@@ -25,8 +25,13 @@ if __name__ == '__main__':
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
     
+    ARGS = parse_arguments(manualModel='ffort/rc-subset/rc.1-1-hc.dft')
+    ARGS.Nsamples = [100]
+    ARGS.param_file = 'rc.1-1-hc_parameters.xlsx'
+    
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
     # ARGS.plot_timebounds = [120, 160]
+    # ARGS.Nsamples = [100]
     
     # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban3.sm')
     # ARGS.bisim = False
@@ -49,7 +54,7 @@ if __name__ == '__main__':
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    ARGS = parse_arguments()
+    # ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -129,11 +134,15 @@ if __name__ == '__main__':
         print("\n===== Sampler finished at:", getTime(),"=====")
         time_start = time.process_time()
         
-        ls = map(int, np.linspace(0, args.Nsamples, min(args.Nsamples,10)))
+        # TODO smarter choice of step sizes ls
+        ls = map(int, [0, 1, 2, 4, 6, 8, 10, 15, 20] + list(np.linspace(0, args.Nsamples, 
+                                          min(args.Nsamples,args.rho_steps))))
+        
         if args.rho_list:
             rho_list = args.rho_list
         else:
-            rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)[::-1]
+            rho_list = np.unique(np.sort(np.round(
+                            [1/(int(n)+0.5) for n in ls], 3)))
         
         i = 0
         plotEvery = 1

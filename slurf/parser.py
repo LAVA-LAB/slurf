@@ -42,7 +42,9 @@ def parse_arguments(manualModel=None, nobisim=False):
         
     # # Scenario problem optional arguments
     parser.add_argument('--rho', type=float, action="store", dest='rho_list', 
-                        default=None, help="Minimum cost of violation")
+                        default=None, help="List of cost of violation")
+    parser.add_argument('--rho_steps', type=int, action="store", dest='rho_steps', 
+                        default=10, help="Number of values for rho to run for")
     # parser.add_argument('--rho_min', type=float, action="store", dest='rho_min', 
     #                     default=0.0001, help="Minimum cost of violation")
     # parser.add_argument('--rho_incr', type=float, action="store", dest='rho_incr', 
