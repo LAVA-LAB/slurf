@@ -33,9 +33,11 @@ if __name__ == '__main__':
     # ARGS.Nsamples = [50]
     # ARGS.Nvalidate = 25
     
-    
-    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
-    # ARGS.plot_timebounds = [0.6, 1]
+    ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
+    ARGS.plot_timebounds = [0.6, 1]
+    ARGS.rho_list = [1.1]
+    ARGS.Nvalidate = 100
+    ARGS.seeds = 2
     
     # ARGS = parse_arguments(manualModel='dft/hecs_for_approx/hecs_2_2.dft')
     # ARGS.plot_timebounds = [2000, 8000]
@@ -47,7 +49,7 @@ if __name__ == '__main__':
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    ARGS = parse_arguments()
+    # ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,

@@ -113,10 +113,10 @@ class Cases():
             self.eta_df.loc[q, 'N'] = args.Nsamples
             self.eta_df.loc[q, '#'] = q
             self.eta_df.loc[q, 'seed'] = args.seeds
-            self.eta_df.loc[q, 'rho'] = np.round(region['rho'], 5)
+            self.eta_df.loc[q, 'rho'] = np.round(region['rho'], 6)
             
             betas = list(map(str, args.beta))
-            self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 5)
+            self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 6)
             
             self.eta_df.loc[q, 'empirical'] = emp_satprob[i]
                 

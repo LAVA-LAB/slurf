@@ -194,8 +194,18 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
     sampleObj = sampler.sample_batch(parameters_dic, exact)
 
     for n in range(Nsamples):
-
-        results[n] = sampleObj[n].get_result()
+        
+        sol = np.array(sampleObj[n].get_result())
+        
+        if exact and len(sol.shape) == 2:
+            if all(np.isclose(sol[:,0], sol[:,1])):
+                results[n] = sol[:,0]
+            else:
+                print('ERROR: Exact results expected, but imprecise results given')
+                assert False
+                
+        else:
+            results[n] = sampleObj[n].get_result()
         
         if not exact:
             if all(np.isclose(results[n,:,0], results[n,:,1])):

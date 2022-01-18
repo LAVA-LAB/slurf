@@ -425,7 +425,7 @@ def compute_confidence_region(samples, args, rho_list):
         Psat = []
         for b in beta:
 
-            Pviolation = np.round(1 - etaLow(Nsamples, complexity, b), 4)
+            Pviolation = np.round(1 - etaLow(Nsamples, complexity, b), 6)
             Psat += [1 - Pviolation]
             regions[i]['satprob_beta='+str(b)] = 1 - Pviolation
             print(' - Lower bound on sat.prob for beta={}: {:0.6f}'.\
