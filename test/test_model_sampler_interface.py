@@ -1,4 +1,5 @@
-from slurf.model_sampler_interface import CtmcReliabilityModelSamplerInterface, DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
+from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
+from slurf.dft_sampler import DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
 import slurf.util as util
 from . import util as testutils
 
