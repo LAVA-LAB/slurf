@@ -267,6 +267,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         for prop in self._properties:
             # Check CTMC
             lb, ub = self._inst_checker_approx.check(sample_point, storm_valuation, prop.raw_formula)
+            assert util.leq(lb, ub)
             results.append((lb, ub))
         # Add result
         sample_point.set_results(results, refined=False)
@@ -593,49 +594,4 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         self._builders[sample_point] = (builder, iteration)
 
         sample_point.set_results(results, refined=False)
-        return sample_point
-
-
-class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterface):
-    """
-    The approximation sampler builds the complete parametric model and tries to use only partial models for sampling.
-    """
-
-    def _sample(self, sample_point):
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc)
-
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Check CTMC
-            lb, ub = self._inst_checker_approx.check(sample_point, storm_valuation, prop.raw_formula)
-            assert util.leq(lb, ub)
-            results.append((lb, ub))
-        # Add result
-        sample_point.set_results(results, refined=False)
-        return sample_point
-
-    def _refine(self, sample_point, precision, ind_precisions=dict()):
-        assert not sample_point.is_refined()
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # Parameter valuation must be graph preserving
-        self._inst_checker_exact.set_graph_preserving(True)
-
-        # TODO: allow approximation
-
-        env = sp.Environment()
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Specify formula
-            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
-            # Check CTMC
-            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
-        # Add result
-        sample_point.set_results(results, True)
         return sample_point
