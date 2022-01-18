@@ -10,6 +10,10 @@ __pycache__/
 output/*
 !output/.keep
 
+# Cache folder
+cache/*
+!cache/.keep
+
 # Distribution / packaging
 .Python
 build/
