@@ -1,20 +1,13 @@
 from slurf.sample_cache import SampleCache
-from slurf.approximate_ctmc_checker import ApproximateChecker
-import slurf.util as util
+from slurf.approximate_ctmc_checker import ApproximationOptions
 
-import stormpy as sp
-import stormpy.pars
-import stormpy.dft
-
-import math
-import os.path
 import time
 from tqdm import tqdm
 
 
 class ModelSamplerInterface:
     """
-    Describes the interface for sampling parametric models.
+    Describes the general interface for sampling parametric models.
     """
 
     def __init__(self):
@@ -24,8 +17,10 @@ class ModelSamplerInterface:
         self._properties = None
         self._parameters = None
         self._inst_checker_approx = None
+        self._approx_options = ApproximationOptions()
         self._inst_checker_exact = None
-        self._samples = None
+        self._samples = SampleCache()
+
         # Statistics
         self._states_orig = 0
         self._transitions_orig = 0
@@ -34,6 +29,12 @@ class ModelSamplerInterface:
         self._time_sample = 0
         self._sample_calls = 0
         self._refined_samples = 0
+
+    def set_max_cluster_distance(self, max_distance):
+        self._approx_options.set_cluster_max_distance(max_distance)
+
+    def set_approximation_heuristic(self, approx_heuristic):
+        self._approx_options.set_approx_heuristic(approx_heuristic)
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -50,33 +51,72 @@ class ModelSamplerInterface:
         Returns Dict of all parameters and their bounds (default bounds are [0, infinity)).
         """
 
-    def sample(self, valuation):
+    def _sample(self, sample_point):
+        pass
+
+    def sample(self, valuation, exact=False):
         """
         Analyse the model according to a sample point.
 
         Parameters
         ----------
         valuation Parameter valuation in form of a dictionary from parameters to values.
+        exact Whether exact results should be computed.
 
         Returns
         -------
         Sample point containing the result of evaluating the model for each property.
         """
+        # Create sample point
+        self.check_correct_valuation(valuation)
+        sample_point = self._samples.add_sample(valuation)
 
-    def sample_batch(self, samples):
+        if exact:
+            return self._refine(sample_point, precision=0)
+
+        time_start = time.process_time()
+        sample_point = self._sample(sample_point)
+        self._time_sample += time.process_time() - time_start
+        self._sample_calls += 1
+        return sample_point
+
+    def sample_batch(self, samples, exact=False):
         """
         Analyse the model according to a batch of sample points.
 
         Parameters
         ----------
         samples List of samples to check.
+        exact Whether exact results should be computed.
 
         Returns
         -------
         A dictionary of results corresponding to the names of the sample points.
         """
+        # Create sample points
+        sample_points = []
+        for valuation in samples:
+            self.check_correct_valuation(valuation)
+            sample_points.append(self._samples.add_sample(valuation))
 
-    def refine(self, sample_id, precision, ind_precision=dict()):
+        if exact:
+            # TODO: more efficient
+            return self.refine_batch([s.get_id() for s in sample_points], precision=0)
+
+        time_start = time.process_time()
+        results = dict()
+        # TODO: use better approach than simply iterating
+        for sample_point in tqdm(sample_points):
+            results[sample_point.get_id()] = self._sample(sample_point)
+
+        self._time_sample += time.process_time() - time_start
+        self._sample_calls += len(samples)
+        return results
+
+    def _refine(self, sample_point, precision, ind_precisions=dict()):
+        pass
+
+    def refine(self, sample_id, precision, ind_precisions=dict()):
         """
         Refine sample point and obtain exact result.
 
@@ -84,15 +124,25 @@ class ModelSamplerInterface:
         ----------
         sample_id Id of sample to refine.
         precision Maximal allowed distance between upper and lower bound.
-        ind_precision Dictionary with individual precisions for given properties. If property is not given,
+        ind_precisions Dictionary with individual precisions for given properties. If property is not given,
             the default precision is used.
 
         Returns
         -------
         Sample point containing the refined result.
         """
+        time_start = time.process_time()
 
-    def refine_batch(self, sample_ids, precision, ind_precision=dict()):
+        # Get corresponding sample point
+        sample = self._samples.get_sample(sample_id)
+        # Refine sample
+        self._refine(sample, precision, ind_precisions)
+
+        self._time_sample += time.process_time() - time_start
+        self._refined_samples += 1
+        return sample
+
+    def refine_batch(self, sample_ids, precision, ind_precisions=dict()):
         """
         Refine sample points and obtain exact result.
 
@@ -100,12 +150,24 @@ class ModelSamplerInterface:
         ----------
         sample_ids Ids of samples to refine.
         precision Maximal allowed distance between upper and lower bound.
-        ind_precision Dictionary with individual precisions for given properties. If property is not given,
+        ind_precisions Dictionary with individual precisions for given properties. If property is not given,
             the default precision is used.
         Returns
         -------
         A dictionary of results corresponding to the names of the sample points.
         """
+        time_start = time.process_time()
+
+        # Get corresponding sample points
+        samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
+
+        for sample in tqdm(samples):
+            # Refine sample
+            self._refine(sample, precision, ind_precisions)
+
+        self._time_sample += time.process_time() - time_start
+        self._refined_samples += len(samples)
+        return samples
 
     def get_stats(self):
         """
@@ -139,503 +201,3 @@ class ModelSamplerInterface:
             if param not in self._parameters:
                 print("ERROR: parameter {} is not given in valuation".format(param))
                 assert False
-
-    def is_precise_enough(self, lb, ub, precision, ind_precisions, prop):
-        rel_error = 2 * (ub - lb) / (ub + lb)
-        if prop in ind_precisions:
-            return rel_error <= ind_precisions[prop]
-        else:
-            return rel_error <= precision
-
-
-class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
-    """
-    This simple interface builds a parametric CTMC and then uses an instantiation checker to check the model.
-    """
-
-    def init_from_model(self, model, bisim=True):
-        """
-        Initialize sampler from CTMC model.
-
-        Parameters
-        ----------
-        model CTMC.
-
-        Returns Dict of all parameters and their bounds (default [0, infinity)).
-        -------
-
-        """
-        self._model = model
-        # Simplify model
-        # Keep track of size of original model
-        self._states_orig = self._model.nr_states
-        self._transitions_orig = self._model.nr_transitions
-        time_start = time.process_time()
-        # Apply bisimulation minimisation
-        if bisim:
-            self._model = sp.perform_bisimulation(self._model, self._properties, sp.BisimulationType.STRONG)
-        self._time_bisim = time.process_time() - time_start
-
-        # Get (unique) initial state
-        assert len(self._model.initial_states) == 1
-        self._init_state = self._model.initial_states[0]
-        # Get parameters
-        self._parameters = {p.name: p for p in self._model.collect_all_parameters()}
-
-        # Create instantiation model checkers
-        self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._model)
-        self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc)
-
-        # Create sample cache
-        self._samples = SampleCache()
-        # Return all parameters each with range (0 infinity)
-        return {p: (0, math.inf) for p in self._parameters.keys()}
-
-    def prepare_properties(self, properties):
-        """
-        Set properties.
-
-        Parameters
-        ----------
-        properties Properties either given as a tuple (event, [time bounds]) or a list of properties.
-        -------
-
-        """
-        if isinstance(properties, list):
-            # List of properties
-            property_string = ";".join(properties)
-        else:
-            # Given as tuple (reachability label/expression, [time bounds])
-            event, time_bounds = properties[0], properties[1]
-            # Todo: use less hackish way to distinguish between expression and label
-            ev_str = event if "=" in event else f'"{event}"'
-            property_string = ";".join([f'P=? [ F<={float(t)} {ev_str} ]' for t in time_bounds])
-        if self._symb_desc is not None:
-            if self._symb_desc.is_prism_program:
-                self._properties = sp.parse_properties_for_prism_program(property_string, self._symb_desc.as_prism_program())
-            else:
-                assert self._symb_desc.is_jani_model
-                self._properties = sp.parse_properties_for_jani_model(property_string, self._symb_desc.as_jani_model())
-        else:
-            self._properties = sp.parse_properties(property_string)
-
-    def load(self, model, properties, bisim=True, constants=None):
-        """
-
-        Initialize sampler with model and properties.
-
-        Parameters
-        ----------
-        model A CTMC with a label.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (optional)
-
-        Returns Dict of all parameters and their bounds (default [0, infinity)).
-        -------
-
-        """
-        time_start = time.process_time()
-        jani_file = (os.path.splitext(model)[1] == ".jani")
-
-        if jani_file:
-            # Parse Jani program
-            model_desc, formulas = stormpy.parse_jani_model(model)
-            if constants:
-                symb_desc = stormpy.SymbolicModelDescription(model_desc)
-                constant_definitions = symb_desc.parse_constant_definitions(constants)
-                model_desc = symb_desc.instantiate_constants(constant_definitions).as_jani_model()
-        else:
-            # Parse Prism program
-            model_desc = sp.parse_prism_program(model, prism_compat=True)
-        self._symb_desc = stormpy.SymbolicModelDescription(model_desc)
-        # Create properties
-        self.prepare_properties(properties)
-        # Build (sparse) CTMC
-        options = sp.BuilderOptions([p.raw_formula for p in self._properties])
-        model = sp.build_sparse_parametric_model_with_options(model_desc, options)
-        parameters = self.init_from_model(model, bisim)
-        self._time_load = time.process_time() - time_start
-        return parameters
-
-    def _sample(self, sample_point):
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Check CTMC
-            lb, ub = self._inst_checker_approx.check(sample_point, storm_valuation, prop.raw_formula)
-            results.append((lb, ub))
-        # Add result
-        sample_point.set_results(results, refined=False)
-        return sample_point
-
-    def sample(self, valuation, exact=False):
-
-        # Create sample point
-        self.check_correct_valuation(valuation)
-        sample_point = self._samples.add_sample(valuation)
-
-        if exact:
-            return self._refine(sample_point, precision=0)
-
-        time_start = time.process_time()
-        sample_point = self._sample(sample_point)
-        self._time_sample += time.process_time() - time_start
-        self._sample_calls += 1
-        return sample_point
-
-    def sample_batch(self, samples, exact=False):
-        # Create sample points
-        sample_points = []
-        for valuation in samples:
-            self.check_correct_valuation(valuation)
-            sample_points.append(self._samples.add_sample(valuation))
-
-        if exact:
-            # TODO: more efficient
-            return self.refine_batch([s.get_id() for s in sample_points], precision=0)
-
-        time_start = time.process_time()
-        results = dict()
-        # TODO: use better approach than simply iterating
-        for sample_point in tqdm(sample_points):
-            results[sample_point.get_id()] = self._sample(sample_point)
-
-        self._time_sample += time.process_time() - time_start
-        self._sample_calls += len(samples)
-        return results
-
-    def _refine(self, sample_point, precision, ind_precisions=dict()):
-        assert not sample_point.is_refined()
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # TODO: allow for approximation
-
-        # Parameter valuation must be graph preserving
-        self._inst_checker_exact.set_graph_preserving(True)
-
-        env = sp.Environment()
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Specify formula
-            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
-            # Check CTMC
-            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
-        # Add result
-        sample_point.set_results(results, True)
-        return sample_point
-
-    def refine(self, sample_id, precision, ind_precisions=dict()):
-        time_start = time.process_time()
-
-        # Get corresponding sample point
-        sample = self._samples.get_sample(sample_id)
-        # Refine sample
-        self._refine(sample, precision, ind_precisions)
-
-        self._time_sample += time.process_time() - time_start
-        self._refined_samples += 1
-        return sample
-
-    def refine_batch(self, sample_ids, precision, ind_precisions=dict()):
-        time_start = time.process_time()
-
-        # Get corresponding sample points
-        samples = [self._samples.get_sample(sample_id) for sample_id in sample_ids]
-
-        for sample in tqdm(samples):
-            # Refine sample
-            self._refine(sample, precision, ind_precisions)
-
-        self._time_sample += time.process_time() - time_start
-        self._refined_samples += len(samples)
-        return samples
-
-
-class DftModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
-    """
-    General class for DFT sampler interface.
-    """
-
-    def __init__(self):
-        super(CtmcReliabilityModelSamplerInterface, self).__init__()
-        self._dft = None
-
-    def get_stats(self):
-        stats = super(CtmcReliabilityModelSamplerInterface, self).get_stats()
-        stats["dft_be"] = self._dft.nr_be()
-        stats["dft_elements"] = self._dft.nr_elements()
-        stats["dft_dynamic"] = self._dft.nr_dynamic()
-        return stats
-
-
-class DftParametricModelSamplerInterface(DftModelSamplerInterface):
-    """
-    This simple interface builds a parametric DFT, generates the corresponding parametric CTMC
-    and then uses an instantiation checker to check the model.
-    """
-
-    def load(self, model, properties, bisim=True, constants=None):
-        """
-
-        Parameters
-        ----------
-        model A DFT with parametric failure rates.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (not required for fault trees)
-
-        Returns Dictionary of parameters and their bounds.
-        -------
-
-        """
-        time_start = time.process_time()
-        print(' - Load DFT from Galileo file')
-        # Load DFT from Galileo file
-        self._dft = sp.dft.load_parametric_dft_galileo_file(model)
-        # Make DFT well-formed
-        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
-        # Check for dependency conflicts -> no conflicts mean CTMC
-        sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
-
-        # Create properties
-        self.prepare_properties(properties)
-
-        # Build CTMC from DFT
-        print(' - Start building state space')
-        # Set empty symmetry as rates can change which destroys symmetries
-        empty_sym = sp.dft.DFTSymmetries()
-        model = sp.dft.build_model(self._dft, empty_sym)
-        print(' - Finished building model')
-
-        if model.model_type == sp.ModelType.MA:
-            print("ERROR: Resulting model is MA instead of CTMC")
-            assert False
-
-        parameters = self.init_from_model(model, bisim=bisim)
-        self._time_load = time.process_time() - time_start
-        return parameters
-
-
-class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
-    """
-    The approximation sampler does not build one parametric model but a partial model for each parameter valuation.
-    Refinement can be done by exploring more of the state space.
-    """
-
-    def __init__(self):
-        super(DftModelSamplerInterface, self).__init__()
-        self._builders = dict()
-
-    def load(self, model, properties, bisim=True, constants=None):
-        """
-        Note that load() only constructs the DFT. The state space is built for each sample individually.
-
-        Parameters
-        ----------
-        model A DFT with parametric failure rates.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (not required for fault trees)
-
-        Returns Dictionary of parameters and their bounds.
-        -------
-
-        """
-        time_start = time.process_time()
-        print(' - Load DFT from Galileo file')
-        # Load DFT from Galileo file
-        self._dft = sp.dft.load_parametric_dft_galileo_file(model)
-        # Make DFT well-formed
-        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
-        # Check for dependency conflicts -> no conflicts mean CTMC
-        sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
-
-        self._inst_checker_approx = sp.dft.DFTInstantiator(self._dft)
-
-        # Create properties
-        self.prepare_properties(properties)
-
-        # Create sample cache
-        self._samples = SampleCache()
-
-        # Get parameters
-        self._parameters = {p.name: p for p in sp.dft.get_parameters(self._dft)}
-        self._time_load = time.process_time() - time_start
-        return self._parameters
-
-    def _sample(self, sample_point):
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # Instantiate parametric DFT
-        sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
-        sp.dft.compute_dependency_conflicts(sample_dft, use_smt=False, solver_timeout=0)  # Needed as instantiation looses this information
-
-        # Create new builder
-        assert sample_point not in self._builders
-        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
-        iteration = 0
-
-        # Refine approximation from DFT
-        print(' - Start refining state space')
-        iterating = True
-        while iterating:
-            builder.build(iteration, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
-            self._model = builder.get_partial_model(True, False)
-            self._init_state = self._model.initial_states[0]
-            if self._model.model_type == sp.ModelType.MA:
-                print("ERROR: Resulting model is MA instead of CTMC")
-                assert False
-            # TODO find better stopping criteria
-            if self._model.nr_states > 1000 or iteration >= 5:
-                iterating = False
-            else:
-                iteration += 1
-        print(' - Finished building model after iteration {}'.format(iteration))
-        # Store builder in cache
-        self._builders[sample_point] = (builder, iteration)
-
-        model_up = builder.get_partial_model(False, False)
-        init_up = model_up.initial_states[0]
-        results = []
-        for prop in self._properties:
-            result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
-            result_up = stormpy.model_checking(model_up, prop).at(init_up)
-            results.append((result_low, result_up))
-
-        sample_point.set_results(results, refined=False)
-        return sample_point
-
-    def _refine(self, sample_point, precision, ind_precision=dict()):
-        assert not sample_point.is_refined()
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # Instantiate parametric DFT
-        sample_dft = self._inst_checker_approx.instantiate(storm_valuation)
-        sp.dft.compute_dependency_conflicts(sample_dft, use_smt=False, solver_timeout=0)  # Needed as instantiation looses this information
-
-        if precision == 0:
-            # Build complete CTMC from DFT
-            print(' - Start building complete state space')
-            self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
-            self._init_state = self._model.initial_states[0]
-            print(' - Finished building complete model')
-
-            if self._model.model_type == sp.ModelType.MA:
-                print("ERROR: Resulting model is MA instead of CTMC")
-                assert False
-
-            results = []
-            for prop in self._properties:
-                # Check CTMC
-                results.append(sp.model_checking(self._model, prop).at(self._init_state))
-            sample_point.set_results(results, refined=True)
-            return sample_point
-
-        # Compute approximation from DFT
-        # Get existing builder
-        assert sample_point in self._builders
-        builder, iteration = self._builders[sample_point]
-        print("  - Use existing builder with iteration {}".format(iteration))
-
-        # Segfault occurs when trying to reuse builder
-        # -> temporary solution is to rebuild to given iteration without model checking inbetween
-        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
-        for i in range(iteration + 1):
-            builder.build(i, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
-
-        iteration += 1  # Next iteration
-        print(' - Refine partial state space from iteration {}'.format(iteration))
-        iterating = True
-        while iterating:
-            self._model = builder.get_partial_model(True, False)
-            builder.build(iteration, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
-            self._model = builder.get_partial_model(True, False)
-            self._init_state = self._model.initial_states[0]
-            if self._model.model_type == sp.ModelType.MA:
-                print("ERROR: Resulting model is MA instead of CTMC")
-                assert False
-
-            model_up = builder.get_partial_model(False, False)
-            init_up = model_up.initial_states[0]
-            results = []
-            iterating = False
-
-            # Try longest timebound first for faster abortion
-            prop_last = self._properties[-1]
-            result_last_low = stormpy.model_checking(self._model, prop_last).at(self._init_state)
-            result_last_up = stormpy.model_checking(model_up, prop_last).at(init_up)
-            print("   - Iteration {} ({} states): {}, {}".format(iteration, self._model.nr_states, result_last_low, result_last_up))
-            if not self.is_precise_enough(result_last_low, result_last_up, precision, ind_precision, prop_last):
-                iterating = True
-                iteration += 1
-                continue
-
-            for prop in self._properties[:-1]:
-                result_low = stormpy.model_checking(self._model, prop).at(self._init_state)
-                result_up = stormpy.model_checking(model_up, prop).at(init_up)
-                print("   - Iteration {}: {}, {}".format(iteration, result_low, result_up))
-                if not self.is_precise_enough(result_low, result_up, precision, ind_precision, prop):
-                    iterating = True
-                    iteration += 1
-                    break
-                results.append((result_low, result_up))
-            results.append((result_last_low, result_last_up))
-        print(' - Finished building partial model after {} iterations'.format(iteration))
-        # Store builder in cache
-        self._builders[sample_point] = (builder, iteration)
-
-        sample_point.set_results(results, refined=False)
-        return sample_point
-
-
-class DftParametricApproximationSamplerInterface(DftParametricModelSamplerInterface):
-    """
-    The approximation sampler builds the complete parametric model and tries to use only partial models for sampling.
-    """
-
-    def _sample(self, sample_point):
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc)
-
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Check CTMC
-            lb, ub = self._inst_checker_approx.check(sample_point, storm_valuation, prop.raw_formula)
-            assert util.leq(lb, ub)
-            results.append((lb, ub))
-        # Add result
-        sample_point.set_results(results, refined=False)
-        return sample_point
-
-    def _refine(self, sample_point, precision, ind_precisions=dict()):
-        assert not sample_point.is_refined()
-        # Create parameter valuation
-        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
-
-        # Parameter valuation must be graph preserving
-        self._inst_checker_exact.set_graph_preserving(True)
-
-        # TODO: allow approximation
-
-        env = sp.Environment()
-        # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
-        results = []
-        for prop in self._properties:
-            # Specify formula
-            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
-            # Check CTMC
-            results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
-        # Add result
-        sample_point.set_results(results, True)
-        return sample_point
