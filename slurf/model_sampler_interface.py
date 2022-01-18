@@ -1,4 +1,5 @@
 from slurf.sample_cache import SampleCache
+from slurf.approximate_ctmc_checker import ApproximationOptions
 
 import time
 from tqdm import tqdm
@@ -16,10 +17,9 @@ class ModelSamplerInterface:
         self._properties = None
         self._parameters = None
         self._inst_checker_approx = None
-        self._approx_options = None
+        self._approx_options = ApproximationOptions()
         self._inst_checker_exact = None
         self._samples = SampleCache()
-        self._max_cluster_distance = 0
 
         # Statistics
         self._states_orig = 0
@@ -31,7 +31,10 @@ class ModelSamplerInterface:
         self._refined_samples = 0
 
     def set_max_cluster_distance(self, max_distance):
-        self._max_cluster_distance = max_distance
+        self._approx_options.set_cluster_max_distance(max_distance)
+
+    def set_approximation_heuristic(self, approx_heuristic):
+        self._approx_options.set_approx_heuristic(approx_heuristic)
 
     def load(self, model, properties, bisim=True, constants=None):
         """

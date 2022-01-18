@@ -1,5 +1,5 @@
 from slurf.model_sampler_interface import ModelSamplerInterface
-from slurf.approximate_ctmc_checker import ApproximateChecker, ApproximationOptions
+from slurf.approximate_ctmc_checker import ApproximateChecker
 
 import stormpy as sp
 import stormpy.pars
@@ -45,7 +45,6 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         # Create instantiation model checkers
         self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._model)
-        self._approx_options = ApproximationOptions(self._max_cluster_distance)
         self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc, self._approx_options)
 
         # Return all parameters each with range (0 infinity)

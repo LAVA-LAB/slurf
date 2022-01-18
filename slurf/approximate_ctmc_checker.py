@@ -23,12 +23,15 @@ class ApproximationOptions:
     Sets the hyperparameters used for approximation.
     """
 
-    def __init__(self, cluster_max_distance=1):
-        self._max_depth_of_considered_states = 10
-        self._cluster_max_distance = cluster_max_distance
+    def __init__(self):
+        self._cluster_max_distance = 0
+        self._heuristic = "expected_time"
 
     def set_cluster_max_distance(self, max_distance):
         self._cluster_max_distance = max_distance
+
+    def set_approx_heuristic(self, heuristic):
+        self._heuristic = heuristic
 
 
 class SubModelInfo:
@@ -92,7 +95,7 @@ class ApproximateChecker:
             # No cluster is close enough -> create new submodel info
             print("  - Use new cluster")
             cluster_point = sample_point
-            absorbing_states = self._compute_initial_absorbing_states(instantiation, self._reach_label)
+            absorbing_states = self._compute_initial_absorbing_states(instantiation, self._reach_label, self._options._heuristic)
             submodel_info = ApproximateChecker.build_submodel(self._original_model, absorbing_states, self._abort_label)
 
         while True:
@@ -107,7 +110,7 @@ class ApproximateChecker:
                 results = self.compute_bounds(submodel_info, instantiation, self._formulas, precision)
                 if results is None:
                     # Refine further
-                    submodel_info = self._refine_states(submodel_info, instantiation, self._reach_label)
+                    submodel_info = self._refine_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
                     print("Iteration refine" + str(submodel_info._iteration))
                 else:
                     # Precise enough
@@ -184,35 +187,20 @@ class ApproximateChecker:
         assert submodel_result.deadlock_label is None or abort_label == submodel_result.deadlock_label
         return SubModelInfo(submodel)
 
-    def _compute_initial_absorbing_states(self, instantiation, reach_label):
-        # Check expected time on CTMC to as heuristic for important/unimportant states
-        formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
+    def _compute_initial_absorbing_states(self, instantiation, reach_label, heuristic):
+        if heuristic == "expected_time":
+            return self._get_absorbing_states_by_expected_time(instantiation, reach_label, 1)
+        else:
+            print("ERROR: heuristic not known")
+            assert False
 
-        # Check CTMC
-        self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
-        env = sp.Environment()
-        result = self._inst_checker_exact.check(env, instantiation)
-        assert result.result_for_all_states
-
-        # Compute absorbing states
-        result = dict(zip(range(self._original_model.nr_states), result.get_values()))
-        res_reference = result[self._original_init_state] / 2.0
-        return [i for i, res in result.items() if res < res_reference]
-
-    def _refine_states(self, submodel_info, instantiation, reach_label):
-        # Check expected time on CTMC to as heuristic for important/unimportant states
-        formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
-
-        # Check CTMC
-        self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
-        env = sp.Environment()
-        result = self._inst_checker_exact.check(env, instantiation)
-        assert result.result_for_all_states
-
-        # Compute absorbing states
-        result = dict(zip(range(self._original_model.nr_states), result.get_values()))
-        res_reference = result[self._original_init_state] / (2 * (submodel_info._iteration + 1))
-        absorbing_states = [i for i, res in result.items() if res < res_reference]
+    def _refine_absorbing_states(self, submodel_info, instantiation, reach_label, heuristic):
+        # Get absorbing states
+        if heuristic == "expected_time":
+            absorbing_states = self._get_absorbing_states_by_expected_time(instantiation, reach_label, submodel_info._iteration + 1)
+        else:
+            print("ERROR: heuristic not known")
+            assert False
 
         # Create new submodel
         new_info = ApproximateChecker.build_submodel(self._original_model, absorbing_states, self._abort_label)
@@ -220,3 +208,18 @@ class ApproximateChecker:
         if not absorbing_states:
             new_info._exact = True
         return new_info
+
+    def _get_absorbing_states_by_expected_time(self, instantiation, reach_label, threshold):
+        # Check expected time on CTMC to as heuristic for important/unimportant states
+        formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
+
+        # Check CTMC
+        self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
+        env = sp.Environment()
+        result = self._inst_checker_exact.check(env, instantiation)
+        assert result.result_for_all_states
+
+        # Compute absorbing states
+        result = dict(zip(range(self._original_model.nr_states), result.get_values()))
+        res_reference = result[self._original_init_state] / (2 * threshold)
+        return [i for i, res in result.items() if res < res_reference]
