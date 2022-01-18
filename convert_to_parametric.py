@@ -94,7 +94,7 @@ def convert_dft_to_parametric(root_dir, dft_file, param_list = None,
    
 # Get root directory
 root_dir = os.path.dirname(os.path.abspath(__file__)) 
-directory = 'models/ffort/rc-subset/'
+directory = 'models/ffort/rc-subset-new/'
    
 dft_files = list(pathlib.Path(root_dir, directory).glob('*.dft'))
 

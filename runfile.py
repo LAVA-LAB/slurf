@@ -26,36 +26,16 @@ if __name__ == '__main__':
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
     
-    ARGS = parse_arguments(manualModel='ffort/rc-subset/rc.1-1-hc.dft')
-    ARGS.Nsamples = [100]
-    ARGS.param_file = 'rc.1-1-hc_parameters.xlsx'
-    
-    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir20.sm')
-    # ARGS.plot_timebounds = [120, 160]
-    # ARGS.Nsamples = [100]
-    
-    # ARGS = parse_arguments(manualModel='ctmc/kanban/kanban3.sm')
-    # ARGS.bisim = False
-    # ARGS.Nsamples = [50]
-    # ARGS.Nvalidate = 25
-    
-    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc.dft')
-    # ARGS.plot_timebounds = [0.6, 1]
-    # ARGS.rho_list = [1.1]
-    # ARGS.Nvalidate = 100
-    # ARGS.seeds = 2
-    
-    # ARGS = parse_arguments(manualModel='dft/hecs_for_approx/hecs_2_2.dft')
-    # ARGS.plot_timebounds = [2000, 8000]
-    
-    # ARGS = parse_arguments(manualModel='dft/dcas/dcas.dft')
-    # ARGS.plot_timebounds = [6000, 16000]
+    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc_parametric.dft')
+    # ARGS.Nsamples = [10]
+    # ARGS.param_file = 'rc.1-1-hc_parameters.xlsx'
+    # ARGS.exact = True
     
     # ARGS.exact = True
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    # ARGS = parse_arguments()
+    ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -106,7 +86,7 @@ if __name__ == '__main__':
         if args.model_type == 'CTMC':
             sampler = CtmcReliabilityModelSamplerInterface()
         else:
-            #sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
+            # sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
             sampler = DftConcreteApproximationSamplerInterface()  # Builds partial models for each sample
         sampler.set_max_cluster_distance(1e-4)
         sampler.set_approximation_heuristic(ApproxHeuristic.REACH_PROB)
