@@ -51,7 +51,7 @@ class SubModelInfo:
     def __init__(self):
         self._model = None
         self._init_state = None
-        self._inst_checker = None
+        self._instantiator = None
         self._absorbing_states = None
         self._iteration = 0
         self._exact = False
@@ -68,7 +68,7 @@ class SubModelInfo:
         self._model = submodel
         assert len(self._model.initial_states) == 1
         self._init_state = self._model.initial_states[0]
-        self._inst_checker = sp.pars.PCtmcInstantiationChecker(self._model)
+        self._instantiator = sp.pars.PCtmcInstantiator(self._model)
 
 
 class ApproximateChecker:
@@ -84,7 +84,7 @@ class ApproximateChecker:
         self._original_init_state = self._original_model.initial_states[0]
         self._environment = sp.Environment()
         self._clusters = dict()
-        self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._original_model)
+        self._instantiator_original = sp.pars.PCtmcInstantiator(self._original_model)
         self._abort_label = "deadl"
         self._formulas = []
         self._reach_label = None
@@ -121,15 +121,20 @@ class ApproximateChecker:
             submodel_info = self._compute_initial_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
             submodel_info = ApproximateChecker.build_submodel(submodel_info, self._original_model, self._abort_label)
 
+        # Instantiate parametric model
+        inst_ctmc = submodel_info._instantiator.instantiate(instantiation)
+        assert len(inst_ctmc.initial_states) == 1
+        init_state = inst_ctmc.initial_states[0]
+
         while True:
             if submodel_info._exact:
                 # Compute results on exact model
                 results = []
                 for lb_formula, _ in self._formulas:
-                    results.append(self._compute_formula(submodel_info, instantiation, lb_formula))
+                    results.append(self._compute_formula(inst_ctmc, lb_formula, init_state, self._environment))
                 break
             else:
-                results = self.compute_bounds(submodel_info, instantiation, self._formulas, precision)
+                results = self.compute_bounds(inst_ctmc, self._formulas, init_state, precision)
                 if results is None:
                     # Refine further
                     submodel_info = self._refine_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
@@ -142,14 +147,14 @@ class ApproximateChecker:
 
         return results, submodel_info._exact
 
-    def compute_bounds(self, model_info, instantiation, formulas, precision):
+    def compute_bounds(self, model, formulas, init_state, precision):
         results = []
         for lb_formula, ub_formula in formulas:
             # Check lower bound
-            lb = self._compute_formula(model_info, instantiation, lb_formula)
+            lb = ApproximateChecker._compute_formula(model, lb_formula, init_state, self._environment)
             # Check upper bound
-            if model_info._model.labeling.contains_label(self._abort_label):
-                ub = self._compute_formula(model_info, instantiation, ub_formula)
+            if model.labeling.contains_label(self._abort_label):
+                ub = ApproximateChecker._compute_formula(model, ub_formula, init_state, self._environment)
                 assert slurf.util.leq(lb, ub)
                 if not slurf.util.is_precise_enough(lb, ub, precision, dict(), None):
                     return None
@@ -158,9 +163,10 @@ class ApproximateChecker:
             results.append((lb, ub))
         return results
 
-    def _compute_formula(self, model_info, instantiation, formula):
-        model_info._inst_checker.specify_formula(sp.ParametricCheckTask(formula, True))  # Only initial states
-        return model_info._inst_checker.check(self._environment, instantiation).at(model_info._init_state)
+    @staticmethod
+    def _compute_formula(model, formula, initial_state, environment):
+        task = sp.CheckTask(formula, True)
+        return sp.core._model_checking_sparse_engine(model, task, environment=environment).at(initial_state)
 
     @staticmethod
     def formulas_lower_upper(formula, abort_label, model_desc=None):
@@ -236,9 +242,9 @@ class ApproximateChecker:
             formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
 
             # Check CTMC
-            self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(formula, False))  # Get result for all states
-            env = sp.Environment()
-            result = self._inst_checker_exact.check(env, instantiation)
+            inst_model = self._instantiator_original.instantiate(instantiation)
+            task = sp.CheckTask(formula, False)  # Compute results for all states
+            result = sp.core._model_checking_sparse_engine(inst_model, task, self._environment)
             assert result.result_for_all_states
             submodel_info._state_expected_times = result.get_values()
 
@@ -251,8 +257,7 @@ class ApproximateChecker:
         # Compute reachability probability for each state as heuristic
         if len(submodel_info._state_reach_probabilities) == 0:
             # Initialize reachability probabilities by graph search
-            instantiator = stormpy.pars.ModelInstantiator(self._original_model)
-            inst_model = instantiator.instantiate(instantiation)
+            inst_model = self._instantiator_original.instantiate(instantiation)
 
             submodel_info._state_reach_probabilities = [0] * inst_model.nr_states
             visited = sp.storage.BitVector(inst_model.nr_states)
