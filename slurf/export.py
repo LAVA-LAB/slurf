@@ -57,7 +57,7 @@ def plot_results(output_dir, args, regions, solutions, reliability,
                 
                 # Plot 2D confidence regions
                 plot_2D(args, idx_pair, idx_prop, regions, 
-                        solutions, R, plotSamples=True, plotSampleID=True)
+                        solutions, R, plotSamples=True, plotSampleID=False)
         
                 exp_file = args.modelfile + "_" + str(idx_pair)
                 if R != None:
@@ -69,6 +69,18 @@ def plot_results(output_dir, args, regions, solutions, reliability,
                 print(' - 2D plot exported to:',exp_file)
                 
                 plt.show()
+                
+            # Plot 2D confidence regions
+            plot_2D(args, idx_pair, idx_prop, regions, 
+                    solutions, plotSamples=True, plotSampleID=False)
+    
+            exp_file = args.modelfile + "_" + str(idx_pair) + '.pdf'    
+            
+            filename = path(output_dir, "", exp_file)
+            plt.savefig(filename, format='pdf', bbox_inches='tight')
+            print(' - 2D plot exported to:',exp_file)
+            
+            plt.show()
 
 
 def save_results(output_path, dfs, modelfile_nosuffix, N):
@@ -197,7 +209,7 @@ def make_conservative(low, upp):
 
 
 def plot_reliability(timebounds, regions, samples, beta, plotSamples=False, 
-                     mode='conservative', annotate=False):
+                     mode='conservative', annotate=False, title=False):
     
     assert mode in ['optimistic', 'conservative']
     
@@ -235,11 +247,15 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     if plotSamples:
         plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, ls='dotted', alpha=0.5)
         
-    plt.xlabel('Time')
-    plt.ylabel('Value')
+    plt.xlabel('Time', fontsize=24)
+    plt.ylabel('Value', fontsize=24)
+    
+    plt.xticks(fontsize=22)
+    plt.yticks(fontsize=22)
 
-    ax.set_title("Confidence regions over time (beta={}; N={})".
-                 format(beta, len(samples)), fontsize=8)
+    if title:
+        ax.set_title("Confidence regions over time (beta={}; N={})".
+                 format(beta, len(samples)), fontsize=22)
     
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
     sm.set_array([])
@@ -249,7 +265,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     
 
 def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
-            plotSamples=True, plotSampleID=True, title=False):
+            plotSamples=True, plotSampleID=False, title=False):
     
     beta = args.beta2plot
     if args.pareto_pieces > 0:
@@ -279,7 +295,7 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             # Plot Pareto-front confidence region
             
             # Convert halfspaces to verticers of polygon
-            feasible_point = item['x_low'][[X,Y]] + 1e-6
+            feasible_point = item['x_low'][[X,Y]] + 1e-3
             poly_vertices = HalfspaceIntersection(item['halfspaces'], 
                                                   feasible_point).intersections
             hull = ConvexHull(poly_vertices) 

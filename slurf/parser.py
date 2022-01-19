@@ -24,7 +24,9 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--model', type=str, action="store", dest='model', 
                         default=manualModel, help="Model file to load")
     
-    # Argument for model to load
+    # Argument for type of model checking
+    parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
+                        default='parametric', help="Type of DFT model checker to use")
     parser.add_argument('--exact', type=int, action="store", dest='exact', 
                         default=1, help="Switch between exact and approximate results")
     
@@ -41,7 +43,7 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.set_defaults(bisim=True)
         
     # # Scenario problem optional arguments
-    parser.add_argument('--rho', type=float, action="store", dest='rho_list', 
+    parser.add_argument('--rho', type=str, action="store", dest='rho_list', 
                         default=None, help="List of cost of violation")
     parser.add_argument('--rho_steps', type=int, action="store", dest='rho_steps', 
                         default=10, help="Number of values for rho to run for")
@@ -67,6 +69,10 @@ def parse_arguments(manualModel=None, nobisim=False):
     # Now, parse the command line arguments and store the
     # values in the `args` variable
     args = parser.parse_args()    
+
+    if args.dft_checker not in ['concrete','parametric']:
+        print('ERROR: the DFT model checker argument should be "concrete" or "parametric"; current value:', args.dft_checker)
+        assert False
 
     # Interprete some arguments as lists
     if args.rho_list:

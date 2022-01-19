@@ -24,12 +24,15 @@ if __name__ == '__main__':
     timing = {}
     
     # Interpret arguments provided
-    # ARGS = parse_arguments(manualModel='ctmc/buffer/buffer.sm')
+    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir60.sm')
     
-    # ARGS = parse_arguments(manualModel='dft/rc/rc.1-1-hc_parametric.dft')
-    # ARGS.Nsamples = [10]
-    # ARGS.param_file = 'rc.1-1-hc_parameters.xlsx'
-    # ARGS.exact = True
+    # ARGS = parse_arguments(manualModel='dft/rc/rc.2-2-hc_parametric.dft')
+    # ARGS.Nsamples = [100]
+    # ARGS.param_file = 'rc.2-2-hc_parameters.xlsx'
+    # ARGS.exact = False
+    # ARGS.dft_checker = 'concrete'
+    # ARGS.plot_timebounds = [1.2, 3.6]
+    # ARGS.rho_list = [1.1]
     
     # ARGS.exact = True
     # ARGS.Nsamples = [100]
@@ -86,8 +89,10 @@ if __name__ == '__main__':
         if args.model_type == 'CTMC':
             sampler = CtmcReliabilityModelSamplerInterface()
         else:
-            # sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
-            sampler = DftConcreteApproximationSamplerInterface()  # Builds partial models for each sample
+            if args.dft_checker == 'parametric':
+                sampler = DftParametricModelSamplerInterface()  # Builds parametric model once and samples on (partial or complete) CTMC
+            else:
+                sampler = DftConcreteApproximationSamplerInterface()  # Builds partial models for each sample
         sampler.set_max_cluster_distance(1e-4)
         sampler.set_approximation_heuristic(ApproxHeuristic.REACH_PROB)
 
@@ -117,19 +122,22 @@ if __name__ == '__main__':
         time_start = time.process_time()
         
         # TODO smarter choice of step sizes ls
-        ls = map(int, [0, 1, 2, 4, 6, 8, 10, 15, 20] + list(np.linspace(0, args.Nsamples, 
-                                          min(args.Nsamples,args.rho_steps))))
+        ls = np.minimum(int(args.Nsamples/2), [0, 1, 2, 4, 6, 8, 10, 15, 20, 50, 100, 200, 400])
+                 # map(int, list(np.linspace(0, args.Nsamples, 
+                 #                          min(args.Nsamples,args.rho_steps))))
         
         if args.rho_list:
             rho_list = args.rho_list
         else:
-            rho_list = np.unique(np.sort(np.round(
-                            [1/(int(n)+0.5) for n in ls], 3)))
+            rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)
+        
+        rho_list = np.unique(np.sort(rho_list))
         
         i = 0
+        max_i = 10
         plotEvery = 1
         done = False
-        while not done:
+        while not done and i <= max_i:
             # Compute solution set using scenario optimization
             regions, dfs['regions'], dfs['regions_stats'], refineID = \
                 compute_confidence_region(solutions, args, rho_list)
@@ -145,9 +153,12 @@ if __name__ == '__main__':
             
             # Plot results
             toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
+            
+            toRefine = [r for r in np.arange(args.Nsamples) if not sampleObj[r].is_refined()]
+            
             print('Refine samples:', toRefine)
             # TODO make precision choosable
-            precision = 0.01
+            precision = 0.01/(i+1)
             ind_precision = dict()
             if len(toRefine) > 0:            
                 solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, precision, ind_precision)
@@ -190,6 +201,7 @@ if __name__ == '__main__':
         
         # Save raw results in Excel file
         dfs['timing'] = pd.Series(timing)
+        dfs['arguments'] = pd.Series(vars(args))
         save_results(output_path, dfs, args.modelfile_nosuffix, 
                      args.Nsamples)
     

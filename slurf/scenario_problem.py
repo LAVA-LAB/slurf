@@ -269,7 +269,6 @@ class scenarioProblem:
         
         else:
             boundary_mask = np.zeros(self.Nsamples, dtype=bool)
-            refine_mask = np.zeros(self.Nsamples, dtype=bool)
             
             for i in range(self.Nsamples):
                     
@@ -278,6 +277,7 @@ class scenarioProblem:
                 if any(np.isclose(sol['xi'][i], 0)) and support_mask[i]:
                     boundary_mask[i] = True
     
+            refine_mask = copy.copy(boundary_mask)
             boundary_set = self.sample_ids[boundary_mask]
             print( 'Samples on boundary:', boundary_set )
             intersect_mask = np.zeros(len(all_solutions), dtype=bool)
