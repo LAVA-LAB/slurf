@@ -7,7 +7,7 @@ import copy
 
 from slurf.sample_solutions import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions, refine_solutions
-from slurf.scenario_problem import compute_confidence_region
+from slurf.scenario_problem import compute_confidence_region, compute_confidence_per_dim
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.dft_sampler import DftParametricModelSamplerInterface, DftConcreteApproximationSamplerInterface
 from slurf.approximate_ctmc_checker import ApproxHeuristic
@@ -33,6 +33,8 @@ if __name__ == '__main__':
     # ARGS.dft_checker = 'concrete'
     # ARGS.plot_timebounds = [1.2, 3.6]
     # ARGS.rho_list = [1.1]
+    
+    # ARGS = parse_arguments(manualModel='sft/pcs/pcs.dft')
     
     # ARGS.exact = True
     # ARGS.Nsamples = [100]
@@ -133,6 +135,8 @@ if __name__ == '__main__':
         
         rho_list = np.unique(np.sort(rho_list))
         
+        NAIVE_BASELINE = True
+        
         i = 0
         max_i = 10
         plotEvery = 1
@@ -140,7 +144,12 @@ if __name__ == '__main__':
         while not done and i <= max_i:
             # Compute solution set using scenario optimization
             regions, dfs['regions'], dfs['regions_stats'], refineID = \
-                compute_confidence_region(solutions, args, rho_list)
+                compute_confidence_region(solutions, args.beta, args, rho_list)
+            
+            # TODO make implementation of this baseline (experiment for paper) more refined
+            if args.naive_baseline and args.exact:
+                args.naive_bounds = compute_confidence_per_dim(solutions, args, [max(rho_list)])
+                print('Naive bounds obtained by analyzing measures independently:', args.naive_bounds)
             
             # If we compute exact results, break the while loop directly
             if args.exact:

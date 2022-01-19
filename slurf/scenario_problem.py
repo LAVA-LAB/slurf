@@ -333,26 +333,26 @@ class scenarioProblem:
 
 
 
-def compute_confidence_region(samples, args, rho_list):
+def compute_confidence_region(samples, beta, args, rho_list):
     """
 
     Parameters
     ----------
     samples 2D Numpy array of samples
     beta Confidence probability (close to one means good)
-    rho_min Cost of violation used in first iteration
-    factor Multiplication factor to increase rho with
-    itermax Maximum number of iterations to do over increasing rho
+    args Argument given by parser
+    rho Cost of relaxation
     -------
 
     Returns
     ----------
-    Pviolation, x_low, x_upp Results for the slurfs in all iterations
+    regions Dictionary of results per rho
+    df_regions, df_regions_stats Pandas DFs with stats and results
+    refineID List of sample IDs to refine for (if exact=False)
     ----------
 
     """
     
-    beta = args.beta
     Nsamples = len(samples)
 
     regions = {}
@@ -448,3 +448,23 @@ def compute_confidence_region(samples, args, rho_list):
         df_regions_stats.loc[i] = [rho, complexity] + Psat
 
     return regions, df_regions, df_regions_stats, refineID
+
+def compute_confidence_per_dim(solutions, args, rho_list):
+    '''
+    Perform scenario optimization for each measure/dimension individually
+    '''
+    
+    dims = solutions.shape[1]
+    beta = list(1-(1 - np.array(args.beta))/dims)
+    
+    satprobs = np.zeros((len(beta), dims))
+    satprob  = np.ones(len(beta))
+    
+    for dim in range(solutions.shape[1]):
+        reg, _, _, _, = compute_confidence_region(solutions[:,[dim]], beta, args, rho_list)
+        
+        satprobs[:,dim] = reg[0]['eta_series'].to_numpy()
+        
+        satprob *= satprobs[:,dim]
+        
+    return satprob

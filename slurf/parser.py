@@ -26,9 +26,13 @@ def parse_arguments(manualModel=None, nobisim=False):
     
     # Argument for type of model checking
     parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
-                        default='parametric', help="Type of DFT model checker to use")
+                        default='concrete', help="Type of DFT model checker to use")
     parser.add_argument('--exact', type=int, action="store", dest='exact', 
                         default=1, help="Switch between exact and approximate results")
+    
+    parser.add_argument('--naive_baseline', action="store_true", dest='naive_baseline', 
+                        help="Enable naive baseline that analyzes each measure independently")
+    parser.set_defaults(naive_baseline=False)
     
     # Set a manual parameter distribution file
     parser.add_argument('--param_file', type=str, action="store", dest='param_file', 
