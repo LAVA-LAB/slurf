@@ -18,7 +18,7 @@ class ModelSamplerInterface:
         self._parameters = None
         self._inst_checker_approx = None
         self._approx_options = ApproximationOptions()
-        self._inst_checker_exact = None
+        self._instantiator = None
         self._samples = SampleCache()
 
         # Statistics

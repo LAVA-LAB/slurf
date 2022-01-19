@@ -44,7 +44,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._parameters = {p.name: p for p in self._model.collect_all_parameters()}
 
         # Create instantiation model checkers
-        self._inst_checker_exact = sp.pars.PCtmcInstantiationChecker(self._model)
+        self._instantiator = sp.pars.PCtmcInstantiator(self._model)
         self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc, self._approx_options)
 
         # Return all parameters each with range (0 infinity)
@@ -135,17 +135,15 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         if precision == 0:
             # Compute exact results
-            # Parameter valuation must be graph preserving
-            self._inst_checker_exact.set_graph_preserving(True)
+            # Instantiate model
+            inst_model = self._instantiator.instantiate(storm_valuation)
 
             env = sp.Environment()
-            # Analyse each property individually (Storm does not allow multiple properties for the InstantiationModelChecker
+            # Analyse each property individually (Storm does not allow multiple properties)
             results = []
             for prop in self._properties:
-                # Specify formula
-                self._inst_checker_exact.specify_formula(sp.ParametricCheckTask(prop.raw_formula, True))  # Only initial states
                 # Check CTMC
-                results.append(self._inst_checker_exact.check(env, storm_valuation).at(self._init_state))
+                results.append(stormpy.model_checking(inst_model, prop).at(self._init_state))
             # Add result
             sample_point.set_results(results, refined=True)
             return sample_point
