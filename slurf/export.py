@@ -10,8 +10,11 @@ from scipy.spatial import HalfspaceIntersection, ConvexHull
 
 from slurf.commons import path, append_new_line
 
-def plot_results(output_dir, args, regions, solutions, reliability,
-                 prop_labels=None, timebounds=None):
+def plot_results(output_dir, args, regions, solutions):
+    
+    reliability = args.reliability
+    prop_labels = args.prop_labels
+    timebounds  = args.timebounds
     
     # Plot the solution set
     if reliability:
@@ -328,7 +331,7 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
                 diff  = s_upp - s_low
                 
                 # Still plot as point if the samples is fully refined
-                if all(diff == 0):
+                if all(diff < 1e-3):
                     plt.scatter(s_upp[X], s_upp[Y], color='k', s=10, alpha=0.5)
                     
                 else:
@@ -368,8 +371,8 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         
         plt.xticks([260, 300, 340, 380, 420])
 
-    # plt.gca().set_xlim(0.15, 0.75)
-    # plt.gca().set_ylim(0.4, 1.0)
+    plt.gca().set_xlim(0.26, 0.48)
+    plt.gca().set_ylim(0.6, 0.83)
 
     if title:
         if pareto:

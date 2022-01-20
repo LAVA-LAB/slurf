@@ -35,7 +35,7 @@ def getDateTime():
     
     now = datetime.now()
 
-    return now.strftime("%Y-%M-%d_%H-%M-%S")
+    return now.strftime("%Y-%m-%d_%H-%M-%S")
 
 
 def print_stats(stats):

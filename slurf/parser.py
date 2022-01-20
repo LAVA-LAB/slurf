@@ -27,8 +27,8 @@ def parse_arguments(manualModel=None, nobisim=False):
     # Argument for type of model checking
     parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
                         default='concrete', help="Type of DFT model checker to use")
-    parser.add_argument('--exact', type=int, action="store", dest='exact', 
-                        default=1, help="Switch between exact and approximate results")
+    parser.add_argument('--precision', type=float, action="store", dest='precision', 
+                        default=0, help="Switch between exact and approximate results")
     
     parser.add_argument('--naive_baseline', action="store_true", dest='naive_baseline', 
                         help="Enable naive baseline that analyzes each measure independently")
@@ -121,5 +121,10 @@ def parse_arguments(manualModel=None, nobisim=False):
     if not args.bisim or nobisim:
         args.bisim = False
         print('- Bisimulation is disabled')
+    
+    if args.precision == 0:
+        args.exact = True
+    else:
+        args.exact = False
     
     return args

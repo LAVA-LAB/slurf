@@ -5,6 +5,8 @@ import copy
 
 from slurf.compute_bound import etaLow
 from slurf.commons import intersect
+from slurf.sample_solutions import refine_solutions
+from slurf.export import plot_results
 
 class scenarioProblem:
     """
@@ -184,7 +186,7 @@ class scenarioProblem:
         return G
         
 
-    def solve(self, compareAt, costOfRegret=1, all_solutions=None):
+    def solve(self, sampleObj, compareAt, costOfRegret=1, all_solutions=None):
 
         # Solve initial problem with all constraints
         mask = np.zeros(self.Nsamples)
@@ -203,23 +205,24 @@ class scenarioProblem:
         interior_mask = np.zeros(self.Nsamples, dtype=bool)
         support_mask = np.ones(self.Nsamples, dtype=bool)
 
-        # For every non-relaxed sample, check its dual values
-        for i in range(self.Nsamples):
-            LB_dual = sol['constraints_low'][i].dual_value
-            UB_dual = sol['constraints_upp'][i].dual_value
-
-            if self.pareto:
-                pareto_dual = sol['constraints_par'][i].dual_value
-                pareto_dual_check = all(np.isclose(pareto_dual, 0))
-            else:
-                pareto_dual_check = True
-
-            # If all dual values are zero (and xi=0), sample is in interior
-            if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)) and \
-                pareto_dual_check and all(np.isclose(sol['xi'][i], 0)):
-
-                interior_mask[i] = True
-                support_mask[i] = False
+        if self.exact:
+            # For every non-relaxed sample, check its dual values
+            for i in range(self.Nsamples):
+                LB_dual = sol['constraints_low'][i].dual_value
+                UB_dual = sol['constraints_upp'][i].dual_value
+    
+                if self.pareto:
+                    pareto_dual = sol['constraints_par'][i].dual_value
+                    pareto_dual_check = all(np.isclose(pareto_dual, 0))
+                else:
+                    pareto_dual_check = True
+    
+                # If all dual values are zero (and xi=0), sample is in interior
+                if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)) and \
+                    pareto_dual_check and all(np.isclose(sol['xi'][i], 0)):
+    
+                    interior_mask[i] = True
+                    support_mask[i] = False
 
         num_interior = sum(interior_mask)
 
@@ -300,25 +303,15 @@ class scenarioProblem:
                         # Select this solution on the boundary for refinement
                         refine_mask[j] = True
                         
+                        # If this solution was already refined, than also
+                        # refine the one it intersects with
+                        if sampleObj[self.sample_ids[j]]._refined:
+                            print(' - Sample',j,'already refined, so refine sample',i)
+                            
+                            refine_mask[i] = True
+                        
             
             refine_set = np.union1d(self.sample_ids[refine_mask], boundary_set)
-            
-            # for i,I in enumerate(intersect_mask):
-                
-            #     # If already on the boundary, set to True and skip
-            #     if i in boundary_set:
-            #         intersect_mask[i] = True
-            #         continue
-                
-            #     # Otherwise, check if sample intersects with (affine extensions
-            #     # of) the boundary
-            #     for j,J in enumerate(boundary_mask):
-            #         if any([ intersect(all_solutions[i,d,:], self.samples[j,d,:]) 
-            #                  for d in range(self.dim)]):
-            #             intersect_mask[i] = True
-            #             # If we already have an intersecting solution, we can
-            #             # break the inner for-loop
-            #             break
                     
             intersect_set = np.where(intersect_mask)[0]
             # print('Samples intersecting with the boundary:', intersect_set)
@@ -333,7 +326,7 @@ class scenarioProblem:
 
 
 
-def compute_confidence_region(samples, beta, args, rho_list):
+def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
     """
 
     Parameters
@@ -389,7 +382,7 @@ def compute_confidence_region(samples, beta, args, rho_list):
     for i,rho in enumerate(rho_list):    
 
         sol, complexity, critical_set, exterior_ids, num_interior, \
-            refine_set = problem.solve(compareAt, rho, all_solutions=samples)
+            refine_set = problem.solve(sampleObj, compareAt, rho, all_solutions=samples)
 
         '''
         # If complexity is the same (or even higher) as in previous iteration, 
@@ -448,6 +441,49 @@ def compute_confidence_region(samples, beta, args, rho_list):
         df_regions_stats.loc[i] = [rho, complexity] + Psat
 
     return regions, df_regions, df_regions_stats, refineID
+
+
+def refinement_scheme(output_path, sampler, sampleObj, solutions, args, 
+                      rho_list, plotEvery=1000, max_iter = 10):
+    '''
+    Refinement scheme that refines imprecise solutions
+    '''
+    
+    i = 0
+    done = False
+    
+    args.no_refined = 0
+    
+    while not done:
+        i += 1
+        
+        regions, dfs_regions, dfs_regions_stats, refineID = \
+            compute_confidence_region(solutions, args.beta, args, rho_list, sampleObj)
+        
+        if i > max_iter:
+            break
+        
+        # Occasionally plot (intermediate) results
+        if i % plotEvery == 0:
+            plot_results(output_path, args, regions, solutions)
+        
+        toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
+        
+        print(' - Refine samples:', toRefine)
+        # TODO make precision choosable
+        precision = 0.001
+        ind_precision = dict()
+        
+        if len(toRefine) > 0:            
+            solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, precision, ind_precision)
+        elif i > 1:
+            done = True
+            
+        for n in toRefine:
+            sampleObj[n]._refined = True
+            args.no_refined += 1
+    
+    return regions, dfs_regions, dfs_regions_stats
 
 def compute_confidence_per_dim(solutions, args, rho_list):
     '''
