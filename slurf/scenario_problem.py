@@ -13,7 +13,7 @@ class scenarioProblem:
     Functions related to the scenario optimization part.
     """
 
-    def init_problem(self, samples, sample_ids, paretoP=0, paretoCost=1):
+    def init_problem(self, refine, samples, sample_ids, paretoP=0, paretoCost=1):
         '''
         
         Parameters
@@ -25,7 +25,8 @@ class scenarioProblem:
         -------
 
         '''
-
+        
+        self.refine = refine
         self.samples = samples
         self.sample_ids = sample_ids
         
@@ -300,15 +301,16 @@ class scenarioProblem:
                             for d in range(self.dim)]):
                         intersect_mask[i] = True
                         
-                        # Select this solution on the boundary for refinement
-                        refine_mask[j] = True
-                        
-                        # If this solution was already refined, than also
-                        # refine the one it intersects with
-                        if sampleObj[self.sample_ids[j]]._refined:
-                            print(' - Sample',j,'already refined, so refine sample',i)
+                        if self.refine:
+                            # Select this solution on the boundary for refinement
+                            refine_mask[j] = True
                             
-                            refine_mask[i] = True
+                            # If this solution was already refined, than also
+                            # refine the one it intersects with
+                            if sampleObj[self.sample_ids[j]]._refined:
+                                print(' - Sample',j,'already refined, so refine sample',i)
+                                
+                                refine_mask[i] = True
                         
             
             refine_set = np.union1d(self.sample_ids[refine_mask], boundary_set)
@@ -352,7 +354,7 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
-    problem.init_problem(samples, np.arange(Nsamples), args.pareto_pieces)
+    problem.init_problem(args.refine, samples, np.arange(Nsamples), args.pareto_pieces)
 
     exterior_ids = [None]
     
@@ -406,8 +408,8 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
         # are samples fully in the interior of the current solution set)
         # BUT: do not do this step in case of pareto plot
         if args.pareto_pieces == 0 and num_interior > 0:
-            problem.init_problem(samples[exterior_ids], exterior_ids,
-                                  args.pareto_pieces)
+            problem.init_problem(args.refine, samples[exterior_ids], 
+                                 exterior_ids, args.pareto_pieces)
 
         regions[i] = {
             'x_low': sol['xL'],
@@ -465,13 +467,15 @@ def refinement_scheme(output_path, sampler, sampleObj, solutions, args,
         
         # Occasionally plot (intermediate) results
         if i % plotEvery == 0:
-            plot_results(output_path, args, regions, solutions)
+            file_suffix = 'refine'+str(i)
+            
+            plot_results(output_path, args, regions, solutions, file_suffix)
         
         toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
         
         print(' - Refine samples:', toRefine)
         # TODO make precision choosable
-        precision = 0.001
+        precision = args.refine_precision
         ind_precision = dict()
         
         if len(toRefine) > 0:            

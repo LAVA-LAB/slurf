@@ -28,15 +28,17 @@ if __name__ == '__main__':
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir60.sm')
     
     # ARGS = parse_arguments(manualModel='dft/hecs_for_approx/hecs_2_2.dft')
-    ARGS = parse_arguments(manualModel='dft/rc_for_imprecise/rc.2-2-hc_parametric.dft')
-    ARGS.param_file = 'rc.2-2-hc_parameters.xlsx'
-    ARGS.prop_file = 'properties2.xlsx'
-    ARGS.Nsamples = [100]
-    ARGS.precision = 0.10
-    ARGS.exact = False
-    # ARGS.plot_timebounds = [6000, 16000]
-    ARGS.plot_timebounds = [3, 6]
-    ARGS.rho_list = [0.4]
+    # ARGS = parse_arguments(manualModel='dft/rc_for_imprecise/rc.3-3-hc_parametric.dft')
+    # ARGS.param_file = 'rc.3-3-hc_parameters.xlsx'
+    # ARGS.prop_file = 'properties2.xlsx'
+    # ARGS.Nsamples = [10]
+    # ARGS.precision = 0.10
+    # ARGS.exact = False
+    # ARGS.refine = False
+    # ARGS.refine_precision = 0.01
+    # # ARGS.plot_timebounds = [6000, 16000]
+    # ARGS.plot_timebounds = [3, 6]
+    # ARGS.rho_list = [0.4]
     
     # ARGS = parse_arguments(manualModel='dft/rc/rc.2-2-hc_parametric.dft')
     # ARGS.Nsamples = [100]
@@ -52,7 +54,7 @@ if __name__ == '__main__':
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    # ARGS = parse_arguments()
+    ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -151,7 +153,7 @@ if __name__ == '__main__':
         
         rho_list = np.unique(np.sort(rho_list))
         
-        if args.exact:
+        if args.exact or not args.refine:
             # Compute solution set using scenario optimization
             regions, dfs['regions'], dfs['regions_stats'], _ = \
                 compute_confidence_region(solutions, args.beta, args, rho_list)

@@ -28,7 +28,7 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
                         default='concrete', help="Type of DFT model checker to use")
     parser.add_argument('--precision', type=float, action="store", dest='precision', 
-                        default=0, help="Switch between exact and approximate results")
+                        default=0, help="Initial precision to be used for computing solutions (0 is exact)")
     
     parser.add_argument('--naive_baseline', action="store_true", dest='naive_baseline', 
                         help="Enable naive baseline that analyzes each measure independently")
@@ -45,20 +45,21 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--no-bisim', dest='bisim', action='store_false',
                         help="Disable bisimulation")
     parser.set_defaults(bisim=True)
+    
+    # Enable/disable refinement and set precision for refinement
+    parser.add_argument('--refine', dest='refine', action='store_true',
+                        help="Iterative refinement scheme")
+    parser.set_defaults(refine=False)
+    parser.add_argument('--refine_precision', type=float, action="store", dest='refine_precision', 
+                        default=0, help="Refinement precision to be used for refining solutions (0 is exact)")
         
     # # Scenario problem optional arguments
     parser.add_argument('--rho', type=str, action="store", dest='rho_list', 
                         default=None, help="List of cost of violation")
     parser.add_argument('--rho_steps', type=int, action="store", dest='rho_steps', 
                         default=10, help="Number of values for rho to run for")
-    # parser.add_argument('--rho_min', type=float, action="store", dest='rho_min', 
-    #                     default=0.0001, help="Minimum cost of violation")
-    # parser.add_argument('--rho_incr', type=float, action="store", dest='rho_incr', 
-    #                     default=1.5, help="Increment factor for the cost of violation")
-    # parser.add_argument('--rho_max_iter', type=int, action="store", dest='rho_max_iter', 
-    #                     default=20, help="Maximum number of iterations to perform")
     
-    parser.add_argument('--plot-timebounds', type=str, action="store", dest='plot_timebounds', 
+    parser.add_argument('--plot_timebounds', type=str, action="store", dest='plot_timebounds', 
                         default=None, help="List of two timebounds to create 2D plot for")
     
     # Plot optional arguments
@@ -121,10 +122,16 @@ def parse_arguments(manualModel=None, nobisim=False):
     if not args.bisim or nobisim:
         args.bisim = False
         print('- Bisimulation is disabled')
+        
+    if args.refine:
+        print('- Iterative refinement scheme is enabled')
+        print('--- Refinement precision is:',args.refine_precision)
     
     if args.precision == 0:
         args.exact = True
+        print('- Compute exact solution vectors')
     else:
         args.exact = False
+        print('- Computing imprecise solution vectors (precision: '+str(args.precision)+')')
     
     return args

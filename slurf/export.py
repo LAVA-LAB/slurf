@@ -10,7 +10,7 @@ from scipy.spatial import HalfspaceIntersection, ConvexHull
 
 from slurf.commons import path, append_new_line
 
-def plot_results(output_dir, args, regions, solutions):
+def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     
     reliability = args.reliability
     prop_labels = args.prop_labels
@@ -40,10 +40,15 @@ def plot_results(output_dir, args, regions, solutions):
             # Plot 2D confidence regions
             plot_2D(args, idx_pair, idx_prop, regions, solutions, 
                     regions, plotSamples=True, plotSampleID=True)
-
-        # exp_file = args.modelfile + "_" + str(idx_pair)
         
-        plt.show()
+            exp_file = args.modelfile
+            if file_suffix != None:
+                exp_file += "_" + str(file_suffix)
+            exp_file += '.pdf'   
+            filename = path(output_dir, "", exp_file)
+            plt.savefig(filename, format='pdf', bbox_inches='tight')
+            
+            plt.show()
         
     else:
         # As a solution set (if properties object is a list of properties)    
@@ -371,8 +376,8 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         
         plt.xticks([260, 300, 340, 380, 420])
 
-    plt.gca().set_xlim(0.26, 0.48)
-    plt.gca().set_ylim(0.6, 0.83)
+    # plt.gca().set_xlim(0.26, 0.48)
+    # plt.gca().set_ylim(0.6, 0.83)
 
     if title:
         if pareto:
