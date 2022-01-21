@@ -27,18 +27,19 @@ if __name__ == '__main__':
     # Interpret arguments provided
     # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir60.sm')
     
-    # ARGS = parse_arguments(manualModel='dft/hecs_for_approx/hecs_2_2.dft')
-    # ARGS = parse_arguments(manualModel='dft/rc_for_imprecise/rc.3-3-hc_parametric.dft')
-    # ARGS.param_file = 'rc.3-3-hc_parameters.xlsx'
-    # ARGS.prop_file = 'properties2.xlsx'
-    # ARGS.Nsamples = [10]
-    # ARGS.precision = 0.10
-    # ARGS.exact = False
-    # ARGS.refine = False
-    # ARGS.refine_precision = 0.01
-    # # ARGS.plot_timebounds = [6000, 16000]
-    # ARGS.plot_timebounds = [3, 6]
-    # ARGS.rho_list = [0.4]
+    '''
+    ARGS = parse_arguments(manualModel='dft/rc_for_imprecise/rc.2-2-hc_parametric.dft')
+    ARGS.param_file = 'rc.2-2-hc_parameters.xlsx'
+    ARGS.prop_file = 'properties2.xlsx'
+    ARGS.Nsamples = [90]
+    ARGS.precision = 0.10
+    ARGS.exact = False
+    ARGS.refine = True
+    ARGS.refine_precision = 0.001
+    ARGS.plot_timebounds = [3, 6]
+    ARGS.rho_list = [0.4]
+    ARGS.Nvalidate = 1000
+    '''
     
     # ARGS = parse_arguments(manualModel='dft/rc/rc.2-2-hc_parametric.dft')
     # ARGS.Nsamples = [100]
@@ -48,13 +49,16 @@ if __name__ == '__main__':
     # ARGS.plot_timebounds = [1.2, 3.6]
     # ARGS.rho_list = [1.1]
     
-    # ARGS = parse_arguments(manualModel='sft/pcs/pcs.dft')
+    ARGS = parse_arguments(manualModel='ctmc/epidemic/sir140.sm')
+    ARGS.rho_list = [2, 1.12,0.48,0.12, 0.05,0.04,0.03,0.02]
+    ARGS.param_file = 'parameters_highcov.xlsx'
+    ARGS.Nsamples = [200]
     
     # ARGS.exact = True
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    ARGS = parse_arguments()
+    # ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
@@ -160,9 +164,9 @@ if __name__ == '__main__':
                 
         else:
             # Enter iterative refinement scheme
-            regions, dfs['regions'], dfs['regions_stats'] = \
+            regions, dfs['regions'], dfs['regions_stats'], dfs['refinement'] = \
                 refinement_scheme(output_path, sampler, sampleObj, solutions, 
-                                  args, rho_list, plotEvery=1, max_iter = 10)
+                                  args, rho_list, plotEvery=1, max_iter = 20)
             
         # TODO make implementation of this baseline (experiment for paper) more refined
         if args.naive_baseline and args.exact:

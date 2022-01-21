@@ -20,7 +20,7 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     if reliability:
         # As reliability over time (if properties object is a tuple)
         plot_reliability(timebounds, regions, solutions, args.beta2plot, 
-                         mode=args.curve_plot_mode, plotSamples=False)
+                         mode=args.curve_plot_mode, plotSamples=True)
         
         # Save figure
         exp_file = args.modelfile + '.pdf'
@@ -39,7 +39,7 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
         
             # Plot 2D confidence regions
             plot_2D(args, idx_pair, idx_prop, regions, solutions, 
-                    regions, plotSamples=True, plotSampleID=True)
+                    regions, plotSamples=True, plotSampleID=False)
         
             exp_file = args.modelfile
             if file_suffix != None:
@@ -376,8 +376,10 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         
         plt.xticks([260, 300, 340, 380, 420])
 
-    # plt.gca().set_xlim(0.26, 0.48)
-    # plt.gca().set_ylim(0.6, 0.83)
+    plt.gca().set_xlim(0.286, 0.467)
+    plt.gca().set_ylim(0.60, 0.83)
+    
+    ax.set_xticks([0.3,0.35,0.4,0.45])
 
     if title:
         if pareto:

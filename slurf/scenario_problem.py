@@ -456,6 +456,8 @@ def refinement_scheme(output_path, sampler, sampleObj, solutions, args,
     
     args.no_refined = 0
     
+    refined_df = pd.DataFrame()
+    
     while not done:
         i += 1
         
@@ -486,8 +488,16 @@ def refinement_scheme(output_path, sampler, sampleObj, solutions, args,
         for n in toRefine:
             sampleObj[n]._refined = True
             args.no_refined += 1
+        
+        
+        for z,region in regions.items():
+            for beta,eta in region['eta_series'].items():
+                refined_df.loc[i, str(z)+'_'+str(beta)] = eta
+                
+            refined_df.loc[i, str(z)+'_x_low'] = str(region['x_low'])
+            refined_df.loc[i, str(z)+'_x_upp'] = str(region['x_upp'])
     
-    return regions, dfs_regions, dfs_regions_stats
+    return regions, dfs_regions, dfs_regions_stats, refined_df
 
 def compute_confidence_per_dim(solutions, args, rho_list):
     '''
