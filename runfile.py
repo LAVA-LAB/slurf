@@ -49,16 +49,11 @@ if __name__ == '__main__':
     # ARGS.plot_timebounds = [1.2, 3.6]
     # ARGS.rho_list = [1.1]
     
-    ARGS = parse_arguments(manualModel='ctmc/epidemic/sir140.sm')
-    ARGS.rho_list = [2, 1.12,0.48,0.12, 0.05,0.04,0.03,0.02]
-    ARGS.param_file = 'parameters_highcov.xlsx'
-    ARGS.Nsamples = [200]
-    
     # ARGS.exact = True
     # ARGS.Nsamples = [100]
     # ARGS.Nvalidate = 100
     
-    # ARGS = parse_arguments()
+    ARGS = parse_arguments()
     
     # Define dictionary over which to iterate
     iterate_dict = {'N': ARGS.Nsamples,
