@@ -131,7 +131,7 @@ if __name__ == '__main__':
                                 exact = args.exact)
         
         if not args.exact:
-            toRefine = np.arange(len(solutions))
+            toRefine = [r for r in np.arange(len(solutions)) if not sampleObj[r].is_refined()]
             solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, args.precision, dict())
         
         timing['4_model_sampling'] = time.process_time() - time_start
