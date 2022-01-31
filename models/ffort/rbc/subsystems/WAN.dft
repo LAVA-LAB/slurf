@@ -1,4 +1,0 @@
-toplevel "wan";
-"wan" and "w1" "w2";
-"w1" lambda=2.5e-6 repair=6;
-"w2" lambda=2.5e-6 repair=6;

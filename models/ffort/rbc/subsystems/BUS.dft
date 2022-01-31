@@ -1,4 +1,0 @@
-toplevel "bus";
-"bus" and "b1" "b2";
-"b1" lambda=4.4e-6 repair=4;
-"b2" lambda=4.4e-6 repair=4;

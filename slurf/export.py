@@ -8,6 +8,9 @@ import seaborn as sns
 import itertools
 from scipy.spatial import HalfspaceIntersection, ConvexHull
 
+import matplotlib as mpl
+mpl.rcParams['pdf.fonttype'] = 42
+
 from slurf.commons import path, append_new_line
 
 def plot_results(output_dir, args, regions, solutions, file_suffix=None):
@@ -20,7 +23,7 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     if reliability:
         # As reliability over time (if properties object is a tuple)
         plot_reliability(timebounds, regions, solutions, args.beta2plot, 
-                         mode=args.curve_plot_mode, plotSamples=True)
+                         mode=args.curve_plot_mode, plotSamples=False)
         
         # Save figure
         exp_file = args.modelfile + '.pdf'
@@ -160,36 +163,6 @@ class Cases():
         # Write DataFrame to file
         self.time_df.to_csv(self.time_csv, sep=';')
 
-# def save_validation_results(q, args, eta_csv, eta_df, regions, emp_satprob):
-#     '''
-#     Export the results on the satisfaction probability to a .csv file
-#     '''
-    
-#     for i, region in regions.items():
-        
-#         eta_df.loc[q, 'N'] = args.Nsamples
-#         eta_df.loc[q, '#'] = q
-#         eta_df.loc[q, 'seed'] = args.seeds
-#         eta_df.loc[q, 'rho'] = np.round(region['rho'], 5)
-        
-#         betas = list(map(str, args.beta))
-#         eta_df.loc[q, betas] = np.round(list(region['eta_series']), 5)
-        
-#         eta_df.loc[q, 'empirical'] = emp_satprob[i]
-            
-#         row = eta_df.loc[q]
-#         append_new_line(eta_csv, ';'.join(map(str, row)))
-            
-#     return eta_df
-
-# def save_scenario_time_results(seed, args, time_csv, time_df, time):
-#     '''
-#     Export the scenario problem timing to a .csv file
-#     '''
-     
-#     time_df.loc[seed, str(args.Nsamples)] = np.round(time, 5)
-    
-#     return time_df
 
 def make_conservative(low, upp):
     '''
@@ -252,7 +225,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
                          arrowprops=dict(arrowstyle="-|>",mutation_scale=12, facecolor='black'),
                          )
         
-    if plotSamples:
+    if plotSamples and len(samples.shape) == 2:
         plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, ls='dotted', alpha=0.5)
         
     plt.xlabel('Time', fontsize=24)
@@ -375,11 +348,6 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
         plt.gca().set_ylim(bottom=np.min(samples[:,1]))
         
         plt.xticks([260, 300, 340, 380, 420])
-
-    plt.gca().set_xlim(0.286, 0.467)
-    plt.gca().set_ylim(0.60, 0.83)
-    
-    ax.set_xticks([0.3,0.35,0.4,0.45])
 
     if title:
         if pareto:

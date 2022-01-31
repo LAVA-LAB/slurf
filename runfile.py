@@ -5,7 +5,7 @@ import numpy as np
 import itertools
 import copy
 
-from slurf.sample_solutions import load_distribution, sample_solutions, \
+from slurf.solution_sampler import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions, refine_solutions
 from slurf.scenario_problem import compute_confidence_region, compute_confidence_per_dim, \
     refinement_scheme
@@ -23,35 +23,6 @@ if __name__ == '__main__':
     dfs = {}
     val_dfs = {}
     timing = {}
-    
-    # Interpret arguments provided
-    # ARGS = parse_arguments(manualModel='ctmc/epidemic/sir60.sm')
-    
-    '''
-    ARGS = parse_arguments(manualModel='dft/rc_for_imprecise/rc.2-2-hc_parametric.dft')
-    ARGS.param_file = 'rc.2-2-hc_parameters.xlsx'
-    ARGS.prop_file = 'properties2.xlsx'
-    ARGS.Nsamples = [90]
-    ARGS.precision = 0.10
-    ARGS.exact = False
-    ARGS.refine = True
-    ARGS.refine_precision = 0.001
-    ARGS.plot_timebounds = [3, 6]
-    ARGS.rho_list = [0.4]
-    ARGS.Nvalidate = 1000
-    '''
-    
-    # ARGS = parse_arguments(manualModel='dft/rc/rc.2-2-hc_parametric.dft')
-    # ARGS.Nsamples = [100]
-    # ARGS.param_file = 'rc.2-2-hc_parameters.xlsx'
-    # ARGS.exact = False
-    # ARGS.dft_checker = 'concrete'
-    # ARGS.plot_timebounds = [1.2, 3.6]
-    # ARGS.rho_list = [1.1]
-    
-    # ARGS.exact = True
-    # ARGS.Nsamples = [100]
-    # ARGS.Nvalidate = 100
     
     ARGS = parse_arguments()
     
@@ -140,14 +111,13 @@ if __name__ == '__main__':
         print("\n===== Sampler finished at:", getTime(),"=====")
         time_start = time.process_time()
         
-        # TODO smarter choice of step sizes ls
-        ls = np.minimum(int(args.Nsamples/2), [0, 1, 2, 4, 6, 8, 10, 15, 20, 50, 100, 200, 400])
-                 # map(int, list(np.linspace(0, args.Nsamples, 
-                 #                          min(args.Nsamples,args.rho_steps))))
-        
         if args.rho_list:
             rho_list = args.rho_list
         else:
+            # TODO smarter choice of step sizes ls
+            ls = np.minimum(int(args.Nsamples/2), 
+                            [0, 1, 2, 4, 6, 8, 10, 15, 20, 50, 100, 200, 400])
+            
             rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)
         
         rho_list = np.unique(np.sort(rho_list))
@@ -210,6 +180,3 @@ if __name__ == '__main__':
         cases.add_time_row(args, timing['5_scenario_problems'])
     
         cases.write_time()
-    
-    ###
-        

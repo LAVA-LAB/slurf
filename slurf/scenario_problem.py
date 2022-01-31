@@ -5,7 +5,7 @@ import copy
 
 from slurf.compute_bound import etaLow
 from slurf.commons import intersect
-from slurf.sample_solutions import refine_solutions
+from slurf.solution_sampler import refine_solutions
 from slurf.export import plot_results
 
 class scenarioProblem:

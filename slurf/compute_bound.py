@@ -31,9 +31,6 @@ def etaLow(N, k, beta, verbose=False):
     
     # Compute combination (i, k) in logarithmic base (term 1)
     m1 = np.array([np.arange(k,N+1)])
-    
-    # aux1_old = np.sum( np.triu(np.log( np.repeat(m1, N-k+1, axis=0)), 1), axis=1 )
-    # aux2_old = np.sum( np.triu(np.log( np.repeat(m1-k, N-k+1, axis=0)), 1), axis=1)
 
     rep1 = np.repeat(m1, N-k+1, axis=0)
     log1 = np.array([[np.log(val) if val != 0 else 0 for val in row]
@@ -51,10 +48,6 @@ def etaLow(N, k, beta, verbose=False):
     t1 = 1E-9
     t2 = 1-1E-9
     
-    # Initialize bisection problem
-    # poly1 = 1+(1-beta)/(N) - (1-beta)/(N)*np.sum( np.exp( coeffs1 - (N-m1)*np.log(t1) ), axis=1 )
-    # poly2 = 1+(1-beta)/(N) - (1-beta)/(N)*np.sum( np.exp( coeffs1 - (N-m1)*np.log(t2) ), axis=1 )
-    
     while t2-t1 > 1E-10:
         t = (t1+t2)/2
         polyt = 1+(1-beta)/(N) - (1-beta)/(N)*np.sum( np.exp( coeffs1 - (N-m1)*np.log(t) ), axis=1 )
@@ -71,76 +64,6 @@ def etaLow(N, k, beta, verbose=False):
         print('Remainder is:',remainder(k,N,eta_star,beta))
     
     return eta_star
-
-def betaLow(N, k, eta, verbose=False):
-    '''
-    Rootfinding problem to compute the lower bound on the satprob (eta)
-
-    Parameters
-    ----------
-    N : int
-        Number of samples.
-    k : int
-        Complexity of the problem (is 1 + number of discarded samples).
-    eta : float
-        Lower bound on the satisfaction probability.
-
-    Returns
-    -------
-    beta_star : float
-        Confidence probability.
-
-    '''
-    
-    # Compute combination (i, k) in logarithmic base (term 1)
-    m1 = np.array([np.arange(k,N+1)])
-    # aux1 = np.sum( np.triu(np.log( np.repeat(m1, N-k+1, axis=0)), 1), axis=1 )
-    
-    aux1 = np.array([np.sum(np.log( np.arange(k+i+1, N+1) )) for i in range(0, N-k+1)])
-    
-    # mat = np.triu( np.repeat(m1-k, N-k+1, axis=0), 1)    
-    # aux2 = np.array([np.sum(np.log(row[i+1:])) for i,row in enumerate(mat)])
-    
-    aux2 = np.array([np.sum(np.log( np.arange(i+1, N-k+1) )) for i in range(0, N-k+1)])
-    
-    coeffs1 = aux2 - aux1
-    
-    # Initial guess for value of beta
-    b1 = 0
-    b2 = 1
-    
-    while b2-b1 > 1E-10:
-        if verbose:
-            print(' -- Diff is',np.abs(b2-b1))
-        
-        b = (b1+b2)/2
-        
-        polyb = 1+(1-b)/(N) - (1-b)/(N)*np.sum( np.exp( coeffs1 - (N-m1)*np.log(eta) ), axis=1 )
-        
-        if polyb > 0:
-            b2 = b
-        else:
-            b1 = b
-    
-    beta_star = b1
-    
-    '''
-    # Compute combination (i, k) in logarithmic base (term 1)
-    m1 = np.array([np.arange(k,N+1)])
-    
-    aux1 = np.sum( np.triu(np.log( np.repeat(m1, N-k+1, axis=0)), 1), axis=1 )
-    
-    mat = np.triu( np.repeat(m1-k, N-k+1, axis=0), 1)    
-    aux2 = np.array([np.sum(np.log(row[i+1:])) for i,row in enumerate(mat)])
-
-    coeffs1 = aux2 - aux1
-
-    beta_test = 1 + N / (1-np.sum( np.exp( coeffs1 - (N-m1)*np.log(eta) ), axis=1 ))  
-    
-    print('beta test:',beta_test)
-    '''
-    
-    return beta_star
 
 def remainder(k,N,eta,beta):
     

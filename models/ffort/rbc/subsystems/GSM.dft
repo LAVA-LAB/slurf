@@ -1,4 +1,0 @@
-toplevel "gsm";
-"gsm" and "g1" "g2";
-"g1" lambda=5.7078e-6 repair=6;
-"g2" lambda=5.7078e-6 repair=6;

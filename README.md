@@ -1,6 +1,4 @@
-# SLURF
-### Scenario optimization for Learning Uncertain Reliability Functions
-
+# Sampling-Based Verification of CTMCs with Uncertain Rates (SLURF)
 
 ## Installation
 

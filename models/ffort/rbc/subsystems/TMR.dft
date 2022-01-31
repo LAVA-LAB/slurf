@@ -1,9 +1,0 @@
-toplevel "tmr";
-"tmr" or "CPU" "FPGA";
-"CPU" 2of3 "C1" "C2" "C3";
-"FPGA" and "F1" "F2";
-"C1" lambda=7.4074e-6 repair=6;
-"C2" lambda=7.4074e-6 repair=6;
-"C3" lambda=7.4074e-6 repair=6;
-"F1" lambda=3.003e-9 repair=4;
-"F2" lambda=3.003e-9 repair=4;
