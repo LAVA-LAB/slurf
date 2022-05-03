@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 import pandas as pd
 import copy
+import time
 
 from slurf.compute_bound import etaLow
 from slurf.commons import intersect
@@ -22,7 +23,7 @@ class scenarioProblem:
         sample_ids Indices of sample subset (compared to complete sample set)
         paretoP Number of linear pieces in the Pareto-front
         paretoCost Coefficient in the Pareto-front portion of the objective
-        -------
+        ----------
 
         '''
         
@@ -327,6 +328,32 @@ class scenarioProblem:
                 refine_set
 
 
+def init_rho_list(args):
+    """
+    Define the list of the costs of violation to use by SLURF
+
+    Parameters
+    ----------
+    args Argument given by parser
+    ----------
+
+    Returns
+    ----------
+    Sorted list of the values for the cost of violation to use
+    ----------
+
+    """
+    
+    if args.rho_list:
+        rho_list = args.rho_list
+    else:
+        # If no list of values
+        ls = np.minimum(int(args.Nsamples/2), 
+                        [0, 1, 2, 4, 6, 8, 10, 15, 20, 50, 100, 200, 400])
+        
+        rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)
+        
+    return np.unique(np.sort(rho_list))
 
 def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
     """
@@ -337,7 +364,7 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
     beta Confidence probability (close to one means good)
     args Argument given by parser
     rho Cost of relaxation
-    -------
+    ----------
 
     Returns
     ----------
@@ -429,11 +456,14 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
         Psat = []
         for b in beta:
 
+            time_start = time.process_time()
             Pviolation = np.round(1 - etaLow(Nsamples, complexity, b), 6)
+            time_taken = time.process_time() - time_start
             Psat += [1 - Pviolation]
             regions[i]['satprob_beta='+str(b)] = 1 - Pviolation
             print(' - Lower bound on sat.prob for beta={}: {:0.6f}'.\
                   format(b, 1-Pviolation))
+            print(' - Computing this bound took: {:0.3f}'.format(time_taken))
                 
         regions[i]['eta_series'] = pd.Series(Psat, index=beta)
         

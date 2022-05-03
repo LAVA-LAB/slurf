@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+import glob
+import os
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -14,6 +16,17 @@ mpl.rcParams['pdf.fonttype'] = 42
 from slurf.commons import path, append_new_line
 
 def plot_results(output_dir, args, regions, solutions, file_suffix=None):
+    '''
+    Plot the figures relevant for the current execution of the script    
+
+    Parameters
+    ----------
+    :output_dir: Directory to save results in
+    :args: Arguments provided to script
+    :regions: Dictionary of results per rho
+    :solutions: Solution vectors computed by Storm
+    :file_suffix: Optional suffix to filename of exports
+    '''
     
     reliability = args.reliability
     prop_labels = args.prop_labels
@@ -64,7 +77,8 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
                 region_list = [None]
             for R in region_list:
                 
-                idx_prop = [prop_labels[idx_pair[0]]] + [prop_labels[idx_pair[1]]]
+                idx_prop = [prop_labels[idx_pair[0]]] + \
+                           [prop_labels[idx_pair[1]]]
                 
                 # Plot 2D confidence regions
                 plot_2D(args, idx_pair, idx_prop, regions, 
@@ -97,6 +111,13 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
 def save_results(output_path, dfs, modelfile_nosuffix, N):
     '''
     Export the results of the current execution to an Excel file
+    
+    Parameters
+    ----------
+    :output_dir: Directory to save results in
+    :dfs: DataFrames to store in the Excel file
+    :modelfile_nosuffix: Name of the model being run without extension/suffix
+    :N: Number of samples to store results for
     '''
     
     # Create a Pandas Excel writer using XlsxWriter as the engine.
@@ -117,14 +138,26 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
 
 
 class Cases():
+    '''
+    Export iterative results that differ in certain parameters.
+    '''
     
-    def __init__(self, root_dir):
+    def __init__(self, root_dir, args):
         
         self.root_dir = root_dir
+        
+        if args.export_bounds:
+            # If option enabled, export lower bounds as a table
+            self.init_eta(args.export_bounds,
+             ['#', 'N','seed','rho','Frequentist'] + list(map(str, args.beta)))
+            
+        if args.export_runtime:
+            # If option enabled, export scenario optimization run times
+            self.init_time(args.export_runtime, list(map(str, args.Nsamples)))
     
     def init_eta(self, eta_csv, eta_cols):
         
-        self.eta_csv = path(self.root_dir, 'output', eta_csv)
+        self.eta_csv = path(self.root_dir, '', eta_csv)
         self.eta_df = pd.DataFrame(columns = eta_cols)
         
         append_new_line(self.eta_csv, ';'.join(self.eta_df.columns))
@@ -141,7 +174,7 @@ class Cases():
             betas = list(map(str, args.beta))
             self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 6)
             
-            self.eta_df.loc[q, 'empirical'] = emp_satprob[i]
+            self.eta_df.loc[q, 'Frequentist'] = emp_satprob[i]
                 
             row = self.eta_df.loc[q]
             
@@ -150,7 +183,7 @@ class Cases():
         
     def init_time(self, time_csv, time_cols):
         
-        self.time_csv = path(self.root_dir, 'output', time_csv)
+        self.time_csv = path(self.root_dir, '', time_csv)
         self.time_df = pd.DataFrame(columns = time_cols)
         self.time_df.index.name = '#'
         
@@ -171,13 +204,13 @@ def make_conservative(low, upp):
 
     Parameters
     ----------
-    low : Lower bound (array)
-    upp : Upper bound (array)
+    :low: Lower bound (array)
+    :upp: Upper bound (array)
 
     Returns
     -------
-    x_low : Conservative lower bound
-    x_upp : Conservative upper bound
+    :x_low: Conservative lower bound
+    :x_upp: Conservative upper bound
 
     '''
     
@@ -191,6 +224,17 @@ def make_conservative(low, upp):
 
 def plot_reliability(timebounds, regions, samples, beta, plotSamples=False, 
                      mode='conservative', annotate=False, title=False):
+    '''
+    Plot a reliability curve
+    
+    Parameters
+    ----------
+    :timebounds: List of timebounds for which to plot the curve
+    :regions: Dictionary of results per rho
+    :samples: Solution vectors computed by Storm
+    :beta: Confidence level
+    :mode: If this is 'conservative', then plot underapproximation of the curve
+    '''
     
     assert mode in ['optimistic', 'conservative']
     
@@ -219,14 +263,17 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
             xy = (t-1, y)
             xytext = (50, -15)
             
-            plt.annotate(r'$\eta=$'+str(np.round(item['satprob_beta='+str(beta)], 2)), 
+            plt.annotate(r'$\eta=$'+str(np.round(
+                item['satprob_beta='+str(beta)], 2)), 
                          xy=xy, xytext=xytext,
                          ha='left', va='center', textcoords='offset points',
-                         arrowprops=dict(arrowstyle="-|>",mutation_scale=12, facecolor='black'),
+                         arrowprops=dict(arrowstyle="-|>",mutation_scale=12, 
+                                         facecolor='black'),
                          )
         
     if plotSamples and len(samples.shape) == 2:
-        plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, ls='dotted', alpha=0.5)
+        plt.plot(timebounds[:-1], samples.T[:-1], color='k', lw=0.3, 
+                 ls='dotted', alpha=0.5)
         
     plt.xlabel('Time', fontsize=24)
     plt.ylabel('Value', fontsize=24)
@@ -241,7 +288,8 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
     sm.set_array([])
     
-    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
+    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, 
+                        ax.get_position().height])
     ax.figure.colorbar(sm, cax=cax)
     
 
@@ -283,7 +331,7 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             vertices = hull.points[hull.vertices]
             
             polygon = patches.Polygon(vertices, True, 
-                                  linewidth=0, edgecolor='none', facecolor=color)
+                              linewidth=0, edgecolor='none', facecolor=color)
             ax.add_patch(polygon)
             
         else:
@@ -291,7 +339,7 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             diff = item['x_upp'] - item['x_low']
             
             rect = patches.Rectangle(item['x_low'][[X,Y]], diff[X], diff[Y], 
-                                     linewidth=0, edgecolor='none', facecolor=color)
+                             linewidth=0, edgecolor='none', facecolor=color)
     
             # Add the patch to the Axes
             ax.add_patch(rect)
@@ -314,8 +362,8 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
                     
                 else:
                     rect = patches.Rectangle(s_low[[X,Y]], diff[X], diff[Y], 
-                                             linewidth=0.5, edgecolor='red', 
-                                             linestyle='dashed', facecolor='none')
+                                        linewidth=0.5, edgecolor='red', 
+                                        linestyle='dashed', facecolor='none')
                     
                     # Add the patch to the Axes
                     ax.add_patch(rect)
@@ -335,7 +383,8 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             if plotSampleID:
                 for i,sample in enumerate(samples):
                     
-                    plt.text(samples[i,X], samples[i,Y], i, fontsize=6, color='r')
+                    plt.text(samples[i,X], samples[i,Y], i, fontsize=6, 
+                             color='r')
         
     plt.xlabel(prop_labels[0], fontsize=24)
     plt.ylabel(prop_labels[1], fontsize=24)
@@ -360,6 +409,49 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
     sm = plt.cm.ScalarMappable(cmap=color_map, norm=plt.Normalize(0,1))
     sm.set_array([])
     
-    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, ax.get_position().height])
+    cax = fig.add_axes([ax.get_position().x1+0.05, ax.get_position().y0, 0.06, 
+                        ax.get_position().height])
     cbar = ax.figure.colorbar(sm, cax=cax)
     cbar.ax.tick_params(labelsize=22)
+    
+    
+def export_benchmark_table(root_dir, outfile, row):
+    '''
+    Updates the table for benchmark statistics, as reported in the paper.
+
+    Parameters
+    ----------
+    root_dir Root directory
+    row Row (as Pandas DataFrame) to add to the table
+
+    '''
+    
+    # Determine full path to output file
+    outpath = path(root_dir, '', outfile)
+    
+    # Retrieve all files with this name (wildcard * possible)
+    path_to_tables = outpath
+    list_of_files = glob.glob(path_to_tables)
+    
+    if len(list_of_files) == 0:
+        # If the file does not exist yet, create one
+        row.to_csv(outpath) 
+        
+    else:
+        # If the file does already exist, append current row to it
+        latest_table_file = max(list_of_files, key=os.path.getctime)
+        
+        try:
+            TABLE = pd.read_csv(latest_table_file)
+            TABLE.set_index('instance', inplace=True)
+            
+            TABLE_PLUS = pd.concat([TABLE, row])
+            TABLE_PLUS.to_csv(latest_table_file)     
+            
+            print('>> Exported results to table of benchmark statistics')
+            
+        except:
+            print('>> An unexpected error occured:',
+                  'Could not add current iteration to benchmark table')
+            
+            return

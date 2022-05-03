@@ -1,0 +1,12 @@
+instance,model checking type,Nr. props (Phi),#pars,#states,#trans,time_init,time_sample (x100),scen_opt_N=100,scen_opt_N=200,instantiator
+sir20,exact,26,2,216,396,0.07,3.72,3.77,13.56,
+kanban3,exact,4,13,58400,446400,6.75,65.8,3.52,9.41,
+polling.3,exact,2,2,36,84,0.04,0.12,3.33,10.36,
+buffer,exact,2,6,5632,21968,0.85,35.16,3.22,8.89,
+tandem15,exact,2,5,496,1619,0.1,147.3,3.72,14.09,
+embedded.64,exact,3,6,55868,235793,10.43,16.68,9.97,29.38,
+pcs,exact,25,8,2041201,17963509,972.11,48.06,8.12,29.43,DFT (parametric)
+rbc,exact,40,6,2269,12930,0.44,2.53,11.62,36.43,DFT (parametric)
+dcas,exact,25,10,64,202,0.05,0.72,6.93,24.68,DFT (parametric)
+rc.1-1-hc_parametric,exact,25,21,8401,49446,66.91,138.66,12.44,46.72,DFT (parametric)
+hecs_2_1,exact,25,5,118945,1018603,42.73,7.2,8.86,29.57,DFT (parametric)

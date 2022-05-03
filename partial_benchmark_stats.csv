@@ -1,0 +1,4 @@
+instance,model checking type,Nr. props (Phi),#pars,#states,#trans,time_init,time_sample (x100),scen_opt_N=100,scen_opt_N=200,instantiator
+sir20,exact,26,2,216,396,3e-02,3.49,2.94,12.32,
+kanban3,exact,4,13,58400,446400,13.51,91.31,3.5,9.08,
+polling.3,exact,2,2,36,84,0.02,0.1,3.95,10.2,CTMC
