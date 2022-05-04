@@ -37,10 +37,10 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
 
         Parameters
         ----------
-        model A DFT with parametric failure rates.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (not required for fault trees)
+        :model: A DFT with parametric failure rates.
+        :properties: Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        :bisim: Whether to apply bisimulation.
+        :constants: Constants for graph changing variables in model description (not required for fault trees)
 
         Returns Dictionary of parameters and their bounds.
         -------
@@ -90,10 +90,10 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         Parameters
         ----------
-        model A DFT with parametric failure rates.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (not required for fault trees)
+        :model: A DFT with parametric failure rates.
+        :properties: Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        :bisim: Whether to apply bisimulation.
+        :constants: Constants for graph changing variables in model description (not required for fault trees)
 
         Returns Dictionary of parameters and their bounds.
         -------

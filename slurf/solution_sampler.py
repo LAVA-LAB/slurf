@@ -72,6 +72,9 @@ def load_distribution(root_dir, model_path, model_type,
 
 
 def get_parameter_values(Nsamples, param_dic):
+    """
+    Get` Nsamples` valuations for the parameters in the `param_dic` and return.
+    """
     
     # Initialize parameter matrix
     param_matrix = np.zeros((Nsamples, len(param_dic)))
@@ -104,6 +107,9 @@ def get_parameter_values(Nsamples, param_dic):
             
 
 def param_interval(Nsamples, lb, ub):
+    """
+    Sample parameter valuations from the specified interval.
+    """
     
     param_values = np.random.uniform(low=lb, high=ub, size=Nsamples)
     
@@ -111,6 +117,9 @@ def param_interval(Nsamples, lb, ub):
 
 
 def param_gaussian(Nsamples, mean, std):
+    """
+    Sample parameter valuations from a Gaussian distribution.
+    """
     
     param_values = np.random.normal(loc=mean, scale=std, size=Nsamples)
     
@@ -126,13 +135,13 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
 
     Parameters
     ----------
-    sampler Sampler object (for either CTMC of DFT)
-    Nsamples Number of samples
-    properties List of property strings
-    param_list Names (labels) of the parameters
-    param_values List of values for every parameter
-    root_dir Root directory where script is being run
-    cache If True, we export the samples to a cache file
+    :sampler: Sampler object (for either CTMC of DFT)
+    :Nsamples: Number of samples
+    :properties: List of property strings
+    :param_list: Names (labels) of the parameters
+    :param_values: List of values for every parameter
+    :root_dir: Root directory where script is being run
+    :cache: If True, we export the samples to a cache file
 
     Returns 2D Numpy array with every row being a sample
     -------
@@ -229,22 +238,22 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
 
 
 def refine_solutions(sampler, sampleObj, solutions, idx, precision, ind_precision):
-    '''
+    """
     Refine imprecise solutions for the given indices
 
     Parameters
     ----------
-    sampler Sampler object (for either CTMC of DFT)
-    solutions 3D np.array with solutions
-    idx List of indices to refine
-    precision Maximal allowed distance between upper and lower bounds on results.
-    ind_precision Dictionary with individual precisions for given properties. If property is not given,
+    :sampler: Sampler object (for either CTMC of DFT)
+    :solutions: 3D np.array with solutions
+    :idx: List of indices to refine
+    :precision: Maximal allowed distance between upper and lower bounds on results.
+    :ind_precision: Dictionary with individual precisions for given properties. If property is not given,
             the default precision is used.
     
     Returns
     -------
-    solutions Updated solutions array
-    '''
+    :solutions: Updated solutions array
+    """
 
     samples = sampler.refine_batch(idx, precision, ind_precision)
     for i, n in enumerate(idx):
@@ -268,13 +277,13 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
 
     Parameters
     ----------
-    val_dfs DataFrame where the validation results are stored over repetitions
-    sampler Sampler object (for either CTMC of DFT)
-    regions Solutions to scenario problems (for multiple values of rho)
-    Nvaliate Number of samples
-    properties List of property strings
-    param_list Names (labels) of the parameters
-    param_values List of values for every parameter
+    :val_dfs: DataFrame where the validation results are stored over repetitions
+    :sampler: Sampler object (for either CTMC of DFT)
+    :regions: Solutions to scenario problems (for multiple values of rho)
+    :Nvaliate: Number of samples
+    :properties: List of property strings
+    :param_list: Names (labels) of the parameters
+    :param_values: List of values for every parameter
 
     NOTE: Validation currently only works for rectangular confidence regions
 

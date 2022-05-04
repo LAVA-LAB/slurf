@@ -4,19 +4,19 @@ from ast import literal_eval
 import statistics
 
 def parse_arguments(manualModel=None, nobisim=False):
-    '''
+    """
     Function to parse arguments provided
 
     Parameters
     ----------
-    manualModel Override model as provided as argument in the command
-    nobisim Override bisimulatoin option as provided as argument in the command
+    :manualModel: Override model as provided as argument in the command
+    :nobisim: Override bisimulatoin option as provided as argument in the command
 
     Returns
     -------
-    args Dictionary with all arguments
+    :args: Dictionary with all arguments
 
-    '''
+    """
     
     parser = argparse.ArgumentParser(description="Sampling-based verifier for upCTMCs")
     # Scenario problem main arguments

@@ -2,6 +2,9 @@ import math
 
 
 class Sample:
+    """
+    Class for a sample/solution vector
+    """
 
     def __init__(self, sample_id, valuation):
         self._id = sample_id

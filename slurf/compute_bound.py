@@ -1,16 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Oct 25 17:35:21 2021
-
-@author: thom
-"""
-
 import numpy as np
 import math
 
+
 def etaLow(N, k, beta, verbose=False):
-    '''
+    """
     Rootfinding problem to compute the lower bound on the satprob (eta)
 
     Parameters
@@ -27,7 +20,7 @@ def etaLow(N, k, beta, verbose=False):
     eta_star : float
         Lower bound on the satisfaction probability.
 
-    '''
+    """
     
     # Compute combination (i, k) in logarithmic base (term 1)
     m1 = np.array([np.arange(k,N+1)])
@@ -50,7 +43,8 @@ def etaLow(N, k, beta, verbose=False):
     
     while t2-t1 > 1E-10:
         t = (t1+t2)/2
-        polyt = 1+(1-beta)/(N) - (1-beta)/(N)*np.sum( np.exp( coeffs1 - (N-m1)*np.log(t) ), axis=1 )
+        polyt = 1+(1-beta)/(N) - (1-beta)/(N)*np.sum( np.exp( 
+            coeffs1 - (N-m1)*np.log(t) ), axis=1 )
         
         if polyt > 0:
             t2 = t
@@ -65,11 +59,22 @@ def etaLow(N, k, beta, verbose=False):
     
     return eta_star
 
+
 def remainder(k,N,eta,beta):
+    """
+    Helper function to compute the accuracy of the current solution to the
+    root finding problem.
+    """
     
-    return math.comb(N,k) * eta**(N-k) - (1-beta)/N * sum([math.comb(i,k)*eta**(i-k) for i in range(k,N)])
+    return math.comb(N,k) * eta**(N-k) - (1-beta)/N * \
+        sum([math.comb(i,k)*eta**(i-k) for i in range(k,N)])
+
 
 def compute_beta(k,N,eta):
+    """
+    Compute the confidence probability (beta) for a given containment 
+    probability (eta), a given complexity (k) and a given sample size (N)
+    """
     
     invbeta = 0
     
@@ -84,25 +89,3 @@ def compute_beta(k,N,eta):
     beta = 1 - N/invbeta
     
     return beta
-
-# Approximation of binomial cdf with continuity correction for large n
-# n: trials, p: success prob, m: starting successes
-def BCDF(p, n, m):
-    return 1-CDF((m-0.5-(n*p))/math.sqrt(n*p*(1-p)))
-def CDF(x):
-    return (1.0 + math.erf(x/math.sqrt(2.0)))/2.0
-
-def determine_discarded(N=1000, beta=1e-6, eta=0.86):
-    
-    k = 0
-    res = -1
-    
-    while res < beta and k < N:
-        #res = math.comb(N+1, N) * sum([math.comb(N, i)*(eta)**(N-i)*(1-eta)**(i) for i in range(k+1)])
-        res = sum([math.comb(N, i)*(eta)**(N-i)*(1-eta)**(i) for i in range(k+1)])
-    
-        k+=1
-    
-        # print(k,':',res)
-        
-    print('Number of discarded constraints:',k)

@@ -1,5 +1,9 @@
 #!/bin/bash
 cd ..;
+OutputFile='partial_benchmark_stats.csv';
+if [ -f "$OutputFile" ] ; then
+    rm "$OutputFile";
+fi
 echo -e "RUN PARTIAL SET OF BENCHMARKS\n";
 #
 # === CTMCS ===
@@ -29,13 +33,18 @@ timeout 3600s python3 runfile.py --model ctmc/embedded/embedded.64.prism --N [10
 #
 # === Fault trees ===
 echo -e "\n++++++++ START FAULT TREE BENCHMARKS ++++++++\n";
-timeout 3600s python3 runfile.py --model sft/pcs/pcs.dft --N [100,200] --dft_checker 'parametric' --export_stats partial_benchmark_stats.csv;
+timeout 3600s python3 runfile.py --model sft/pcs/pcs.dft --N 100 --dft_checker 'parametric' --export_stats $OutputFile;
+timeout 3600s python3 runfile.py --model sft/pcs/pcs.dft --N 200 --dft_checker 'parametric' --export_stats $OutputFile;
 #
-timeout 3600s python3 runfile.py --model sft/rbc/rbc.dft --N [100,200] --dft_checker 'parametric' --export_stats partial_benchmark_stats.csv;
+timeout 3600s python3 runfile.py --model sft/rbc/rbc.dft --N [100] --dft_checker 'parametric' --export_stats $OutputFile;
+timeout 3600s python3 runfile.py --model sft/rbc/rbc.dft --N [200] --dft_checker 'parametric' --export_stats $OutputFile;
 #
-timeout 3600s python3 runfile.py --model dft/dcas/dcas.dft --N [100,200] --dft_checker 'parametric' --export_stats partial_benchmark_stats.csv;
+timeout 3600s python3 runfile.py --model dft/dcas/dcas.dft --N [100] --dft_checker 'parametric' --export_stats $OutputFile;
+timeout 3600s python3 runfile.py --model dft/dcas/dcas.dft --N [200] --dft_checker 'parametric' --export_stats $OutputFile;
 #
-timeout 3600s python3 runfile.py --model dft/rc/rc.1-1-hc_parametric.dft --param_file rc.1-1-hc_parameters.xlsx --prop_file properties.xlsx --N [100,200] --dft_checker 'parametric' --export_stats partial_benchmark_stats.csv;
+timeout 3600s python3 runfile.py --model dft/rc/rc.1-1-hc_parametric.dft --param_file rc.1-1-hc_parameters.xlsx --prop_file properties.xlsx --N [100] --dft_checker 'parametric' --export_stats $OutputFile;
+timeout 3600s python3 runfile.py --model dft/rc/rc.1-1-hc_parametric.dft --param_file rc.1-1-hc_parameters.xlsx --prop_file properties.xlsx --N [200] --dft_checker 'parametric' --export_stats $OutputFile;
 #
-timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N [100,200] --dft_checker 'parametric' --export_stats partial_benchmark_stats.csv;
+timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N [100] --dft_checker 'parametric' --export_stats $OutputFile;
+timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N [200] --dft_checker 'parametric' --export_stats $OutputFile;
 #

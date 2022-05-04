@@ -171,7 +171,9 @@ class ApproximateChecker:
     @staticmethod
     def formulas_lower_upper(formula, abort_label, model_desc=None):
         lb_formula = formula
+        
         # TODO once instantiation checker yields transient probabilities, this is no longer necessary
+        
         if type(formula.subformula.right_subformula) == sp.logic.AtomicLabelFormula:
             reach_label = "\"" + formula.subformula.right_subformula.label + "\""
         else:

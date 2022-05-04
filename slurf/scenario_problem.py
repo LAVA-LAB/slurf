@@ -14,18 +14,21 @@ class scenarioProblem:
     Functions related to the scenario optimization part.
     """
 
-    def init_problem(self, refine, samples, sample_ids, paretoP=0, paretoCost=1):
-        '''
+    def init_problem(self, refine, samples, sample_ids, paretoP=0, 
+                     paretoCost=1):
+        """
+        Initialize scenario optimization problem
         
         Parameters
         ----------
-        samples Current subset of samples active in optimization problem
-        sample_ids Indices of sample subset (compared to complete sample set)
-        paretoP Number of linear pieces in the Pareto-front
-        paretoCost Coefficient in the Pareto-front portion of the objective
+        :refine: Boolean whether solution vectors should be refined or not
+        :samples: Current subset of samples active in optimization problem
+        :sample_ids: Indices of sample subset (compared to complete sample set)
+        :paretoP: Number of linear pieces in the Pareto-front
+        :paretoCost: Coefficient in the Pareto-front portion of the objective
         ----------
 
-        '''
+        """
         
         self.refine = refine
         self.samples = samples
@@ -64,7 +67,7 @@ class scenarioProblem:
         # Define regret/slack variables
         self.xi = cp.Variable((self.Nsamples, self.dim), nonneg=True)
 
-        # Cost of violation
+        # Cost of relaxation
         self.rho = cp.Parameter()
 
         # Define slack variables (to enable/disable individual constraints)
@@ -130,11 +133,26 @@ class scenarioProblem:
 
         self.prob = cp.Problem(self.obj, constraints)
 
-    def solve_instance(self, disable_mask, costOfRegret, solver='ECOS'):
+    def solve_instance(self, disable_mask, costOfRelaxation, solver='ECOS'):
+        """
+        Solve a single instance of the scenario optimization problem
+        
+        Parameters
+        ----------
+        :disable_mask: Mask to disable solutions that can be left out of the 
+        optimization problem
+        :costOfRelaxation: Current value of the cost of relaxation (rho)
+        :solver: Solver to use (optional; ECOS by default, which is provided
+        which CVXPY)
+        ----------
+        
+        Returns the optimal value of the solution, and the solution itself.
 
+        """
+        
         # Set current parameters
         self.param.value = disable_mask
-        self.rho.value = costOfRegret
+        self.rho.value = costOfRelaxation
 
         # Solve optimization problem
         if solver == 'ECOS':
@@ -167,9 +185,10 @@ class scenarioProblem:
         return self.prob.value, sol
     
     def get_halfspaces(self):
-        '''
-        Set halfspace matrix based on the given `base` and `slope` (both 1D arrays)
-        '''
+        """
+        Set halfspace matrix based on the given `base` and `slope` 
+        (both 1D arrays)
+        """
         
         if self.dim != 2:
             return None
@@ -186,13 +205,38 @@ class scenarioProblem:
             G = np.vstack((G, H))
         
         return G
+      
+    def solve(self, sampleObj, compareAt, costOfRelaxation, 
+              all_solutions=None):
+        """
+        Solve the scenario optimization for a specific value of the cost of
+        relaxation, and determine the resulting complexity.
         
+        Parameters
+        ----------
+        :sampleObj: Object containing the solution vectors
+        :compareAt: (Time) values to solve the problem for
+        :costOfRelaxation: Current value of the cost of relaxation (rho)
+        :solver: Object of all solutions (used for approximate model checking 
+                                          only)
+        ----------
+        
+        Returns
+        ----------
+        :sol: Solution to the optimization problem
+        :complexity: Complexity of the scenario optimization problem
+        :critical_set: Set of solutions that are of complexity
+        :exterior_ids: Solution IDs that are being relaxed (out of the obtained
+                                                            confidence region)
+        :num_interior: Number of solutions in the interior of the conf. region
+        :refine_set: Set of solutions to refine (in case of approximate mode)
+        ----------
 
-    def solve(self, sampleObj, compareAt, costOfRegret=1, all_solutions=None):
-
+        """
+        
         # Solve initial problem with all constraints
         mask = np.zeros(self.Nsamples)
-        value, sol = self.solve_instance(mask, costOfRegret)
+        value, sol = self.solve_instance(mask, costOfRelaxation)
 
         # If upper bound equals lower bound, we can already conclude that
         # the complexity equals the number of samples
@@ -200,8 +244,8 @@ class scenarioProblem:
           all(np.isclose(sol['xL'], sol['xU'])):
             print(' >> Solution is a point, so skip to next problem iteration')
             
-            return sol, len(self.samples), self.sample_ids, self.sample_ids, 0, \
-                    None
+            return sol, len(self.samples), self.sample_ids, \
+                self.sample_ids, 0, None
 
         # Initialize masks
         interior_mask = np.zeros(self.Nsamples, dtype=bool)
@@ -220,8 +264,8 @@ class scenarioProblem:
                     pareto_dual_check = True
     
                 # If all dual values are zero (and xi=0), sample is in interior
-                if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0)) and \
-                    pareto_dual_check and all(np.isclose(sol['xi'][i], 0)):
+                if all(np.isclose(LB_dual, 0)) and all(np.isclose(UB_dual, 0))\
+                    and pareto_dual_check and all(np.isclose(sol['xi'][i], 0)):
     
                     interior_mask[i] = True
                     support_mask[i] = False
@@ -229,7 +273,7 @@ class scenarioProblem:
         num_interior = sum(interior_mask)
 
         disable_mask = np.array(~support_mask, dtype=int)
-        _, solC = self.solve_instance(disable_mask, costOfRegret)
+        _, solC = self.solve_instance(disable_mask, costOfRelaxation)
 
         for i in range(self.Nsamples):
 
@@ -246,7 +290,7 @@ class scenarioProblem:
             disable_mask[i] = 1
 
             # Solve the optimization problem
-            _, solB = self.solve_instance(disable_mask, costOfRegret)
+            _, solB = self.solve_instance(disable_mask, costOfRelaxation)
 
             if self.pareto:
                 pareto_check = all( np.isclose(sol['pareto']['base'], 
@@ -330,16 +374,16 @@ class scenarioProblem:
 
 def init_rho_list(args):
     """
-    Define the list of the costs of violation to use by SLURF
+    Define the list of the costs of relaxation to use by SLURF
 
     Parameters
     ----------
-    args Argument given by parser
+    :args: Argument given by parser
     ----------
 
     Returns
     ----------
-    Sorted list of the values for the cost of violation to use
+    :Sorted: list of the values for the cost of relaxation to use
     ----------
 
     """
@@ -353,35 +397,41 @@ def init_rho_list(args):
         
         rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)
         
-    return np.unique(np.sort(rho_list))
+    return np.unique(np.sort(rho_list))[::-1]
+
 
 def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
     """
+    Compute the confidence region for a given set of solution vectors, a given
+    confidence probability (beta), and a list of cost of relaxations (rho_list)
 
     Parameters
     ----------
-    samples 2D Numpy array of samples
-    beta Confidence probability (close to one means good)
-    args Argument given by parser
-    rho Cost of relaxation
+    :samples: 2D Numpy array of samples
+    :beta: Confidence probability (close to one means a good conf. level)
+    :args: Argument given by parser
+    :rho_list: List of numeric values for the cost of relaxation
+    :sampleObj: Object containing the solution vectors (used for refinement,
+                                                        if enabled; optional)
     ----------
 
     Returns
     ----------
-    regions Dictionary of results per rho
-    df_regions, df_regions_stats Pandas DFs with stats and results
-    refineID List of sample IDs to refine for (if exact=False)
+    :regions: Dictionary of results per rho
+    :df_regions:, :df_regions_stats: Pandas DFs with stats and results
+    :refineID: IDs of the solution vectors that are to be refined
+    
     ----------
 
     """
     
     Nsamples = len(samples)
-
     regions = {}
 
     # Initialize scenario optimization problem
     problem = scenarioProblem()
-    problem.init_problem(args.refine, samples, np.arange(Nsamples), args.pareto_pieces)
+    problem.init_problem(args.refine, samples, np.arange(Nsamples), 
+                         args.pareto_pieces)
 
     exterior_ids = [None]
     
@@ -411,20 +461,8 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
     for i,rho in enumerate(rho_list):    
 
         sol, complexity, critical_set, exterior_ids, num_interior, \
-            refine_set = problem.solve(sampleObj, compareAt, rho, all_solutions=samples)
-
-        '''
-        # If complexity is the same (or even higher) as in previous iteration, 
-        # skip or break
-        if i > 0 and complexity >= regions[i-1]['complexity']:
-            if rho > 2: #complexity < 0.5*Nsamples:
-                # If we are already at the outside of the slurf, break overall
-                break
-            # else:
-            #     # If we are still at the inside, increase rho and continue
-            #     rho *= increment_factor
-            #     continue
-        '''
+            refine_set = problem.solve(sampleObj, compareAt, rho, 
+                                       all_solutions=samples)
         
         print('\nScenario problem solved of size {}; rho = {:0.4f}'.\
               format(problem.Nsamples, rho))
@@ -438,6 +476,7 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
             problem.init_problem(args.refine, samples[exterior_ids], 
                                  exterior_ids, args.pareto_pieces)
 
+        # Store results about the confidence region for the current conf.prob.
         regions[i] = {
             'x_low': sol['xL'],
             'x_upp': sol['xU'],
@@ -450,9 +489,12 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
             'refine_set': refine_set
             }
         
+        # If not in exact mode, also determine solutions to be refined
         if not args.exact:
             refineID = np.union1d(refineID, refine_set)
         
+        # Determine the satisfaction/containment probability for the current
+        # confidence region
         Psat = []
         for b in beta:
 
@@ -471,29 +513,52 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
         df_regions['x_low'+str(i)] = sol['xL']
         df_regions['x_upp'+str(i)] = sol['xU']
         df_regions_stats.loc[i] = [rho, complexity] + Psat
-
+        
     return regions, df_regions, df_regions_stats, refineID
 
 
 def refinement_scheme(output_path, sampler, sampleObj, solutions, args, 
                       rho_list, plotEvery=1000, max_iter = 10):
-    '''
+    """
     Refinement scheme that refines imprecise solutions
-    '''
+    
+    Parameters
+    ----------
+    :output_path: Path to folder for exporting results/figures
+    :sampler: Sampler object
+    :sampleObj: Object containing the solution vectors (used for refinement,
+                                                        if enabled);
+    :solutions: Solution vectors
+    :args: Argument given by parser
+    :rho_list: List of numeric values for the cost of relaxation
+    :plotEvery: Determines how often we plot intermediate refinement results
+    :maxIter: Maximum number of refinement iterations
+    ----------
+
+    Returns
+    ----------
+    :regions: Dictionary of results per rho
+    :dfs_regions:, :dfs_regions_stats: Pandas DFs with stats and results
+    :refined_df: Pandas DF with the refined solution vectors for each iteration
+    
+    """
     
     i = 0
     done = False
     
     args.no_refined = 0
-    
     refined_df = pd.DataFrame()
     
+    # Iterate while not finished with refining yet
     while not done:
         i += 1
         
+        # Compute confidence region for current iteration
         regions, dfs_regions, dfs_regions_stats, refineID = \
-            compute_confidence_region(solutions, args.beta, args, rho_list, sampleObj)
+            compute_confidence_region(solutions, args.beta, args, rho_list, 
+                                      sampleObj)
         
+        # If maximum number of iteration is exceeded, break
         if i > max_iter:
             break
         
@@ -506,12 +571,10 @@ def refinement_scheme(output_path, sampler, sampleObj, solutions, args,
         toRefine = [r for r in refineID if not sampleObj[r].is_refined()]
         
         print(' - Refine samples:', toRefine)
-        # TODO make precision choosable
-        precision = args.refine_precision
-        ind_precision = dict()
         
         if len(toRefine) > 0:            
-            solutions = refine_solutions(sampler, sampleObj, solutions, toRefine, precision, ind_precision)
+            solutions = refine_solutions(sampler, sampleObj, solutions, 
+                                         toRefine, args.refine_precision, {})
         elif i > 1:
             done = True
             
@@ -529,10 +592,17 @@ def refinement_scheme(output_path, sampler, sampleObj, solutions, args,
     
     return regions, dfs_regions, dfs_regions_stats, refined_df
 
+
 def compute_confidence_per_dim(solutions, args, rho_list):
-    '''
-    Perform scenario optimization for each measure/dimension individually
-    '''
+    """
+    Perform scenario optimization for each measure/dimension individually.
+    Used for performing the comparison with a 'naive baseline', as reported
+    in the experiments of the main paper.
+    
+    Returns the satisfaction probability for a given set of solution vectors,
+    a given confidence probability, and for every value in a list of cost of 
+    relaxations.
+    """
     
     dims = solutions.shape[1]
     beta = list(1-(1 - np.array(args.beta))/dims)

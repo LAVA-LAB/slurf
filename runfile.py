@@ -46,6 +46,8 @@ if __name__ == '__main__':
     # Parse arguments
     ARGS = parse_arguments()
     
+    print(ARGS)
+    
     # Define dictionary for variables for which we can pass multiple values.
     # We will iterate over these variables as iterations of the same experiment
     iterate_dict = {'N': ARGS.Nsamples,

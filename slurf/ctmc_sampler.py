@@ -11,7 +11,8 @@ import time
 
 class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
     """
-    This simple interface builds a parametric CTMC and then uses an instantiation checker to check the model.
+    This simple interface builds a parametric CTMC and then uses an 
+    instantiation checker to check the model.
     """
 
     def init_from_model(self, model, bisim=True):
@@ -22,7 +23,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         ----------
         model CTMC.
 
-        Returns Dict of all parameters and their bounds (default [0, infinity)).
+        Returns Dict of all params. and their bounds (default [0, infinity)).
         -------
 
         """
@@ -56,7 +57,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         Parameters
         ----------
-        properties Properties either given as a tuple (event, [time bounds]) or a list of properties.
+        properties Properties either given as a tuple (event, [time bounds]) or
+        a list of properties.
         -------
 
         """
@@ -86,11 +88,12 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         Parameters
         ----------
         model A CTMC with a label.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        properties Properties here is either a tuple (event, [time bounds]) or 
+        a list of properties.
         bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (optional)
+        constants Constants for graph changing variables (optional)
 
-        Returns Dict of all parameters and their bounds (default [0, infinity)).
+        Returns Dict of all params. and their bounds (default [0, infinity)).
         -------
 
         """

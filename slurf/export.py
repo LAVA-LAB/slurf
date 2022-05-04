@@ -16,7 +16,7 @@ mpl.rcParams['pdf.fonttype'] = 42
 from slurf.commons import path, append_new_line
 
 def plot_results(output_dir, args, regions, solutions, file_suffix=None):
-    '''
+    """
     Plot the figures relevant for the current execution of the script    
 
     Parameters
@@ -26,7 +26,7 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     :regions: Dictionary of results per rho
     :solutions: Solution vectors computed by Storm
     :file_suffix: Optional suffix to filename of exports
-    '''
+    """
     
     reliability = args.reliability
     prop_labels = args.prop_labels
@@ -109,7 +109,7 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
 
 
 def save_results(output_path, dfs, modelfile_nosuffix, N):
-    '''
+    """
     Export the results of the current execution to an Excel file
     
     Parameters
@@ -118,7 +118,7 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
     :dfs: DataFrames to store in the Excel file
     :modelfile_nosuffix: Name of the model being run without extension/suffix
     :N: Number of samples to store results for
-    '''
+    """
     
     # Create a Pandas Excel writer using XlsxWriter as the engine.
     xlsx_file = modelfile_nosuffix + "_N=" + str(N) + "_results.xlsx"
@@ -138,11 +138,13 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
 
 
 class Cases():
-    '''
+    """
     Export iterative results that differ in certain parameters.
-    '''
+    """
     
     def __init__(self, root_dir, args):
+        # Initialize both the files for storing the lower bounds and the 
+        # scenario optimization run times (if these options are enabled)
         
         self.root_dir = root_dir
         
@@ -156,6 +158,7 @@ class Cases():
             self.init_time(args.export_runtime, list(map(str, args.Nsamples)))
     
     def init_eta(self, eta_csv, eta_cols):
+        # Initialize file for saving the lower bounds on the containment prob.
         
         self.eta_csv = path(self.root_dir, '', eta_csv)
         self.eta_df = pd.DataFrame(columns = eta_cols)
@@ -163,6 +166,8 @@ class Cases():
         append_new_line(self.eta_csv, ';'.join(self.eta_df.columns))
         
     def add_eta_row(self, q, args, regions, emp_satprob):
+        # Add a row to the file for saving the lower bounds on the containment
+        # probability
         
         for i, region in regions.items():
             
@@ -174,7 +179,7 @@ class Cases():
             betas = list(map(str, args.beta))
             self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 6)
             
-            self.eta_df.loc[q, 'Frequentist'] = emp_satprob[i]
+            self.eta_df.loc[q, 'Frequentist'] = args.Nvalidate * emp_satprob[i]
                 
             row = self.eta_df.loc[q]
             
@@ -182,23 +187,25 @@ class Cases():
             append_new_line(self.eta_csv, ';'.join(map(str, row)))
         
     def init_time(self, time_csv, time_cols):
+        # Initialize the DF for saving the scenario optimization run times
         
         self.time_csv = path(self.root_dir, '', time_csv)
         self.time_df = pd.DataFrame(columns = time_cols)
         self.time_df.index.name = '#'
         
     def add_time_row(self, args, time):
+        # Add a row to the DF for exporting the scenario optimization run times
         
         self.time_df.loc[args.seeds, str(args.Nsamples)] = np.round(time, 5)
         
     def write_time(self):
-        
         # Write DataFrame to file
+        
         self.time_df.to_csv(self.time_csv, sep=';')
 
 
 def make_conservative(low, upp):
-    '''
+    """
     Make a region conservative (such that the smooth curve is guaranteed to
     contain the actual curve).
 
@@ -212,7 +219,7 @@ def make_conservative(low, upp):
     :x_low: Conservative lower bound
     :x_upp: Conservative upper bound
 
-    '''
+    """
     
     x_low = np.array([np.min(low[i-1:i+2]) if i > 0 and i < len(low) else 
                           low[i] for i in range(len(low))])
@@ -224,7 +231,7 @@ def make_conservative(low, upp):
 
 def plot_reliability(timebounds, regions, samples, beta, plotSamples=False, 
                      mode='conservative', annotate=False, title=False):
-    '''
+    """
     Plot a reliability curve
     
     Parameters
@@ -234,7 +241,7 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
     :samples: Solution vectors computed by Storm
     :beta: Confidence level
     :mode: If this is 'conservative', then plot underapproximation of the curve
-    '''
+    """
     
     assert mode in ['optimistic', 'conservative']
     
@@ -295,6 +302,17 @@ def plot_reliability(timebounds, regions, samples, beta, plotSamples=False,
 
 def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
             plotSamples=True, plotSampleID=False, title=False):
+    """
+    Plot a confidence region against two distinct properties (not over time,
+    as is done for a reliability curve).
+    
+    Parameters
+    ----------
+    :args: Argument given by parser
+    :idxs: Indices of solution vectors to plot
+    :regions: Dictionary of results per rho
+    :samples: Solution vectors computed by Storm
+    """
     
     beta = args.beta2plot
     if args.pareto_pieces > 0:
@@ -416,15 +434,15 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
     
     
 def export_benchmark_table(root_dir, outfile, row):
-    '''
+    """
     Updates the table for benchmark statistics, as reported in the paper.
 
     Parameters
     ----------
-    root_dir Root directory
-    row Row (as Pandas DataFrame) to add to the table
+    :root_dir: Root directory
+    :row: Row (as Pandas DataFrame) to add to the table
 
-    '''
+    """
     
     # Determine full path to output file
     outpath = path(root_dir, '', outfile)

@@ -32,13 +32,17 @@ setup(
     zip_safe=False,
     install_requires=[
         'stormpy>=1.6.3', # Back-end model checker
-        'cvxpy',
-        'matplotlib',
-        'numpy',
+        'cvxpy>=1.1.17',
+        'matplotlib>=3.5.1',
+        'numpy>=1.21.4',
         'openpyxl', # Read Excel files
-        'seaborn',
-        'tqdm', # Progress bar
-        'xlsxwriter' # Write Excel files
+        'seaborn>=0.11.2',
+        'tqdm>=4.62.3', # Progress bar
+        'xlsxwriter>=3.0.2', # Write Excel files
+        'pandas>=1.3.5',
+        'setuptools>=58.0.4',
+        'pytest>=6.2.5',
+        'scipy>=1.8.0'
     ],
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],

@@ -43,10 +43,10 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        model Description file for the (parametric) model.
-        properties Properties here is either a tuple (event, [time bounds]) or a list of properties.
-        bisim Whether to apply bisimulation.
-        constants Constants for graph changing variables in model description (optional)
+        :model: Description file for the (parametric) model.
+        :properties: Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        :bisim: Whether to apply bisimulation.
+        :constants: Constants for graph changing variables in model description (optional)
 
         Returns Dict of all parameters and their bounds (default bounds are [0, infinity)).
         """
@@ -60,8 +60,8 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        valuation Parameter valuation in form of a dictionary from parameters to values.
-        exact Whether exact results should be computed.
+        :valuation: Parameter valuation in form of a dictionary from parameters to values.
+        :exact: Whether exact results should be computed.
 
         Returns
         -------
@@ -86,8 +86,8 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        samples List of samples to check.
-        exact Whether exact results should be computed.
+        :samples: List of samples to check.
+        :exact: Whether exact results should be computed.
 
         Returns
         -------
@@ -122,14 +122,14 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        sample_id Id of sample to refine.
-        precision Maximal allowed distance between upper and lower bound.
-        ind_precisions Dictionary with individual precisions for given properties. If property is not given,
+        :sample_id: Id of sample to refine.
+        :precision: Maximal allowed distance between upper and lower bound.
+        :ind_precisions: Dictionary with individual precisions for given properties. If property is not given,
             the default precision is used.
 
         Returns
         -------
-        Sample point containing the refined result.
+        :sample: point containing the refined result.
         """
         time_start = time.process_time()
 
@@ -148,9 +148,9 @@ class ModelSamplerInterface:
 
         Parameters
         ----------
-        sample_ids Ids of samples to refine.
-        precision Maximal allowed distance between upper and lower bound.
-        ind_precisions Dictionary with individual precisions for given properties. If property is not given,
+        :sample_ids: Ids of samples to refine.
+        :precision: Maximal allowed distance between upper and lower bound.
+        :ind_precisions: Dictionary with individual precisions for given properties. If property is not given,
             the default precision is used.
         Returns
         -------
