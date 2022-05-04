@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
-import glob
-import os
+import json
+from pathlib import Path
 
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ from scipy.spatial import HalfspaceIntersection, ConvexHull
 import matplotlib as mpl
 mpl.rcParams['pdf.fonttype'] = 42
 
-from slurf.commons import path, append_new_line
+from slurf.commons import path
 
 def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     """
@@ -135,73 +135,6 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
     print('- Results exported to:',xlsx_path)
     
     return
-
-
-class Cases():
-    """
-    Export iterative results that differ in certain parameters.
-    """
-    
-    def __init__(self, root_dir, args):
-        # Initialize both the files for storing the lower bounds and the 
-        # scenario optimization run times (if these options are enabled)
-        
-        self.root_dir = root_dir
-        
-        if args.export_bounds:
-            # If option enabled, export lower bounds as a table
-            self.init_eta(args.export_bounds,
-             ['#', 'N','seed','rho','Frequentist'] + list(map(str, args.beta)))
-            
-        if args.export_runtime:
-            # If option enabled, export scenario optimization run times
-            self.init_time(args.export_runtime, list(map(str, args.Nsamples)))
-    
-    def init_eta(self, eta_csv, eta_cols):
-        # Initialize file for saving the lower bounds on the containment prob.
-        
-        self.eta_csv = path(self.root_dir, '', eta_csv)
-        self.eta_df = pd.DataFrame(columns = eta_cols)
-        
-        append_new_line(self.eta_csv, ';'.join(self.eta_df.columns))
-        
-    def add_eta_row(self, q, args, regions, emp_satprob):
-        # Add a row to the file for saving the lower bounds on the containment
-        # probability
-        
-        for i, region in regions.items():
-            
-            self.eta_df.loc[q, 'N'] = args.Nsamples
-            self.eta_df.loc[q, '#'] = q
-            self.eta_df.loc[q, 'seed'] = args.seeds
-            self.eta_df.loc[q, 'rho'] = np.round(region['rho'], 6)
-            
-            betas = list(map(str, args.beta))
-            self.eta_df.loc[q, betas] = np.round(list(region['eta_series']), 6)
-            
-            self.eta_df.loc[q, 'Frequentist'] = args.Nvalidate * emp_satprob[i]
-                
-            row = self.eta_df.loc[q]
-            
-            # Write row to file
-            append_new_line(self.eta_csv, ';'.join(map(str, row)))
-        
-    def init_time(self, time_csv, time_cols):
-        # Initialize the DF for saving the scenario optimization run times
-        
-        self.time_csv = path(self.root_dir, '', time_csv)
-        self.time_df = pd.DataFrame(columns = time_cols)
-        self.time_df.index.name = '#'
-        
-    def add_time_row(self, args, time):
-        # Add a row to the DF for exporting the scenario optimization run times
-        
-        self.time_df.loc[args.seeds, str(args.Nsamples)] = np.round(time, 5)
-        
-    def write_time(self):
-        # Write DataFrame to file
-        
-        self.time_df.to_csv(self.time_csv, sep=';')
 
 
 def make_conservative(low, upp):
@@ -433,43 +366,51 @@ def plot_2D(args, idxs, prop_labels, regions, samples, R=None,
     cbar.ax.tick_params(labelsize=22)
     
     
-def export_benchmark_table(root_dir, outfile, row):
+def export_benchmark_table(root_dir, args, dfs, expdata, regions, emp_satprob):
     """
     Updates the table for benchmark statistics, as reported in the paper.
 
     Parameters
     ----------
     :root_dir: Root directory
-    :row: Row (as Pandas DataFrame) to add to the table
+    :args: Arguments provided to script
+    :dfs: Dataframes containing data to export from
+    :expdata: Dictionary that we will export as JSON file
+    :regions: Results regarding the confidence regions
+    :emp_satprob: Empirical containment probabilities
 
     """
     
+    # Add data to export dictionary
+    expdata['no_properties'] = int(dfs['storm_stats']['no_properties'])
+    expdata['no_pars'] = int(dfs['storm_stats']['no_parameters'])
+    expdata['no_states'] = int(dfs['storm_stats']['orig_model_states'])
+    expdata['no_trans'] = int(dfs['storm_stats']['orig_model_transitions'])
+    
+    expdata['time_init'] = np.round(dfs['storm_stats']['time_load'] + \
+                                 dfs['storm_stats']['time_bisim'], 2)
+    expdata['time_sample_x100'] = np.round(
+        dfs['storm_stats']['time_sample'] / args.Nsamples * 100, 2)
+    
+    expdata['lower_bound'] = {}
+    for j,(i,region) in enumerate(regions.items()):          
+        expdata['lower_bound'][i] = np.round(
+            region['eta_series'], 6).to_dict()
+        expdata['lower_bound'][i]['frequentist'] = np.round(
+            args.Nvalidate * emp_satprob[j], 6)
+    
     # Determine full path to output file
-    outpath = path(root_dir, '', outfile)
+    outpath = path(root_dir, '', args.export_stats)
+    outfolder = outpath.rsplit('/', 1)[0]
     
-    # Retrieve all files with this name (wildcard * possible)
-    path_to_tables = outpath
-    list_of_files = glob.glob(path_to_tables)
+    # Create output subfolder
+    Path(outfolder).mkdir(parents=True, exist_ok=True)
     
-    if len(list_of_files) == 0:
-        # If the file does not exist yet, create one
-        row.to_csv(outpath) 
-        
-    else:
-        # If the file does already exist, append current row to it
-        latest_table_file = max(list_of_files, key=os.path.getctime)
-        
-        try:
-            TABLE = pd.read_csv(latest_table_file)
-            TABLE.set_index('instance', inplace=True)
-            
-            TABLE_PLUS = pd.concat([TABLE, row])
-            TABLE_PLUS.to_csv(latest_table_file)     
-            
-            print('>> Exported results to table of benchmark statistics')
-            
-        except:
-            print('>> An unexpected error occured:',
-                  'Could not add current iteration to benchmark table')
-            
-            return
+    # Write in JSON format
+    f = open(outpath, "w")
+    json.dump(expdata, f)
+    f.close()
+    
+    print('- Benchmark statistics exported as JSON to:', outpath)
+    
+    return

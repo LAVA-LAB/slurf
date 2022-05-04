@@ -48,3 +48,7 @@ timeout 3600s python3 runfile.py --model dft/rc/rc.1-1-hc_parametric.dft --param
 timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N [100] --dft_checker 'parametric' --export_stats $OutputFile;
 timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N [200] --dft_checker 'parametric' --export_stats $OutputFile;
 #
+
+
+timeout 3600s python3 runfile.py --model sft/pcs/pcs.dft --N 100 --dft_checker 'parametric' --export_stats 'stats/out1.json';
+timeout 3600s python3 runfile.py --model sft/pcs/pcs.dft --N 200 --dft_checker 'parametric' --export_stats 'stats/out2.json';

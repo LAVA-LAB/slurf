@@ -20,7 +20,7 @@ def parse_arguments(manualModel=None, nobisim=False):
     
     parser = argparse.ArgumentParser(description="Sampling-based verifier for upCTMCs")
     # Scenario problem main arguments
-    parser.add_argument('--N', type=str, action="store", dest='Nsamples', 
+    parser.add_argument('--N', type=int, action="store", dest='Nsamples', 
                         default=100, help="Number of samples to compute")
     parser.add_argument('--beta', type=str, action="store", dest='beta', 
                         default='[0.9,0.99,0.999]', help="Number of samples to compute")
@@ -30,8 +30,8 @@ def parse_arguments(manualModel=None, nobisim=False):
                         default=0, help="Number of samples to validate confidence regions with")
     
     # Number of repetitions
-    parser.add_argument('--seeds', type=int, action="store", dest='seeds', 
-                        default=1, help="Number of repetitions (to compute average results over)")
+    parser.add_argument('--seed', type=int, action="store", dest='seed', 
+                        default=1, help="Random seed to set in the experiment")
     
     # Argument for model to load
     parser.add_argument('--model', type=str, action="store", dest='model', 
@@ -121,11 +121,7 @@ def parse_arguments(manualModel=None, nobisim=False):
     except:
         args.beta = list(literal_eval(args.beta))
         
-    try:
-        args.Nsamples = [int(args.Nsamples)]
-    except:
-        args.Nsamples = list(literal_eval(args.Nsamples))   
-        args.Nsamples = [int(n) for n in args.Nsamples]
+    args.Nsamples = int(args.Nsamples)
         
     args.beta2plot = str(statistics.median(args.beta))
 

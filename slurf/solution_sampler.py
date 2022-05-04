@@ -271,13 +271,12 @@ def refine_solutions(sampler, sampleObj, solutions, idx, precision, ind_precisio
     return solutions
 
 
-def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties, 
+def validate_solutions(sampler, regions, Nvalidate, properties, 
                        param_list, param_values, root_dir=None, cache=None):
     """
 
     Parameters
     ----------
-    :val_dfs: DataFrame where the validation results are stored over repetitions
     :sampler: Sampler object (for either CTMC of DFT)
     :regions: Solutions to scenario problems (for multiple values of rho)
     :Nvaliate: Number of samples
@@ -306,7 +305,7 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
     empirical_satprob  = np.zeros(len(regions))
     
     # For every value of rho
-    for i,D in regions.items():
+    for i,D in enumerate(regions.values()):
         
         # Determine which samples violate the solution (bounding box)
         sat_low = np.all(solutions_V >= np.array(D['x_low']), axis=1)
@@ -317,16 +316,7 @@ def validate_solutions(val_dfs, sampler, regions, Nvalidate, properties,
         
         # Compute the empirical violation probability 
         empirical_satprob[i] = sat_sum / Nvalidate
-        
-    for i, item in regions.items():
-        
-        rho = np.round(item['rho'], 4)
-        series = copy.copy(regions[i]['eta_series'])
-        series['emp'] = empirical_satprob[i]
-        
-        if rho in val_dfs:
-            val_dfs[rho] = val_dfs[rho].append(series, ignore_index=True)
-        else:
-            val_dfs[rho] = pd.DataFrame(series).T
 
-    return empirical_satprob, val_dfs
+    print(empirical_satprob)
+
+    return empirical_satprob

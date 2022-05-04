@@ -477,7 +477,7 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
                                  exterior_ids, args.pareto_pieces)
 
         # Store results about the confidence region for the current conf.prob.
-        regions[i] = {
+        regions[rho] = {
             'x_low': sol['xL'],
             'x_upp': sol['xU'],
             'rho': rho,
@@ -502,12 +502,12 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
             Pviolation = np.round(1 - etaLow(Nsamples, complexity, b), 6)
             time_taken = time.process_time() - time_start
             Psat += [1 - Pviolation]
-            regions[i]['satprob_beta='+str(b)] = 1 - Pviolation
+            regions[rho]['satprob_beta='+str(b)] = 1 - Pviolation
             print(' - Lower bound on sat.prob for beta={}: {:0.6f}'.\
                   format(b, 1-Pviolation))
             print(' - Computing this bound took: {:0.3f}'.format(time_taken))
                 
-        regions[i]['eta_series'] = pd.Series(Psat, index=beta)
+        regions[rho]['eta_series'] = pd.Series(Psat, index=beta)
         
         # Append results to dataframe
         df_regions['x_low'+str(i)] = sol['xL']
