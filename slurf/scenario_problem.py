@@ -206,7 +206,7 @@ class scenarioProblem:
         
         return G
       
-    def solve(self, sampleObj, compareAt, costOfRelaxation, 
+    def solve(self, sampleObj, compareAt, costOfRelaxation=1, 
               all_solutions=None):
         """
         Solve the scenario optimization for a specific value of the cost of
@@ -397,7 +397,7 @@ def init_rho_list(args):
         
         rho_list = np.round([1/(int(n)+0.5) for n in ls], 3)
         
-    return np.unique(np.sort(rho_list))[::-1]
+    return np.unique(np.sort(rho_list))
 
 
 def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
@@ -513,7 +513,7 @@ def compute_confidence_region(samples, beta, args, rho_list, sampleObj=None):
         df_regions['x_low'+str(i)] = sol['xL']
         df_regions['x_upp'+str(i)] = sol['xU']
         df_regions_stats.loc[i] = [rho, complexity] + Psat
-        
+
     return regions, df_regions, df_regions_stats, refineID
 
 

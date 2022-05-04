@@ -1,3 +1,0 @@
-instance,instantiator,model checking type,Nr. props (Phi),#pars,#states,#trans,time_init,time_sample (x100),scen_opt_N=100,scen_opt_N=200
-dcas,DFT (parametric),exact,25,10,64,202,3e-02,0.4,3.91,
-dcas,DFT (parametric),exact,25,10,64,202,0.03,0.43,,13.63
