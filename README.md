@@ -55,7 +55,8 @@ A miminal command to run a single CTMC or fault tree is as follows:
 python runfile.py --N <number of samples> --beta <confidence level> --model <path to model file>
 ```
 
-The `model` argument should contain the path to the model file, rooted in the `model` folder. For defining CTMCs, we support [the PRISM format](https://prismmodelchecker.org/manual/ThePRISMLanguage/Introduction), while for fault trees, we support [the Galileo format](https://www.cse.msu.edu/~cse870/Materials/FaultTolerant/manual-galileo.htm#Editing%20in%20the%20Textual%20View).
+
+The `model` argument should contain the path to the model file, rooted in the `model` folder. For defining parametric CTMCs, we support [the PRISM format](https://prismmodelchecker.org/manual/ThePRISMLanguage/Introduction), while for parametric fault trees, we support [the Galileo format](https://www.cse.msu.edu/~cse870/Materials/FaultTolerant/manual-galileo.htm#Editing%20in%20the%20Textual%20View). See Section 6 for how the parameters in these models are defined.
 
 To run for 100 samples of the SIR epidemic model with a population of 20 and a confidence probability of 0.99 (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
 
@@ -153,3 +154,73 @@ Below, we list all arguments that can be passed to the command for running the s
 | plot_timebounds | No    | None             | str                      | List of two timebounds to create 2D plot for (note: these should be present in the properties Excel file!) |
 | curve_plot_mode | No    | conservative     | str                      | If `conservative`, overapproximation of curves are plotted over time; if `optimistic`, underapproximations are plotted |
 | pareto_pieces | No      | 0                | int                      | If nonzero, a pareto front is plotted, with a front consisting of the specified number of linear pieces |
+
+## 6. Defining parametric models
+
+We support uncertain parametric CTMCs (defined in PRISM format) and fault trees (defined in Galileo format). For example, the SIR epidemic model CTMC is defined as follows:
+
+```
+ctmc
+
+const double ki;
+const double kr;
+
+const int maxPop = 20;
+const int initS = maxPop-5;
+const int initI = 5;
+const int initR = 0;
+
+module SIR
+
+popS: [0..maxPop] init initS;
+popI: [0..maxPop] init initI;
+popR: [0..maxPop] init initR;
+
+<>popS > 0 & popI > 0 & popI < maxPop  ->    ki*popS*popI  : (popS'= popS-1) & (popI'= popI+1);
+<>popI > 0 & popR < maxPop ->    kr*popI  : (popR'= popR+1) & (popI'= popI-1);
+<>popI=0 -> 1 : true;
+
+endmodule
+
+label "done" = popI=0;
+```
+
+There are two parameters, `ki` and `kr`. As described in Section 3, the parameter distributions are defined in a separate Excel file. 
+
+Similarly, the following is the DCAS dynamic fault tree, in Galileo format:
+
+```
+param P;
+param B;
+param CS;
+param SS;
+param MS;
+param MA;
+param MB;
+param PA;
+param PB;
+param PS;
+toplevel "System";
+"System" or "FDEP" "CPU" "MOTOR" "PUMPS";
+"FDEP" fdep "TRIGGER" "P" "B";
+"TRIGGER" or "CS" "SS";
+"CPU" wsp "P" "B";
+"MOTOR" or "SWITCH" "MOTORS";
+"SWITCH" pand "MS" "MA";
+"MOTORS" csp "MA" "MB";
+"PUMPS" and "PUMP1" "PUMP2";
+"PUMP1" csp "PA" "PS";
+"PUMP2" csp "PB" "PS";
+"P" lambda=P dorm=0;
+"B" lambda=B dorm=0.5;
+"CS" lambda=CS dorm=0;
+"SS" lambda=SS dorm=0;
+"MS" lambda=MS dorm=0;
+"MA" lambda=MA dorm=0;
+"MB" lambda=MB dorm=0;
+"PA" lambda=PA dorm=0;
+"PB" lambda=PB dorm=0;
+"PS" lambda=PS dorm=0;
+```
+
+The original non-parametric fault tree which we adapted can be found in the [FFORT benchmark suite](https://dftbenchmarks.utwente.nl/ffort.php). Other benchmarks from this suite can be converted to a parametric model in a similar way.
