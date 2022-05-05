@@ -76,22 +76,42 @@ The results for individual experiments are saved in the `output/` folder, where 
 
 ## How to run experiments?
 
-We now describe how to reproduce the experimental section of [1].
+The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
+- `run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
+- `run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
+With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
 
+Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `experiments/results/`. Partial tables are stored with the suffix `_partial` in the filename.
+
+1. Creating all figures presented in [1]. The figures are saved in the `output/` folder, where a subfolder is created for each experiment, e.g. `sir60_N=400_date=2022-05-05_14-17-30`.
+2. Benchmark statistics. The table (corresponding with Tables 1 and 4 in [1]) is saved as `benchmark_statistics.csv`.
+3. Tightness of obtained lower bounds. The tables (corresponding with Table 2 in [1]) are saved as `table2_kanban.csv` and `table2_rc.csv`.
+4. Scenario optimization run times. The tables (corresponding with Table 3 in [1]) are saved as `table3_kanban.csv` and `table2_rc.csv`.
+5. Comparison to naive Monte Carlo baseline. The table (corresponding with Table 5 in [1]) is saved as `naive_baseline.csv`.
 
 ## List of possible arguments
 
-Optional arguments
+Below, we list all arguments that can be passed to the command for running the script. Arguments are given as `--<argument name> <value>`.
 
-Other optional arguments are as follows:
-
-- `--rho_min 0.0001` - Minimum cost of violation to start with in first iteration (0.0001 by default)
-- `--rho_incr 1.5` - Increment factor of the cost of violation in every iteration (1.5 by default)
-- `--rho_max_iter 20` - Maximum number of iterations for increasing cost of violations (20 by default)
-- `--curve_plot_mode conservative` - Plotting mode for reliability curves. Is either `optimistic` or `conservative` (default)
-- `--Nvalidate 0` - If provided, an empirical Monte Carlo validation (with the provided number of solutions) of the bounds on the satisfaction probability is performed.
-
-
-
+| Argument    | Required? | Default          | Type                     | Description |
+| ---         | ---       | ---              | ---                      | ---         |
+| N           | No        | 100              | int. or list of integers | Number of solution vectors. A list can be passed as e.g., `[100,200]` |
+| beta        | No        | [0.9,0.99,0.999] | float or list of floats  | Confidence level. A list can be passed as e.g., `[0.9,0.99]` |
+| rho_list    | No        | depends          | float of floats          | Lists of the costs or relaxation to use, e.g. `[0.2,0.5,0.75,1.5]` |
+| model       | Yes       | n/a              | string                   | Model file, e.g. `ctmc/epidemic/sir20.sm` |
+| param_file  | No        | parameters.xlsx  | string                   | File to load parameter distributions from |
+| prop_file   | No        | properties.xlsx  | string                   | File to load properties from |
+| no-bisim    | No        | False            | bool                     | If this argument is added, bisimulation is disabled |
+| seed        | No        | 1                | int                      | Random seed |
+| Nvalidate   | No        | 0                | int                      | Number of solution vectors to use in computing empirical containment probabilities (as in Table 2 in [1]) |
+| dft_checker | No        | concrete         | string                   | Type of DFT model checker to use (either `concrete` or `parametric`) |
+| precision   | No        | 0                | float >= 0               | If specified (and if bigger than zero), approximate model checker is used |
+| naive_baseline   | No   | False            | bool                     | If this argument is added, comparison with a naive Monte Carlo baseline is performed |
+| export_stats| No        | None             | string                   | If this argument is added, benchmark statistics are exported to the specified file |
+| refine      | No        | False            | bool                     | If this argument is added, the iterative refinement scheme is enabled |
+| refine_precision | No   | 0                | float                    | Refinement precision to be used for refining solutions (0 means refining to exact solution vectors) |
+| plot_timebounds | No    | None             | str                      | List of two timebounds to create 2D plot for (note: these should be present in the properties Excel file!) |
+| curve_plot_mode | No    | conservative     | str                      | If `conservative`, overapproximation of curves are plotted over time; if `optimistic`, underapproximations are plotted |
+| pareto_pieces | No      | 0                | int                      | If nonzero, a pareto front is plotted, with a front consisting of the specified number of linear pieces |
