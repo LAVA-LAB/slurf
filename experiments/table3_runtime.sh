@@ -9,7 +9,7 @@ for (( i=0; i < $reps; ++i )); do
 		done
 	done
 done
-python generate_table.py --folder 'stats_runtime/sir/' --outfile 'Table3_sir20.csv' --mode scen_opt_time;
+python generate_table.py --folder 'stats_runtime/sir/' --outfile 'experiments/results/table3_sir20.csv' --mode scen_opt_time;
 #
 echo -e "++++++++ RUN RC(1-1) BENCHMARK ++++++++\n";
 for (( i=0; i < $reps; ++i )); do
@@ -19,4 +19,4 @@ for (( i=0; i < $reps; ++i )); do
 		done
 	done
 done
-python generate_table.py --folder 'stats_runtime/rc/' --outfile 'Table3_rc1-1.csv' --mode scen_opt_time;
+python generate_table.py --folder 'output/stats_runtime/rc/' --outfile 'experiments/results/table3_rc1-1.csv' --mode scen_opt_time;

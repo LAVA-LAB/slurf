@@ -10,6 +10,7 @@ import argparse
 import os
 import glob, json
 from slurf.commons import path
+from pathlib import Path
 
 def is_unique(s):
     a = s.to_numpy() # s.values (pandas<0.24)
@@ -226,9 +227,17 @@ elif args.mode == 'naive_comparison':
         # Add to main output table
         TABLE.loc['Our approach', cols] = bound_df.values
         TABLE.loc['Baseline', cols] = naive_df.values
-            
-                    
-TABLE.to_csv(args.outfile, sep=';')
+           
+        
+root_dir = os.path.dirname(os.path.abspath(__file__))
+
+outpath = path(root_dir, args.outfile, '')
+outfolder = outpath.rsplit('/', 1)[0]
+
+# Create output subfolder
+Path(outfolder).mkdir(parents=True, exist_ok=True)
+               
+TABLE.to_csv(outpath, sep=';')
 print('Final table:')
 print(TABLE)
 print('Table export (as csv) to:', args.outfile)

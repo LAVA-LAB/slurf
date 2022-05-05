@@ -24,29 +24,13 @@ def parse_arguments(manualModel=None, nobisim=False):
                         default=100, help="Number of samples to compute")
     parser.add_argument('--beta', type=str, action="store", dest='beta', 
                         default='[0.9,0.99,0.999]', help="Number of samples to compute")
-    
-    # Number of validation samples (0 by default, i.e. no validation)
-    parser.add_argument('--Nvalidate', type=int, action="store", dest='Nvalidate', 
-                        default=0, help="Number of samples to validate confidence regions with")
-    
-    # Number of repetitions
-    parser.add_argument('--seed', type=int, action="store", dest='seed', 
-                        default=1, help="Random seed to set in the experiment")
+    # Scenario problem optional arguments
+    parser.add_argument('--rho', type=str, action="store", dest='rho_list', 
+                        default=None, help="List of cost of violation")
     
     # Argument for model to load
     parser.add_argument('--model', type=str, action="store", dest='model', 
                         default=manualModel, help="Model file to load")
-    
-    # Argument for type of model checking
-    parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
-                        default='concrete', help="Type of DFT model checker to use")
-    parser.add_argument('--precision', type=float, action="store", dest='precision', 
-                        default=0, help="Initial precision to be used for computing solutions (0 is exact)")
-    
-    parser.add_argument('--naive_baseline', action="store_true", dest='naive_baseline', 
-                        help="Enable naive baseline that analyzes each measure independently")
-    parser.set_defaults(naive_baseline=False)
-    
     # Set a manual parameter distribution file
     parser.add_argument('--param_file', type=str, action="store", dest='param_file', 
                         default=None, help="Parameter distribution Excel file")
@@ -59,9 +43,27 @@ def parse_arguments(manualModel=None, nobisim=False):
                         help="Disable bisimulation")
     parser.set_defaults(bisim=True)
     
+    # Number of repetitions
+    parser.add_argument('--seed', type=int, action="store", dest='seed', 
+                        default=1, help="Random seed to set in the experiment")
+    
+    # Number of validation samples (0 by default, i.e. no validation)
+    parser.add_argument('--Nvalidate', type=int, action="store", dest='Nvalidate', 
+                        default=0, help="Number of samples to validate confidence regions with")
+    
+    # Argument for type of model checking
+    parser.add_argument('--dft_checker', type=str, action="store", dest='dft_checker', 
+                        default='concrete', help="Type of DFT model checker to use")
+    parser.add_argument('--precision', type=float, action="store", dest='precision', 
+                        default=0, help="Initial precision to be used for computing solutions (0 is exact)")
+    
+    parser.add_argument('--naive_baseline', action="store_true", dest='naive_baseline', 
+                        help="Enable naive baseline that analyzes each measure independently")
+    parser.set_defaults(naive_baseline=False)
+    
     # Allow for exporting tabular results
     parser.add_argument('--export_stats', type=str, action="store", dest='export_stats',
-                        help="Export benchmark statistics table")
+                        help="Export benchmark statistics")
     parser.set_defaults(export_stats=None)
     
     # Enable/disable refinement and set precision for refinement
@@ -70,12 +72,6 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.set_defaults(refine=False)
     parser.add_argument('--refine_precision', type=float, action="store", dest='refine_precision', 
                         default=0, help="Refinement precision to be used for refining solutions (0 is exact)")
-        
-    # # Scenario problem optional arguments
-    parser.add_argument('--rho', type=str, action="store", dest='rho_list', 
-                        default=None, help="List of cost of violation")
-    parser.add_argument('--rho_steps', type=int, action="store", dest='rho_steps', 
-                        default=10, help="Number of values for rho to run for")
     
     parser.add_argument('--plot_timebounds', type=str, action="store", dest='plot_timebounds', 
                         default=None, help="List of two timebounds to create 2D plot for")
