@@ -93,7 +93,7 @@ The figures and tables in the experimental section of [1] can be reproduced by r
 - `run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
 - `run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
-With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
+Note: before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
 
 Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `experiments/results/`. Partial tables are stored with the suffix `_partial` in the filename.
 
