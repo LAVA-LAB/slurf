@@ -613,8 +613,11 @@ def compute_confidence_per_dim(solutions, args, rho_list):
     for dim in range(solutions.shape[1]):
         reg, _, _, _, = compute_confidence_region(solutions[:,[dim]], beta, args, rho_list)
         
-        satprobs[:,dim] = reg[0]['eta_series'].to_numpy()
+        key = max(rho_list)
+        satprobs[:,dim] = reg[key]['eta_series'].to_numpy()
         
         satprob *= satprobs[:,dim]
+        
+    satprob = {b: p for b, p in zip(args.beta, satprob)}
         
     return satprob

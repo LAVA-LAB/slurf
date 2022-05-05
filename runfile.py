@@ -132,16 +132,18 @@ if __name__ == '__main__':
             refinement_scheme(output_path, sampler, sampleObj, solutions, 
                               args, rho_list, plotEvery=1, max_iter = 20)
         
-    # TODO make implementation of this baseline (experiment for paper) more refined
+    # Store time taken for solving scenario optimization problems
+    expdata['scen_opt_time'] = np.round(
+         time.process_time() - time_before_scenario, 2)
+        
     if args.naive_baseline and args.exact:
         args.naive_bounds = compute_confidence_per_dim(solutions, args, 
                                                        [max(rho_list)])
+        expdata['naive_bounds_max_rho'] = args.naive_bounds
         print('Naive bounds obtained by analyzing measures independently:', 
               args.naive_bounds)
-        
-    # Store time taken for solving scenario optimization problems
-    expdata['scen_opt_N='+str(args.Nsamples)] = np.round(
-         time.process_time() - time_before_scenario, 2)
+    else:
+        expdata['naive_bounds_max_rho'] = {}
     
     print("\n===== Scenario problems completed at:", getTime(),"=====")
     

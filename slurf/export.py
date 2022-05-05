@@ -381,23 +381,28 @@ def export_benchmark_table(root_dir, args, dfs, expdata, regions, emp_satprob):
 
     """
     
+    expdata['seed'] = int(args.seed)
+    
     # Add data to export dictionary
     expdata['no_properties'] = int(dfs['storm_stats']['no_properties'])
     expdata['no_pars'] = int(dfs['storm_stats']['no_parameters'])
     expdata['no_states'] = int(dfs['storm_stats']['orig_model_states'])
     expdata['no_trans'] = int(dfs['storm_stats']['orig_model_transitions'])
     
-    expdata['time_init'] = np.round(dfs['storm_stats']['time_load'] + \
-                                 dfs['storm_stats']['time_bisim'], 2)
-    expdata['time_sample_x100'] = np.round(
-        dfs['storm_stats']['time_sample'] / args.Nsamples * 100, 2)
+    expdata['time_init'] = float(np.round(dfs['storm_stats']['time_load'] + \
+                                 dfs['storm_stats']['time_bisim'], 2))
+    expdata['time_sample_x100'] = float(np.round(
+        dfs['storm_stats']['time_sample'] / args.Nsamples * 100, 2))
     
     expdata['lower_bound'] = {}
-    for j,(i,region) in enumerate(regions.items()):          
+    for j,(i,region) in enumerate(regions.items()): 
+        # Store lower bounds on the containment probability         
         expdata['lower_bound'][i] = np.round(
             region['eta_series'], 6).to_dict()
-        expdata['lower_bound'][i]['frequentist'] = np.round(
-            args.Nvalidate * emp_satprob[j], 6)
+        
+        # Store frequentist (average) value on the containment probability
+        expdata['lower_bound'][i]['frequentist'] = float(np.round(
+            args.Nvalidate * emp_satprob[j], 6))
     
     # Determine full path to output file
     outpath = path(root_dir, '', args.export_stats)

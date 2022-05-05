@@ -63,12 +63,6 @@ def parse_arguments(manualModel=None, nobisim=False):
     parser.add_argument('--export_stats', type=str, action="store", dest='export_stats',
                         help="Export benchmark statistics table")
     parser.set_defaults(export_stats=None)
-    parser.add_argument('--export_bounds', type=str, action="store", dest='export_bounds',
-                        help="Export table of lower bounds on the containment probability")
-    parser.set_defaults(export_bounds=None)
-    parser.add_argument('--export_runtime', type=str, action="store", dest='export_runtime',
-                        help="Export table of scenario optimization run times")
-    parser.set_defaults(export_runtime=None)
     
     # Enable/disable refinement and set precision for refinement
     parser.add_argument('--refine', dest='refine', action='store_true',

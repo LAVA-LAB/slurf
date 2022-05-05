@@ -178,8 +178,9 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
             # Only interpret results if the cache file matches the current call
             if params_import != param_list:
                 print('- Cache incompatible: number of parameters does not match')
-            elif Nsamples != samples_imp.num_samples:
-                print('- Cache incompatible: number of samples does not match')
+            elif Nsamples > samples_imp.num_samples:
+                print('- Cache incompatible: number of samples does not match (cache has: '
+                      +str(samples_imp.num_samples)+' but we need: '+str(Nsamples)+')')
             elif num_props != num_properties:
                 print('- Cache incompatible: number of properties does not match')
             else:
