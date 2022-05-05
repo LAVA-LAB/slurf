@@ -4,7 +4,7 @@ This is an implementation of the approach proposed in the paper:
 
 - [1] "Sampling-Based Verification of CTMCs with Uncertain Rates" by Thom Badings, Sebastian Junges, Nils Jansen, Marielle Stoelinga, and Matthias Volk, CAV 2022
 
-## Installation
+## 1. Installation
 
 - Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html) and [Stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
   Note that one must use the master branches of both tools.
@@ -23,7 +23,7 @@ This is an implementation of the approach proposed in the paper:
 
   `pytest test`
 
-## How to run for a single model?
+## 2. How to run for a single model?
 
 A miminal command to run a single CTMC or fault tree is as follows:
 
@@ -48,17 +48,29 @@ Besides the model specification file, SLURF requires two additional Excel files,
 
 The parameter distribution file defines the probability distributions of the parameters. For example, the `parameters.xlsx` for the SIR20 CTMC model looks as follows:
 
-![image-1.png](./image.png)
+| name  | type     | mean | std   |
+| ---   | ---      | ---  | ---   |
+| ki    | gaussian | 0.05 | 0.002 |
+| kr    | gaussian | 0.04 | 0.002 |
 
 Here, `ki` and `kr` are the parameter names, `type` can either be `gaussian`, in which case we pass a `mean` and `std`, or it can be `interval` in which case we definee a `lb` and `ub` column for the lower and upper bounds (see the `parameters.xlsx` file for the Kanban CTMC for an example with interval distributions).
 
 The properties file defines the properties that are verified by Storm. We can either pass a list of properties with only varying timebounds, or a list of independent properties. For the SIR20 CTMC, only the timebounds vary, so the `properties.xlsx` file looks as follows:
 
-![image-2.png](./image-2.png)
+| label        | property                               | time      | enabled |
+| ---          | ---                                    | ---       | ---     |
+| Rel T=104    | P=? [ (popI>0) U[100,104] (popI=0) ]   | 104       | TRUE    |
+| Rel T=104    | P=? [ (popI>0) U[100,104] (popI=0) ]   | 104       | TRUE    |
+| ...          | ...                                    | ...       | ...     |
 
-By contrast, for the Kanban CTMC, we pass 4 independent properties, yielding the file:
+By contrast, for the Kanban CTMC, we pass multiple independent properties, yielding the file:
 
-![image-1.png](./image-1.png)
+| label                 | property                      | enabled |
+| ---                   | ---                           | ---     |
+| Exp. tokens cell 1    | R{"tokens_cell1"}=? [ S ]     | TRUE    |
+| Exp. tokens cell 2    | R{"tokens_cell2"}=? [ S ]     | TRUE    |
+| Exp. tokens cell 3    | R{"tokens_cell3"}=? [ S ]     | TRUE    |
+| Exp. tokens cell 4    | R{"tokens_cell4"}=? [ S ]     | TRUE    |
 
 Note that in both cases, the `enabled` column should be set to `TRUE` in order for the property to be verified by Storm.
 
@@ -74,7 +86,7 @@ Besides computing rectangular confidence regions (which is the default), SLURF c
 
 The results for individual experiments are saved in the `output/` folder, where a folder is created for each run of the script. In this experiment folder, you will find all related figures, and an Excel file with the raw export data.
 
-## How to run experiments?
+## 3. How to run experiments?
 
 The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
@@ -91,7 +103,7 @@ Both scripts run 5 experiments, which we now discuss one by one. All tables are 
 4. Scenario optimization run times. The tables (corresponding with Table 3 in [1]) are saved as `table3_kanban.csv` and `table2_rc.csv`.
 5. Comparison to naive Monte Carlo baseline. The table (corresponding with Table 5 in [1]) is saved as `naive_baseline.csv`.
 
-## List of possible arguments
+## 4. List of possible arguments
 
 Below, we list all arguments that can be passed to the command for running the script. Arguments are given as `--<argument name> <value>`.
 
