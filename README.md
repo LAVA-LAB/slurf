@@ -55,7 +55,9 @@ A miminal command to run a single CTMC or fault tree is as follows:
 python runfile.py --N <number of samples> --beta <confidence level> --model <path to model file>
 ```
 
-The `model` argument should contain the path to the model file (e.g., in PRISM format), rooted in the `model` folder. For example, to run for 100 samples of the SIR epidemic model with a population of 20 and a confidence probability of 0.99 (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
+The `model` argument should contain the path to the model file, rooted in the `model` folder. For defining CTMCs, we support [the PRISM format](https://prismmodelchecker.org/manual/ThePRISMLanguage/Introduction), while for fault trees, we support [the Galileo format](https://www.cse.msu.edu/~cse870/Materials/FaultTolerant/manual-galileo.htm#Editing%20in%20the%20Textual%20View).
+
+To run for 100 samples of the SIR epidemic model with a population of 20 and a confidence probability of 0.99 (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
 
 ```
 python runfile.py --N 100 --beta 0.99 --model ctmc/epidemic/sir20.sm
