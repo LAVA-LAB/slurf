@@ -117,8 +117,8 @@ The results for individual experiments are saved in the `output/` folder, where 
 
 The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
-- `run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
-- `run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
+- `cd experiments; bash run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
+- `cd experiments; bash run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
 Note: before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
 
