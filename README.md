@@ -111,7 +111,7 @@ Below, we list all arguments that can be passed to the command for running the s
 | ---         | ---       | ---              | ---                      | ---         |
 | N           | No        | 100              | int. or list of integers | Number of solution vectors. A list can be passed as e.g., `[100,200]` |
 | beta        | No        | [0.9,0.99,0.999] | float or list of floats  | Confidence level. A list can be passed as e.g., `[0.9,0.99]` |
-| rho_list    | No        | depends          | float of floats          | Lists of the costs or relaxation to use, e.g. `[0.2,0.5,0.75,1.5]` |
+| rho_list    | No        | --depends--      | float of floats          | Lists of the costs or relaxation to use, e.g. `[0.2,0.5,0.75,1.5]` |
 | model       | Yes       | n/a              | string                   | Model file, e.g. `ctmc/epidemic/sir20.sm` |
 | param_file  | No        | parameters.xlsx  | string                   | File to load parameter distributions from |
 | prop_file   | No        | properties.xlsx  | string                   | File to load properties from |
