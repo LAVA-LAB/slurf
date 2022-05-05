@@ -231,7 +231,7 @@ elif args.mode == 'naive_comparison':
         
 root_dir = os.path.dirname(os.path.abspath(__file__))
 
-outpath = path(root_dir, args.outfile, '')
+outpath = path(root_dir, '', args.outfile)
 outfolder = outpath.rsplit('/', 1)[0]
 
 # Create output subfolder

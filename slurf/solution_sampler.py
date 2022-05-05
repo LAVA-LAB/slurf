@@ -318,6 +318,4 @@ def validate_solutions(sampler, regions, Nvalidate, properties,
         # Compute the empirical violation probability 
         empirical_satprob[i] = sat_sum / Nvalidate
 
-    print(empirical_satprob)
-
     return empirical_satprob
