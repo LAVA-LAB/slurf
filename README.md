@@ -90,7 +90,7 @@ The properties file defines the properties that are verified by Storm. We can ei
 | Rel T=104    | P=? [ (popI>0) U[100,104] (popI=0) ]   | 104       | TRUE    |
 | ...          | ...                                    | ...       | ...     |
 
-By contrast, for the Kanban CTMC, we pass multiple independent properties, yielding the file:
+By contrast, for the Kanban CTMC, we pass multiple independent properties, yielding the `properties.xlsx` file:
 
 | label                 | property                      | enabled |
 | ---                   | ---                           | ---     |
