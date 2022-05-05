@@ -4,7 +4,7 @@ This is an implementation of the approach proposed in the paper:
 
 - [1] "Sampling-Based Verification of CTMCs with Uncertain Rates" by Thom Badings, Sebastian Junges, Nils Jansen, Marielle Stoelinga, and Matthias Volk, CAV 2022
 
-## 1. Installation
+## 1. Installation from source
 
 - Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html) and [Stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
   Note that one must use the master branches of both tools.
@@ -23,21 +23,45 @@ This is an implementation of the approach proposed in the paper:
 
   `pytest test`
 
-## 2. How to run for a single model?
+## 2. Run using a Docker container
+
+We provide a docker container. We assume you have docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
+
+```
+docker pull INSERT LINK TO DOCKER HERE
+```
+
+or in case you downloaded this container from an (unpacked) archive:
+
+```
+docker load -i slurf_docker.tar
+```
+
+Our Docker container is built upon a container for the probabilistic model checker Storm (see [this documentation](https://www.stormchecker.org/documentation/obtain-storm/docker.html) for details).
+
+To use the docker container, open a terminal and navigate to the folder where you want to save the results in. Then, run the following command (for Windows platforms, please see the documentation on the Storm website above):
+
+```
+docker run --mount type=bind,source="$(pwd)",target=/opt/sluf/output -w /opt/slurf --rm -it --name storm slurf
+```
+
+Now you are ready to run the code for a single model (Section 3) or to replicate the experiments presented in [1] (Section 4).
+
+## 3. How to run for a single model?
 
 A miminal command to run a single CTMC or fault tree is as follows:
 
 ```
-python runfile.py --N=<number of samples> --beta=<confidence level> --model=<path to model file>
+python runfile.py --N <number of samples> --beta <confidence level> --model <path to model file>
 ```
 
-The `model` argument should contain the path to the model file (e.g., in PRISM format), rooted in the `model` folder. For example, to run for `N=100` samples of the SIR epidemic model with a population of 20 and a confidence probability of `beta=0.99` (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
+The `model` argument should contain the path to the model file (e.g., in PRISM format), rooted in the `model` folder. For example, to run for 100 samples of the SIR epidemic model with a population of 20 and a confidence probability of 0.99 (i.e., the obtained results via scenario optimization are correct with at least 99% probability), the following command may be executed:
 
 ```
-python runfile.py --N=100 --beta=0.99 --model=ctmc/epidemic/sir20.sm
+python runfile.py --N 100 --beta 0.99 --model ctmc/epidemic/sir20.sm
 ```
 
-The `model` argument is mandatory, while the number of samples is `N=100` by default, and the default confidence probability if `beta=0.99`. For details on all possible arguments and their default values, see below.
+The `model` argument is mandatory, while the number of samples `N` is 100 by default, and the default confidence probability `beta` is 0.99. For details on all possible arguments and their default values, see below.
 
 ### Parameter distribution and property files
 
@@ -86,7 +110,7 @@ Besides computing rectangular confidence regions (which is the default), SLURF c
 
 The results for individual experiments are saved in the `output/` folder, where a folder is created for each run of the script. In this experiment folder, you will find all related figures, and an Excel file with the raw export data.
 
-## 3. How to run experiments?
+## 4. How to run experiments?
 
 The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
@@ -103,7 +127,7 @@ Both scripts run 5 experiments, which we now discuss one by one. All tables are 
 4. Scenario optimization run times. The tables (corresponding with Table 3 in [1]) are saved as `table3_kanban.csv` and `table2_rc.csv`.
 5. Comparison to naive Monte Carlo baseline. The table (corresponding with Table 5 in [1]) is saved as `naive_baseline.csv`.
 
-## 4. List of possible arguments
+## 5. List of possible arguments
 
 Below, we list all arguments that can be passed to the command for running the script. Arguments are given as `--<argument name> <value>`.
 
