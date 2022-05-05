@@ -10,6 +10,10 @@ __pycache__/
 output/*
 !output/.keep
 
+# Output folder
+experiments/results/*
+!experiments/results/.keep
+
 # Cache folder
 cache/*
 !cache/.keep
