@@ -28,7 +28,7 @@ This is an implementation of the approach proposed in the paper:
 We provide a docker container. We assume you have docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
 
 ```
-docker pull INSERT LINK TO DOCKER HERE
+docker pull thombadings/slurf:cav22
 ```
 
 or in case you downloaded this container from an (unpacked) archive:
