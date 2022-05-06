@@ -10,9 +10,9 @@ Our implementation is called SLURF, named after the resemblance between a typica
 
 ## 1. Installation from source
 
-- Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html) and [Stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
-  Note that one must use the master branches of both tools.
-  Preferably, install these in a virtual environment.
+- Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html), [pycarl](https://moves-rwth.github.io/pycarl/installation.html#installation-steps) and [stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
+  Note that one must use the master branches of all three tools.
+  Preferably, install pycarl and stormpy in a virtual environment.
 
 - Install dependencies: on macOS, tkinter needs to be available.
   It can be installed via [Homebrew](https://brew.sh/):
@@ -39,7 +39,7 @@ docker load -i slurf_docker.tar
 
 Our Docker container is built upon a container for the probabilistic model checker Storm (see [this documentation](https://www.stormchecker.org/documentation/obtain-storm/docker.html) for details).
 
-To use the docker container, open a terminal and navigate to the folder where you want to save the results in. Then, run the following command (for Windows platforms, please see the documentation on the Storm website above):
+To use the docker container, open a terminal and navigate to the folder where you want to save the results in. Then, run the following command (for Windows platforms, please see the [documentation on the Storm website](https://www.stormchecker.org/documentation/obtain-storm/docker.html#run-the-docker-image-windows)):
 
 ```
 docker run --mount type=bind,source="$(pwd)",target=/opt/slurf/output -w /opt/slurf --rm -it --name storm slurf
