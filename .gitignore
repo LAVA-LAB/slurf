@@ -18,6 +18,9 @@ experiments/results/*
 cache/*
 !cache/.keep
 
+# Tarball (e.g. docker container)
+*.tar
+
 # Distribution / packaging
 .Python
 build/
