@@ -1,5 +1,7 @@
-FROM movesrwth/stormpy:ci-release
-MAINTAINER Matthias Volk <m.volk@utwente.nl>
+FROM thombadings/slurf-base:cav22
+# Mirror of the following Docker container
+# FROM movesrwth/stormpy:ci-release
+MAINTAINER Thom Badings <thom.badings@ru.nl>
 
 
 # Activate virtual environment
