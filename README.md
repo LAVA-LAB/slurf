@@ -133,7 +133,7 @@ Note that warnings may pop up (related to the model checker Storm), but these ca
 - The default timeout of one hour (set in `table4_statistics.sh` / `table4_statistics_partial.sh`) may not be enough to run some benchmarks (e.g., Kanban 5; see Table 1 in [1]) in the full experiment set. If desired, you can increase the timeout for these experiments to finish.
 
 ### Inspecting experiment results
-Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `experiments/results/`. Partial tables are stored with the suffix `_partial` in the filename.
+Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `output/` (which is the shared Docker folder, when using SLURF via the run command above). Partial tables are stored with the suffix `_partial` in the filename.
 
 1. Creating all figures presented in [1]. The figures are saved in the `output/` folder, where a subfolder is created for each experiment, e.g. `sir60_N=400_date=2022-05-05_14-17-30`. Within these subfolders, you will find the experiment figures, saved as .pdf files.
 2. Benchmark statistics. The table (corresponding with Tables 1 and 4 in [1]) is saved as `benchmark_statistics.csv`.
