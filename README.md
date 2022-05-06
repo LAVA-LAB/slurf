@@ -42,7 +42,7 @@ Our Docker container is built upon a container for the probabilistic model check
 To use the docker container, open a terminal and navigate to the folder where you want to save the results in. Then, run the following command (for Windows platforms, please see the documentation on the Storm website above):
 
 ```
-docker run --mount type=bind,source="$(pwd)",target=/opt/sluf/output -w /opt/slurf --rm -it --name storm slurf
+docker run --mount type=bind,source="$(pwd)",target=/opt/slurf/output -w /opt/slurf --rm -it --name storm slurf
 ```
 
 You will see a prompt inside the docker container. The README in this folder is what you are reading. Now you are ready to run the code for a single model (Section 3) or to replicate the experiments presented in [1] (Section 4).
