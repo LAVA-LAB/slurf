@@ -10,7 +10,10 @@ Our implementation is called SLURF, named after the resemblance between a typica
 
 ## 1. Installation from source
 
+While for users, we recommend to use SLURF via the Docker container, you can also build SLURF from source as follows:
+
 - Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html), [pycarl](https://moves-rwth.github.io/pycarl/installation.html#installation-steps) and [stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
+
   Note that one must use the master branches of all three tools.
   Preferably, install pycarl and stormpy in a virtual environment.
 
@@ -19,13 +22,13 @@ Our implementation is called SLURF, named after the resemblance between a typica
 
   `brew install python-tk`
 
-- Install Slurf using
+- Install SLURF using
 
   `python setup.py install`
 
-## 2. Run using a Docker container
+## 2. Run SLURF using a Docker container
 
-We provide a docker container. We assume you have docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
+We provide a docker container. We assume you have Docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
 
 ```
 docker pull thombadings/slurf:cav22
@@ -54,7 +57,6 @@ A miminal command to run a single CTMC or fault tree is as follows:
 ```
 python runfile.py --N <number of samples> --beta <confidence level> --model <path to model file>
 ```
-
 
 The `model` argument should contain the path to the model file, rooted in the `model` folder. For defining parametric CTMCs, we support [the PRISM format](https://prismmodelchecker.org/manual/ThePRISMLanguage/Introduction), while for parametric fault trees, we support [the Galileo format](https://www.cse.msu.edu/~cse870/Materials/FaultTolerant/manual-galileo.htm#Editing%20in%20the%20Textual%20View). See Section 6 for how the parameters in these models are defined.
 
@@ -122,7 +124,7 @@ The figures and tables in the experimental section of [1] can be reproduced by r
 
 A few notes:
 
-- Before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). 
+- Before running the experiments, we recommend to remove any existing files/folders in the `output/` folder (except the `.keep` file). 
 - With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.
 - The default timeout of one hour may not be enough to run some benchmarks (e.g., Kanban 5; see Table 1 in [1]) in the full experiment set. If desired, you can increase the timeout for these experiments to finish.
 
@@ -136,7 +138,7 @@ Both scripts run 5 experiments, which we now discuss one by one. All tables are 
 
 ## 5. List of possible arguments
 
-Below, we list all arguments that can be passed to the command for running the script. Arguments are given as `--<argument name> <value>`.
+Below, we list all arguments that can be passed to the command for running SLURF. Arguments are given as `--<argument name> <value>`.
 
 | Argument    | Required? | Default          | Type                     | Description |
 | ---         | ---       | ---              | ---                      | ---         |
@@ -161,7 +163,7 @@ Below, we list all arguments that can be passed to the command for running the s
 
 ## 6. Defining parametric models
 
-We support uncertain parametric CTMCs (defined in PRISM format) and fault trees (defined in Galileo format). For example, the SIR epidemic model CTMC is defined as follows:
+SLURF supports uncertain parametric CTMCs (defined in PRISM format) and fault trees (defined in Galileo format). For example, the SIR epidemic model CTMC is defined as follows:
 
 ```
 ctmc
