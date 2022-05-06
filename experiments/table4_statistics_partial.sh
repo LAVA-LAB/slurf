@@ -40,6 +40,6 @@ timeout 3600s python3 runfile.py --model dft/rc/rc.1-1-hc_parametric.dft --param
 timeout 3600s python3 runfile.py --model dft/hecs/hecs_2_1.dft --N 100 --dft_checker 'parametric' --seed 1 --export_stats output/stats_benchmarks/hecs2-1_100_parametric.json;
 #
 echo -e "\n++++++++ GRAB RESULTS AND CREATE TABLE... ++++++++\n";
-python generate_table.py --folder 'output/stats_benchmarks/' --outfile 'experiments/results/benchmark_statistics_partial.csv' --mode statistics;
+python generate_table.py --folder 'output/stats_benchmarks/' --outfile 'output/benchmark_statistics_partial.csv' --mode statistics;
 #
 echo -e "\n++++++++ SCRIPT DONE ++++++++\n";

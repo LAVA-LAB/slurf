@@ -113,6 +113,6 @@ timeout 3600s python runfile.py --model dft/hecs/hecs_2_2.dft --param_file hecs_
 #
 #
 echo -e "\n++++++++ GRAB RESULTS AND CREATE TABLE... ++++++++\n";
-python generate_table.py --folder 'output/stats_benchmarks/' --outfile 'experiments/results/benchmark_statistics.csv' --mode statistics;
+python generate_table.py --folder 'output/stats_benchmarks/' --outfile 'output/benchmark_statistics.csv' --mode statistics;
 #
 echo -e "\n++++++++ SCRIPT DONE ++++++++\n";
