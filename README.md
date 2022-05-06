@@ -4,6 +4,10 @@ This is an implementation of the approach proposed in the paper:
 
 - [1] "Sampling-Based Verification of CTMCs with Uncertain Rates" by Thom Badings, Sebastian Junges, Nils Jansen, Marielle Stoelinga, and Matthias Volk, CAV 2022
 
+Our implementation is called SLURF, named after the resemblance between a typical result figure and the trunk of an elephant, which is called a *slurf* in Dutch:
+
+![img/slurf-intro.png](./img/slurf-intro.png)
+
 ## 1. Installation from source
 
 - Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html) and [Stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
