@@ -86,11 +86,11 @@ Here, `ki` and `kr` are the parameter names, `type` can either be `gaussian`, in
 
 The properties file defines the properties that are verified by Storm. We can either pass a list of properties with only varying timebounds, or a list of independent properties. For the SIR20 CTMC, only the timebounds vary, so the `properties.xlsx` file looks as follows:
 
-| label        | property                               | time      | enabled |
-| ---          | ---                                    | ---       | ---     |
-| Rel T=104    | P=? [ (popI>0) U[100,104] (popI=0) ]   | 104       | TRUE    |
-| Rel T=104    | P=? [ (popI>0) U[100,104] (popI=0) ]   | 104       | TRUE    |
-| ...          | ...                                    | ...       | ...     |
+| label     | property                             | time | enabled |
+|-----------|--------------------------------------|------| ---     |
+| Rel T=104 | P=? [ (popI>0) U[100,104] (popI=0) ] | 104  | TRUE    |
+| Rel T=108 | P=? [ (popI>0) U[100,108] (popI=0) ] | 108  | TRUE    |
+| ...       | ...                                  | ...  | ...     |
 
 By contrast, for the Kanban CTMC, we pass multiple independent properties, yielding the `properties.xlsx` file:
 
@@ -120,7 +120,7 @@ The results for individual experiments are saved in the `output/` folder, where 
 The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
 - `cd experiments; bash run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
-- `cd experiments; bash run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
+- `cd experiments; bash run_experiments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
 A few notes:
 
