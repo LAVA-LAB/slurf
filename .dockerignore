@@ -16,6 +16,7 @@ coverage.xml
 *.log
 .git
 *.egg-info
+.idea/
 
 dist/
 build/
