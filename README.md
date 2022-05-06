@@ -4,7 +4,7 @@ This is an implementation of the approach proposed in the paper:
 
 - [1] "Sampling-Based Verification of CTMCs with Uncertain Rates" by Thom Badings, Sebastian Junges, Nils Jansen, Marielle Stoelinga, and Matthias Volk, CAV 2022
 
-Our implementation is called SLURF, named after the resemblance between a typical result figure and the trunk of an elephant, which is called a *slurf* in Dutch:
+Our implementation is called SLURF, named after the resemblance between a typical result figure and the trunk of an elephant, which is called a *slurf* in Dutch (Photo by [Rachel Claire](https://www.pexels.com/nl-nl/@rachel-claire/) via [Pexels](https://www.pexels.com/nl-nl/foto/voedsel-natuur-zonnig-veld-4577802/?utm_content=attributionCopyText&utm_medium=referral&utm_source=pexels)):
 
 ![img/slurf-intro.png](./img/slurf-intro.png)
 
