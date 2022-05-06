@@ -9,6 +9,6 @@ for (( i=0; i < $reps; ++i )); do
 done
 #
 echo -e "\n++++++++ GRAB RESULTS AND CREATE TABLE... ++++++++\n";
-python generate_table.py --folder 'output/stats_naive/pcs/' --outfile 'output/naive_baseline_partial.csv' --mode naive_comparison;
+python generate_table.py --folder 'output/stats_naive/pcs/' --outfile 'output/naive_baseline.csv' --mode naive_comparison;
 #
 echo -e "\n++++++++ SCRIPT DONE ++++++++\n";
