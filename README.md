@@ -28,7 +28,7 @@ This is an implementation of the approach proposed in the paper:
 We provide a docker container. We assume you have docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
 
 ```
-docker pull INSERT LINK TO DOCKER HERE
+docker pull thombadings/slurf:cav22
 ```
 
 or in case you downloaded this container from an (unpacked) archive:
@@ -42,7 +42,7 @@ Our Docker container is built upon a container for the probabilistic model check
 To use the docker container, open a terminal and navigate to the folder where you want to save the results in. Then, run the following command (for Windows platforms, please see the documentation on the Storm website above):
 
 ```
-docker run --mount type=bind,source="$(pwd)",target=/opt/sluf/output -w /opt/slurf --rm -it --name storm slurf
+docker run --mount type=bind,source="$(pwd)",target=/opt/slurf/output -w /opt/slurf --rm -it --name storm slurf
 ```
 
 You will see a prompt inside the docker container. The README in this folder is what you are reading. Now you are ready to run the code for a single model (Section 3) or to replicate the experiments presented in [1] (Section 4).
@@ -117,8 +117,8 @@ The results for individual experiments are saved in the `output/` folder, where 
 
 The figures and tables in the experimental section of [1] can be reproduced by running one the shell scripts in the `experiments` folder:
 
-- `run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
-- `run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
+- `cd experiments; bash run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
+- `cd experiments; bash run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
 Note: before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
 
