@@ -132,7 +132,7 @@ Note that warnings may pop up (related to the model checker Storm), but these ca
 - If you want to run the full experiment set anyways, you can reduce the number of repetitions per experiment to reduce the run time. To do this, open one of the respective shell scripts in the `experiments` folder, and reduce the value of variable `reps`, e.g. to `reps=2`.
 - The default timeout of one hour (set in `table4_statistics.sh` / `table4_statistics_partial.sh`) may not be enough to run some benchmarks (e.g., Kanban 5; see Table 1 in [1]) in the full experiment set. If desired, you can increase the timeout for these experiments to finish.
 
-### List of experiments
+### Inspecting experiment results
 Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `experiments/results/`. Partial tables are stored with the suffix `_partial` in the filename.
 
 1. Creating all figures presented in [1]. The figures are saved in the `output/` folder, where a subfolder is created for each experiment, e.g. `sir60_N=400_date=2022-05-05_14-17-30`. Within these subfolders, you will find the experiment figures, saved as .pdf files.
