@@ -229,4 +229,10 @@ toplevel "System";
 
 The original non-parametric fault tree which we adapted can be found in the [FFORT benchmark suite](https://dftbenchmarks.utwente.nl/ffort.php). Other benchmarks from this suite can be converted to a parametric model in a similar way.
 
-## 6.
+## 6. Rebuilding the Docker container
+
+The included Docker image of SLURF is based on the Stormpy image (by the storm developers, see [this documentation](https://www.stormchecker.org/documentation/obtain-storm/docker.html) for details). If, one makes changes to the source code of SLURF, the docker container must be built again, using the included Dockerfile. Rebuilding the SLURF image can be done by executing the following command in the SLURF directory (here, 1.0 indicated the version):
+
+``` 
+docker build -f Dockerfile --tag slurf:1.0 .
+```
