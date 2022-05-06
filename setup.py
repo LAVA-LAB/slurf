@@ -41,7 +41,6 @@ setup(
         'xlsxwriter>=3.0.2', # Write Excel files
         'pandas>=1.3.5',
         'setuptools>=58.0.4',
-        'pytest>=6.2.5',
         'scipy>=1.8.0'
     ],
     setup_requires=['pytest-runner'],
