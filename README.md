@@ -19,10 +19,6 @@ This is an implementation of the approach proposed in the paper:
 
   `python setup.py install`
 
-- Run the tests using
-
-  `pytest test`
-
 ## 2. Run using a Docker container
 
 We provide a docker container. We assume you have docker installed (if not, see the [Docker installation guide](https://docs.docker.com/get-docker/)). Then, run:
@@ -120,7 +116,11 @@ The figures and tables in the experimental section of [1] can be reproduced by r
 - `cd experiments; bash run_experiments.sh` runs the full experiments as presented in [1]. Expected run time: XXX.
 - `cd experiments; bash run_exeriments_partial.sh` runs a partial set of experiments. Expected run time: XXX.
 
-Note: before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.  
+A few notes:
+
+- Before running the experiments, we recommend to remove any files/folders in the `output/` folder (except the `.keep` file). 
+- With the expected run times in mind, we recommend running the partial set. The partial set of experiments uses reduced numbers of solution vectors and less repetitions for each experiment.
+- The default timeout of one hour may not be enough to run some benchmarks (e.g., Kanban 5; see Table 1 in [1]) in the full experiment set. If desired, you can increase the timeout for these experiments to finish.
 
 Both scripts run 5 experiments, which we now discuss one by one. All tables are stored in CSV format in the folder `experiments/results/`. Partial tables are stored with the suffix `_partial` in the filename.
 
@@ -224,3 +224,5 @@ toplevel "System";
 ```
 
 The original non-parametric fault tree which we adapted can be found in the [FFORT benchmark suite](https://dftbenchmarks.utwente.nl/ffort.php). Other benchmarks from this suite can be converted to a parametric model in a similar way.
+
+## 6.
