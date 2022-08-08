@@ -2,6 +2,7 @@ import numpy as np
 import os
 import pandas as pd
 import copy
+import pathlib
 
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
@@ -24,6 +25,7 @@ def load_distribution(root_dir, model_path, model_type,
     model_folder, model_file = model_path.rsplit('/', 1)
     
     param_path = path(root_dir, "models/"+str(model_folder), parameters_file)
+    param_suffix = pathlib.Path(param_path).suffix
     try:
         open(param_path)
     except IOError:
@@ -35,17 +37,25 @@ def load_distribution(root_dir, model_path, model_type,
     except IOError:
         print("ERROR: Model file does not exist")
     
-    # Read parameter sheet
-    param_df = pd.read_excel(param_path, sheet_name='Parameters', index_col=0)
+    # Read parameter input (xlsx or csv)
+    if param_suffix == '.xlsx':
+        param_df = pd.read_excel(param_path, sheet_name='Parameters', index_col=0)
+    else:
+        param_df = pd.read_csv(param_path, sep=';', index_col=0)
     param_dic = param_df.to_dict('index')
 
     properties_path = path(root_dir, "models/"+str(model_folder), properties_file)
+    properties_suffix = pathlib.Path(properties_path).suffix
+
+    # Read property input (xlsx or csv)
+    if properties_suffix == '.xlsx':
+        property_df = pd.read_excel(properties_path, sheet_name='Properties')
+    else:
+        property_df = pd.read_csv(properties_path, sep=';')
 
     # Interpretation of properties differs between CTMCs and DFTs
     if model_type == 'CTMC':
         
-        # Read property sheet
-        property_df = pd.read_excel(properties_path, sheet_name='Properties')
         property_df = property_df[ property_df['enabled'] == True ]
         properties = property_df['property'].to_list()
         prop_labels = property_df['label'].to_list()
@@ -58,9 +68,6 @@ def load_distribution(root_dir, model_path, model_type,
             timebounds = None
             
     else:
-        
-        # Read property sheet
-        property_df = pd.read_excel(properties_path, sheet_name='Properties')
         
         timebounds = tuple(property_df['failed'])        
         properties = ("failed", timebounds)
