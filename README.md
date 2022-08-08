@@ -70,10 +70,10 @@ The `model` argument is mandatory, while the number of samples `N` is 100 by def
 
 ### Parameter distribution and property files
 
-Besides the model specification file, SLURF requires two additional Excel files, which must be located in the same folder as the model:
+Besides the model specification file, SLURF requires two additional Excel or CSV (semi-colon separated) input files. In this ReadMe, we use Excel input files, but CSV input files work in an equivalent way (make sure that the CSV file is semi-colon separated). The input files must be located in the same folder as the model:
 
-- A parameter probability distribution file: `parameters.xlsx` by default, but a manual file can be passed as follows: `--param_file filename.xlsx`
-- A property definition file: `properties.xlsx` by default, but a manual file can be passed as follows: `--prop_file filename.xlsx`
+- A parameter probability distribution file: `parameters.xlsx` by default, but a manual file can be passed as follows: `--param_file filename`
+- A property definition file: `properties.xlsx` by default, but a manual file can be passed as follows: `--prop_file filename`
 
 The parameter distribution file defines the probability distributions of the parameters. For example, the `parameters.xlsx` for the SIR20 CTMC model looks as follows:
 
@@ -162,7 +162,7 @@ Below, we list all arguments that can be passed to the command for running SLURF
 | export_stats| No        | None             | string                   | If this argument is added, benchmark statistics are exported to the specified file |
 | refine      | No        | False            | bool                     | If this argument is added, the iterative refinement scheme is enabled |
 | refine_precision | No   | 0                | float                    | Refinement precision to be used for refining solutions (0 means refining to exact solution vectors) |
-| plot_timebounds | No    | None             | str                      | List of two timebounds to create 2D plot for (note: these should be present in the properties Excel file!) |
+| plot_timebounds | No    | None             | str                      | List of two timebounds to create 2D plot for (note: these should be present in the properties Excel or CSV file!) |
 | curve_plot_mode | No    | conservative     | str                      | If `conservative`, overapproximation of curves are plotted over time; if `optimistic`, underapproximations are plotted |
 | pareto_pieces | No      | 0                | int                      | If nonzero, a pareto front is plotted, with a front consisting of the specified number of linear pieces |
 
@@ -196,7 +196,7 @@ endmodule
 label "done" = popI=0;
 ```
 
-There are two parameters, `ki` and `kr`. As described in Section 3, the parameter distributions are defined in a separate Excel file. 
+There are two parameters, `ki` and `kr`. As described in Section 3, the parameter distributions are defined in a separate Excel or CSV file. 
 
 Similarly, the following is the DCAS dynamic fault tree, in Galileo format:
 
