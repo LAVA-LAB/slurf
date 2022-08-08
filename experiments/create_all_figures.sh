@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ..;
 echo "++++++++ CREATE FIGURE 10: SIR (60), N=400 ++++++++";
-python3 runfile.py --model ctmc/epidemic/sir60.sm --N 400 --prop_file properties25.xlsx --rho [1.2,0.6,0.3,0.15,0.075,0.0375];
+python3 runfile.py --model ctmc/epidemic/sir60.sm --N 400 --prop_file properties25.csv --rho [1.2,0.6,0.3,0.15,0.075,0.0375];
 #
 echo "++++++++ CREATE FIGURE 11: Pareto front for buffer, N=200 ++++++++";
 python3 runfile.py --model ctmc/buffer/buffer.sm --N 200 --pareto_pieces 5 --rho [0.1,1.1];

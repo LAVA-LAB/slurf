@@ -6,23 +6,23 @@ echo -e "RUN COMPLETE SET OF BENCHMARKS\n";
 # SIR
 echo "++++++++ START SIR BENCHMARKS ++++++++";
 # SIR 20
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 100 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir20_100.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 200 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir20_200.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 100 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir20_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 200 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir20_200.json;
 # SIR 60
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir60.sm --N 100 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir60_100.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir60.sm --N 200 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir60_200.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir60.sm --N 100 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir60_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir60.sm --N 200 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir60_200.json;
 # SIR 100
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 100 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir100_100.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 200 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir100_200.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 100 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir100_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 200 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir100_200.json;
 # SIR 100 approximate
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 100 --prop_file properties.xlsx --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_100.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 200 --prop_file properties.xlsx --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_200.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 100 --prop_file properties.csv --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir100.sm --N 200 --prop_file properties.csv --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_200.json;
 # SIR 140
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 100 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir140_100.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 200 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir140_200.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 100 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir140_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 200 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir140_200.json;
 # SIR 140 approximate
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 100 --prop_file properties.xlsx --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_140.json;
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 200 --prop_file properties.xlsx --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir200_140.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 100 --prop_file properties.csv --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir100_140.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir140.sm --N 200 --prop_file properties.csv --precision 0.01 --seed 1 --export_stats output/stats_benchmarks/sir200_140.json;
 #
 # kanban
 echo "++++++++ START KANBAN BENCHMARKS ++++++++";

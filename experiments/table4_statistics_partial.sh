@@ -5,7 +5,7 @@ echo -e "RUN PARTIAL SET OF BENCHMARKS\n";
 # === CTMCS ===
 # SIR
 echo -e "\n++++++++ START SIR BENCHMARKS ++++++++\n";
-timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 100 --prop_file properties.xlsx --seed 1 --export_stats output/stats_benchmarks/sir20_100.json;
+timeout 3600s python3 runfile.py --model ctmc/epidemic/sir20.sm --N 100 --prop_file properties.csv --seed 1 --export_stats output/stats_benchmarks/sir20_100.json;
 #
 # kanban
 echo -e "\n++++++++ START KANBAN BENCHMARKS ++++++++\n";

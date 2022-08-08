@@ -1,0 +1,27 @@
+label;property;time;enabled
+Rel T=104;P=? [ (popI>0) U[100,104] (popI=0) ];104;True
+Rel T=108;P=? [ (popI>0) U[100,108] (popI=0) ];108;True
+Rel T=112;P=? [ (popI>0) U[100,112] (popI=0) ];112;True
+Rel T=116;P=? [ (popI>0) U[100,116] (popI=0) ];116;True
+Rel T=120;P=? [ (popI>0) U[100,120] (popI=0) ];120;True
+Rel T=124;P=? [ (popI>0) U[100,124] (popI=0) ];124;True
+Rel T=128;P=? [ (popI>0) U[100,128] (popI=0) ];128;True
+Rel T=132;P=? [ (popI>0) U[100,132] (popI=0) ];132;True
+Rel T=136;P=? [ (popI>0) U[100,136] (popI=0) ];136;True
+Rel T=140;P=? [ (popI>0) U[100,140] (popI=0) ];140;True
+Rel T=144;P=? [ (popI>0) U[100,144] (popI=0) ];144;True
+Rel T=148;P=? [ (popI>0) U[100,148] (popI=0) ];148;True
+Rel T=152;P=? [ (popI>0) U[100,152] (popI=0) ];152;True
+Rel T=156;P=? [ (popI>0) U[100,156] (popI=0) ];156;True
+Rel T=160;P=? [ (popI>0) U[100,160] (popI=0) ];160;True
+Rel T=164;P=? [ (popI>0) U[100,164] (popI=0) ];164;True
+Rel T=168;P=? [ (popI>0) U[100,168] (popI=0) ];168;True
+Rel T=172;P=? [ (popI>0) U[100,172] (popI=0) ];172;True
+Rel T=176;P=? [ (popI>0) U[100,176] (popI=0) ];176;True
+Rel T=180;P=? [ (popI>0) U[100,180] (popI=0) ];180;True
+Rel T=184;P=? [ (popI>0) U[100,184] (popI=0) ];184;True
+Rel T=188;P=? [ (popI>0) U[100,188] (popI=0) ];188;True
+Rel T=192;P=? [ (popI>0) U[100,192] (popI=0) ];192;True
+Rel T=196;P=? [ (popI>0) U[100,196] (popI=0) ];196;True
+Rel T=200;P=? [ (popI>0) U[100,200] (popI=0) ];200;True
+Rel T=204;P=? [ (popI>0) U[100,204] (popI=0) ];204;True
