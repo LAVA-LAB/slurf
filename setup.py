@@ -31,7 +31,7 @@ setup(
     },
     zip_safe=False,
     install_requires=[
-        'stormpy>=1.6.3', # Back-end model checker
+        'stormpy>=1.7.0', # Back-end model checker
         'cvxpy>=1.1.17',
         'matplotlib>=3.5.1',
         'numpy>=1.21.4',

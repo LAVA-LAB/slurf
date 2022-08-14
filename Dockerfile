@@ -1,21 +1,18 @@
-FROM thombadings/slurf-base:cav22
+FROM movesrwth/stormpy:1.7.0
 # Mirror of the following Docker container
 # FROM movesrwth/stormpy:ci-release
 MAINTAINER Thom Badings <thom.badings@ru.nl>
-
-
-# Activate virtual environment
-############################
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
 # Build Slurf
 #############
 RUN mkdir /opt/slurf
 WORKDIR /opt/slurf
-# Obtain
+# Obtain requirements and install them
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Only then install remainder
 COPY . .
 # Build
-RUN pip install --no-cache-dir -r requirements.txt
 RUN python setup.py develop

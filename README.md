@@ -12,9 +12,9 @@ Our implementation is called SLURF, named after the resemblance between a typica
 
 While for users, we recommend to use SLURF via the Docker container, you can also build SLURF from source as follows:
 
-- Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html), [pycarl](https://moves-rwth.github.io/pycarl/installation.html#installation-steps) and [stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the documentation.
+- Install [Storm](https://www.stormchecker.org/documentation/obtain-storm/build.html), [pycarl](https://moves-rwth.github.io/pycarl/installation.html#installation-steps) and [stormpy](https://moves-rwth.github.io/stormpy/installation.html#installation-steps) using the instructions in the stormpy documentation.
 
-  Note that one must use the master branches of all three tools.
+  Note that one must use at least version 1.7.
   Preferably, install pycarl and stormpy in a virtual environment.
 
 - Install dependencies: on macOS, tkinter needs to be available.
