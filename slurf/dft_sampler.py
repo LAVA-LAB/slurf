@@ -51,7 +51,7 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
         # Load DFT from Galileo file
         self._dft = sp.dft.load_parametric_dft_galileo_file(model)
         # Make DFT well-formed
-        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
+        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True, exponential_distributions=True)
         # Check for dependency conflicts -> no conflicts mean CTMC
         sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
 
@@ -104,7 +104,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         # Load DFT from Galileo file
         self._dft = sp.dft.load_parametric_dft_galileo_file(model)
         # Make DFT well-formed
-        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True)
+        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True, exponential_distributions=True)
         # Check for dependency conflicts -> no conflicts mean CTMC
         sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
 
