@@ -160,6 +160,7 @@ Below, we list all arguments that can be passed to the command for running SLURF
 | precision   | No        | 0                | float >= 0               | If specified (and if bigger than zero), approximate model checker is used |
 | naive_baseline   | No   | False            | bool                     | If this argument is added, comparison with a naive Monte Carlo baseline is performed |
 | export_stats| No        | None             | string                   | If this argument is added, benchmark statistics are exported to the specified file |
+| export_filetype| No     | csv              | string                   | Extension of files to export results to (can be `csv` or `excel`) |
 | refine      | No        | False            | bool                     | If this argument is added, the iterative refinement scheme is enabled |
 | refine_precision | No   | 0                | float                    | Refinement precision to be used for refining solutions (0 means refining to exact solution vectors) |
 | plot_timebounds | No    | None             | str                      | List of two timebounds to create 2D plot for (note: these should be present in the properties Excel or CSV file!) |
