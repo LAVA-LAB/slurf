@@ -113,7 +113,7 @@ Besides computing rectangular confidence regions (which is the default), SLURF c
 
 ### Inspecting results
 
-The results for individual experiments are saved in the `output/` folder, where a folder is created for each run of the script. In this experiment folder, you will find all related figures, and an Excel file with the raw export data.
+The results for individual experiments are saved in the `output/` folder, where a folder is created for each run of the script. In this experiment folder, you will find all related figures, and several csv files (or a single Excel file, if this extension was specified) with the raw export data.
 
 ## 4. How to run experiments?
 
