@@ -63,7 +63,7 @@ def print_stats(stats):
     
     print('-----------------------------------------')
     print('MODEL STATISTICS:')
-    series = pd.Series(stats)
+    series = pd.Series(stats, name='time')
     print(series)
     print('-----------------------------------------')
     

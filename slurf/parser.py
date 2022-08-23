@@ -33,10 +33,10 @@ def parse_arguments(manualModel=None, nobisim=False):
                         default=manualModel, help="Model file to load")
     # Set a manual parameter distribution file
     parser.add_argument('--param_file', type=str, action="store", dest='param_file', 
-                        default=None, help="Parameter distribution Excel file")
+                        default=None, help="Parameter distribution file (CSV or Excel)")
     # Set a manual parameter distribution file
     parser.add_argument('--prop_file', type=str, action="store", dest='prop_file', 
-                        default=None, help="Properties Excel file")
+                        default=None, help="Properties file (CSV or Excel)")
     
     # Enable/disable bisimulation
     parser.add_argument('--no-bisim', dest='bisim', action='store_false',
@@ -63,8 +63,13 @@ def parse_arguments(manualModel=None, nobisim=False):
     
     # Allow for exporting tabular results
     parser.add_argument('--export_stats', type=str, action="store", dest='export_stats',
-                        help="Export benchmark statistics")
+                        help="Export benchmark statistics to specified file")
     parser.set_defaults(export_stats=None)
+    
+    # Allow for exporting tabular results
+    parser.add_argument('--export_filetype', type=str, action="store", dest='export_filetype',
+                        help="Extension ('csv' or 'xlsx') of files to export results to")
+    parser.set_defaults(export_filetype='csv')
     
     # Enable/disable refinement and set precision for refinement
     parser.add_argument('--refine', dest='refine', action='store_true',
@@ -92,6 +97,8 @@ def parse_arguments(manualModel=None, nobisim=False):
     if args.dft_checker not in ['concrete','parametric']:
         print('ERROR: the DFT model checker argument should be "concrete" or "parametric"; current value:', args.dft_checker)
         assert False
+
+    assert args.export_filetype in ['csv', 'xlsx']
 
     # Interprete some arguments as lists
     if args.rho_list:

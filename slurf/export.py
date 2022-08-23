@@ -108,9 +108,9 @@ def plot_results(output_dir, args, regions, solutions, file_suffix=None):
             plt.show()
 
 
-def save_results(output_path, dfs, modelfile_nosuffix, N):
+def save_results(output_path, dfs, modelfile_nosuffix, N, export_filetype):
     """
-    Export the results of the current execution to an Excel file
+    Export the results of the current execution
     
     Parameters
     ----------
@@ -121,18 +121,33 @@ def save_results(output_path, dfs, modelfile_nosuffix, N):
     """
     
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    xlsx_file = modelfile_nosuffix + "_N=" + str(N) + "_results.xlsx"
-    xlsx_path = path(output_path, "", xlsx_file)
-    writer = pd.ExcelWriter(xlsx_path, engine='xlsxwriter')
-    
-    # Write each dataframe to a different worksheet.
-    for name, df in dfs.items():
-        df.to_excel(writer, sheet_name=str(name))
+    if export_filetype == 'xlsx':
+        file = modelfile_nosuffix + "_N=" + str(N) + "_results" + \
+                '.' + export_filetype
+        filepath = path(output_path, "", file)
         
-    # Close the Pandas Excel writer and output the Excel file.
-    writer.save()
+        writer = pd.ExcelWriter(filepath, engine='xlsxwriter')
+        
+        # Write each dataframe to a different worksheet.
+        for name, df in dfs.items():
+            df.to_excel(writer, sheet_name=str(name))
+            
+        # Close the Pandas Excel writer and output the Excel file.
+        writer.save()
     
-    print('- Results exported to:',xlsx_path)
+        print('- Results exported to:',filepath)
+    
+    else:
+        # Write each dataframe to a different worksheet.
+        for name, df in dfs.items():
+            
+            file = modelfile_nosuffix + "_N=" + str(N) + "_results_" \
+                    + str(name) + '.' + export_filetype
+            filepath = path(output_path, "", file)
+            
+            df.to_csv(filepath, sep=';')
+    
+            print('- Part of results exported to:',filepath)
     
     return
 

@@ -172,9 +172,9 @@ if __name__ == '__main__':
     dfs['storm_stats'] = print_stats(sampler.get_stats())
     
     # Save raw results in Excel file
-    dfs['arguments'] = pd.Series(vars(args))
+    dfs['arguments'] = pd.Series(vars(args), name='value')
     save_results(output_path, dfs, args.modelfile_nosuffix, 
-                 args.Nsamples)
+                 args.Nsamples, args.export_filetype)
         
     # Merge with the latest benchmark table csv export file
     if args.export_stats:
