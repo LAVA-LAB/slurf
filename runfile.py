@@ -24,7 +24,7 @@ from slurf.scenario_problem import compute_confidence_region, \
     compute_confidence_per_dim, refinement_scheme, init_rho_list
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.dft_sampler import DftParametricModelSamplerInterface, \
-    DftConcreteApproximationSamplerInterface
+    DftConcreteApproximationSamplerInterface, DftSimulationSamplerInterface
 from slurf.approximate_ctmc_checker import ApproxHeuristic
 from slurf.commons import path, getTime, print_stats, set_solution_df, \
     set_output_path
@@ -72,16 +72,22 @@ if __name__ == '__main__':
         expdata['instantiator'] = 'CTMC'
 
     else:
+        # Current hack to get cabinets to work
+        all_relevant=True
         if args.dft_checker == 'parametric':
             # Build parametric model once and sample on (partial or 
             # complete) CTMC
-            sampler = DftParametricModelSamplerInterface()  
+            sampler = DftParametricModelSamplerInterface(all_relevant)  
             expdata['instantiator'] = 'DFT (parametric)'
-            
-        else:
+        elif args.dft_checker == 'concrete':
             # Build partial models for each sample
-            sampler = DftConcreteApproximationSamplerInterface()
+            sampler = DftConcreteApproximationSamplerInterface(all_relevant)
             expdata['instantiator'] = 'DFT (concrete)'
+        else:
+            assert args.dft_checker == 'simulation'
+            # Perform simulations for each sample
+            sampler = DftSimulationSamplerInterface(all_relevant, no_simulation=1000)
+            expdata['instantiator'] = 'DFT (simulation)'
             
     sampler.set_max_cluster_distance(1e-2)
     sampler.set_approximation_heuristic(ApproxHeuristic.REACH_PROB)

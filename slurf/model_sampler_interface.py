@@ -1,8 +1,27 @@
 from slurf.sample_cache import SampleCache
 from slurf.approximate_ctmc_checker import ApproximationOptions
 
+import stormpy as sp
+
 import time
 from tqdm import tqdm
+
+
+def get_timebounds_and_target(properties):
+    timebounds = []
+    target_label = None
+    for prop in properties:
+        formula = prop.raw_formula.subformula
+        assert not formula.has_lower_bound
+        assert type(formula.right_subformula) == sp.logic.AtomicLabelFormula
+        if target_label is None:
+            target_label = formula.right_subformula.label
+        else:
+            assert target_label == formula.right_subformula.label
+        timebounds.append(formula.upper_bound_expression.evaluate_as_double())
+
+    assert all(timebounds[i] <= timebounds[i + 1] for i in range(len(timebounds) - 1))
+    return timebounds, target_label
 
 
 class ModelSamplerInterface:

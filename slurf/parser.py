@@ -94,8 +94,8 @@ def parse_arguments(manualModel=None, nobisim=False):
     # values in the `args` variable
     args = parser.parse_args()    
 
-    if args.dft_checker not in ['concrete','parametric']:
-        print('ERROR: the DFT model checker argument should be "concrete" or "parametric"; current value:', args.dft_checker)
+    if args.dft_checker not in ['concrete','parametric','simulation']:
+        print('ERROR: the DFT model checker argument should be "concrete", "parametric" or "simulation"; current value:', args.dft_checker)
         assert False
 
     assert args.export_filetype in ['csv', 'xlsx']
