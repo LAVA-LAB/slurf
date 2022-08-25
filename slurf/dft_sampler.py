@@ -1,5 +1,6 @@
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.sample_cache import SampleCache
+from slurf.model_sampler_interface import get_timebounds_and_target
 import slurf.util
 
 import stormpy as sp
@@ -7,6 +8,7 @@ import stormpy.pars
 import stormpy.dft
 
 import time
+import random
 
 
 class DftModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
@@ -31,9 +33,10 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
     This simple interface builds a parametric DFT, generates the corresponding parametric CTMC
     and then uses an instantiation checker to check the model.
     """
+
     def __init__(self, all_relevant=False):
         super(DftModelSamplerInterface, self).__init__()
-        self._all_relevant=all_relevant
+        self._all_relevant = all_relevant
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -90,7 +93,7 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
     def __init__(self, all_relevant=False):
         super(DftModelSamplerInterface, self).__init__()
         self._builders = dict()
-        self._all_relevant=all_relevant
+        self._all_relevant = all_relevant
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -268,3 +271,122 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         sample_point.set_results(results, refined=False)
         return sample_point
+
+
+class DftSimulationSamplerInterface(DftModelSamplerInterface):
+    """
+    This simple interface builds a parametric DFT and simulates traces on the instantiated DFT.
+    """
+
+    def __init__(self, all_relevant=False, no_simulation=1000):
+        super(DftModelSamplerInterface, self).__init__()
+        self._simulation_results = dict()
+        self._all_relevant = all_relevant
+        self._no_simulations = no_simulation
+
+    def load(self, model, properties, bisim=True, constants=None):
+        """
+        Note that load() only constructs the DFT. The simulation is performed for each sample individually.
+
+        Parameters
+        ----------
+        :model: A DFT with parametric failure rates.
+        :properties: Properties here is either a tuple (event, [time bounds]) or a list of properties.
+        :bisim: Whether to apply bisimulation (not used for simulation)
+        :constants: Constants for graph changing variables in model description (not required for fault trees)
+
+        Returns Dictionary of parameters and their bounds.
+        -------
+
+        """
+        time_start = time.process_time()
+        print(' - Load DFT from Galileo file')
+        # Load DFT from Galileo file
+        self._dft = sp.dft.load_parametric_dft_galileo_file(model)
+        # Make DFT well-formed
+        self._dft = sp.dft.transform_dft(self._dft, unique_constant_be=True, binary_fdeps=True, exponential_distributions=True)
+        # Check for dependency conflicts -> no conflicts mean CTMC
+        sp.dft.compute_dependency_conflicts(self._dft, use_smt=False, solver_timeout=0)
+
+        self._inst_checker = sp.dft.DFTInstantiator(self._dft)
+
+        # Create properties
+        self.prepare_properties(properties)
+        # Obtain timebounds
+        timebounds, target_label = get_timebounds_and_target(self._properties)
+        assert target_label == "failed"
+        self._timebounds = timebounds
+
+        # Create sample cache
+        self._samples = SampleCache()
+
+        # Get parameters
+        self._parameters = {p.name: p for p in sp.dft.get_parameters(self._dft)}
+        self._time_load = time.process_time() - time_start
+        return self._parameters
+
+    def _sample(self, sample_point):
+        # Create parameter valuation
+        storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
+
+        # Instantiate parametric DFT
+        sample_dft = self._inst_checker.instantiate(storm_valuation)
+        sp.dft.compute_dependency_conflicts(sample_dft, use_smt=False, solver_timeout=0)  # Needed as instantiation looses this information
+
+        if self._all_relevant:
+            empty_sym = sp.dft.DFTSymmetries()
+            info = sample_dft.state_generation_info(empty_sym)
+        else:
+            info = sample_dft.state_generation_info(sample_dft.symmetries())
+
+        seed = random.randrange(65535)
+        generator = stormpy.dft.RandomGenerator.create(seed)
+        simulator = stormpy.dft.DFTSimulator_double(sample_dft, info, generator)
+
+        # Simulate
+        print(' - Simulate DFT {} times'.format(self._no_simulations))
+        results = []
+        for timebound in self._timebounds:
+            successful = 0
+            for i in range(self._no_simulations):
+                res = simulator.simulate_trace(timebound)
+                if res == stormpy.dft.SimulationResult.SUCCESSFUL:
+                    successful += 1
+            results.append(successful)
+        print(' - Finished simulation')
+        self._simulation_results[sample_point] = (results, self._no_simulations)
+        sample_point.set_results([x / self._no_simulations for x in results], refined=False)
+        return sample_point
+
+    def _refine(self, sample_point, precision, ind_precisions=dict()):
+        assert not sample_point.is_refined()
+        if sample_point in self._simulation_results:
+            old_successful, no_sim = self._simulation_results[sample_point]
+        else:
+            old_successful, no_sim = [0] * len(self._timebounds), 0
+
+        sample_point = self._sample(sample_point)
+        new_successful, no_sim_additional = self._simulation_results[sample_point]
+        total_successful = [sum(x) for x in zip(old_successful, new_successful)]
+        total_simulation = no_sim + no_sim_additional
+        self._simulation_results[sample_point] = (total_successful, total_simulation)
+
+        sample_point.set_results([x / total_simulation for x in total_successful], refined=False)
+        return sample_point
+
+    def get_stats(self):
+        return {
+            "model_states": 0,
+            "model_transitions": 0,
+            "orig_model_states": 0,
+            "orig_model_transitions": 0,
+            "no_simulations": self._no_simulations,
+            "no_parameters": len(self._parameters),
+            "no_samples": len(self._samples.get_samples()),
+            "no_properties": len(self._properties),
+            "sample_calls": self._sample_calls,
+            "refined_samples": self._refined_samples,
+            "time_load": round(self._time_load, 4),
+            "time_bisim": round(self._time_bisim, 4),
+            "time_sample": round(self._time_sample, 4)
+        }
