@@ -93,6 +93,7 @@ if __name__ == '__main__':
     sampler.load(model_file, properties, bisim=args.bisim)
     
     # Compute solutions by verifying the instantiated CTMCs
+    cache = str(args.modelfile_nosuffix) + '_N=' + str(args.Nsamples) + '_seed=' + str(args.seed) + '.pkl'
     sampleObj, solutions = sample_solutions( 
                             sampler = sampler,
                             Nsamples = args.Nsamples, 
@@ -100,7 +101,7 @@ if __name__ == '__main__':
                             param_list = list(param_dic.keys()),
                             param_values = param_values,
                             root_dir = root_dir,
-                            cache = False, 
+                            cache = cache, 
                             exact = args.exact)
     
     # If approximate model checker is active, also refine solution vectors
@@ -169,7 +170,10 @@ if __name__ == '__main__':
         
     print("\n===== Validation completed at:", getTime(),"=====")
     
-    dfs['storm_stats'] = print_stats(sampler.get_stats())
+    try:
+        dfs['storm_stats'] = print_stats(sampler.get_stats())
+    except:
+        True
     
     # Save raw results in Excel file
     dfs['arguments'] = pd.Series(vars(args), name='value')
