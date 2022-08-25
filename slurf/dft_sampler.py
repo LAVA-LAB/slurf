@@ -31,6 +31,9 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
     This simple interface builds a parametric DFT, generates the corresponding parametric CTMC
     and then uses an instantiation checker to check the model.
     """
+    def __init__(self, all_relevant=False):
+        super(DftModelSamplerInterface, self).__init__()
+        self._all_relevant=all_relevant
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -62,7 +65,11 @@ class DftParametricModelSamplerInterface(DftModelSamplerInterface):
         print(' - Start building state space')
         # Set empty symmetry as rates can change which destroys symmetries
         empty_sym = sp.dft.DFTSymmetries()
-        model = sp.dft.build_model(self._dft, empty_sym)
+        if self._all_relevant:
+            relevant_events = sp.dft.compute_relevant_events(self._dft, [], ["all"])
+            model = sp.dft.build_model(self._dft, empty_sym, relevant_events)
+        else:
+            model = sp.dft.build_model(self._dft, empty_sym)
         print(' - Finished building model')
 
         if model.model_type == sp.ModelType.MA:
@@ -80,9 +87,10 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
     Refinement can be done by exploring more of the state space.
     """
 
-    def __init__(self):
+    def __init__(self, all_relevant=False):
         super(DftModelSamplerInterface, self).__init__()
         self._builders = dict()
+        self._all_relevant=all_relevant
 
     def load(self, model, properties, bisim=True, constants=None):
         """
@@ -131,7 +139,12 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         # Create new builder
         assert sample_point not in self._builders
-        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+
+        if self._all_relevant:
+            empty_sym = sp.dft.DFTSymmetries()
+            builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, empty_sym)
+        else:
+            builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
         iteration = 0
 
         # Refine approximation from DFT
@@ -176,7 +189,12 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
         if precision == 0:
             # Build complete CTMC from DFT
             print(' - Start building complete state space')
-            self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
+            if self._all_relevant:
+                empty_sym = sp.dft.DFTSymmetries()
+                relevant_events = sp.dft.compute_relevant_events(self._dft, [], ["all"])
+                self._model = sp.dft.build_model(sample_dft, empty_sym, relevant_events)
+            else:
+                self._model = sp.dft.build_model(sample_dft, sample_dft.symmetries())
             self._init_state = self._model.initial_states[0]
             print(' - Finished building complete model')
 
@@ -199,7 +217,11 @@ class DftConcreteApproximationSamplerInterface(DftModelSamplerInterface):
 
         # Segfault occurs when trying to reuse builder
         # -> temporary solution is to rebuild to given iteration without model checking inbetween
-        builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
+        if self._all_relevant:
+            empty_sym = sp.dft.DFTSymmetries()
+            builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, empty_sym)
+        else:
+            builder = stormpy.dft.ExplicitDFTModelBuilder_double(sample_dft, sample_dft.symmetries())
         for i in range(iteration + 1):
             builder.build(i, 1.0, sp.dft.ApproximationHeuristic.PROBABILITY)
 

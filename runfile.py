@@ -72,15 +72,17 @@ if __name__ == '__main__':
         expdata['instantiator'] = 'CTMC'
 
     else:
+        # Current hack to get cabinets to work
+        all_relevant=True
         if args.dft_checker == 'parametric':
             # Build parametric model once and sample on (partial or 
             # complete) CTMC
-            sampler = DftParametricModelSamplerInterface()  
+            sampler = DftParametricModelSamplerInterface(all_relevant)  
             expdata['instantiator'] = 'DFT (parametric)'
             
         else:
             # Build partial models for each sample
-            sampler = DftConcreteApproximationSamplerInterface()
+            sampler = DftConcreteApproximationSamplerInterface(all_relevant)
             expdata['instantiator'] = 'DFT (concrete)'
             
     sampler.set_max_cluster_distance(1e-2)
