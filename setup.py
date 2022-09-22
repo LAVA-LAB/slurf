@@ -34,7 +34,7 @@ setup(
         'stormpy>=1.7.0', # Back-end model checker
         'cvxpy>=1.1.17',
         'matplotlib>=3.5.1',
-        'numpy>=1.21.4',
+        'numpy>=1.23.1',
         'openpyxl', # Read Excel files
         'seaborn>=0.11.2',
         'tqdm>=4.62.3', # Progress bar

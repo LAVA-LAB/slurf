@@ -26,7 +26,7 @@ from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
 from slurf.dft_sampler import DftParametricModelSamplerInterface, \
     DftConcreteApproximationSamplerInterface, DftSimulationSamplerInterface
 from slurf.approximate_ctmc_checker import ApproxHeuristic
-from slurf.commons import path, getTime, print_stats, set_solution_df, \
+from slurf.util import path, getTime, print_stats, set_solution_df, \
     set_output_path
 from slurf.parser import parse_arguments
 from slurf.export import plot_results, save_results, export_benchmark_table

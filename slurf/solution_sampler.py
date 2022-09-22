@@ -1,12 +1,11 @@
 import numpy as np
 import os
 import pandas as pd
-import copy
 import pathlib
 
 from slurf.sample_cache import SampleCache, import_sample_cache, \
     export_sample_cache
-from slurf.commons import path
+from slurf.util import path
 
 def load_distribution(root_dir, model_path, model_type,
                       parameters_file=None, properties_file=None):

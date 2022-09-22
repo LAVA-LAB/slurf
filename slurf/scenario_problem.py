@@ -5,7 +5,7 @@ import copy
 import time
 
 from slurf.compute_bound import etaLow
-from slurf.commons import intersect
+from slurf.util import intersect
 from slurf.solution_sampler import refine_solutions
 from slurf.export import plot_results
 
@@ -308,7 +308,6 @@ class scenarioProblem:
             del disable_mask
 
         # Compute complexity and store critical sample set
-        
         critical_set = self.sample_ids[support_mask]
         
         if self.exact:

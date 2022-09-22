@@ -13,7 +13,7 @@ from scipy.spatial import HalfspaceIntersection, ConvexHull
 import matplotlib as mpl
 mpl.rcParams['pdf.fonttype'] = 42
 
-from slurf.commons import path
+from slurf.util import path
 
 def plot_results(output_dir, args, regions, solutions, file_suffix=None):
     """

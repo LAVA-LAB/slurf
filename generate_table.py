@@ -9,7 +9,7 @@ import pandas as pd
 import argparse
 import os
 import glob, json
-from slurf.commons import path
+from slurf.util import path
 from pathlib import Path
 
 def is_unique(s):
