@@ -20,6 +20,7 @@ import numpy as np
 
 from slurf.solution_sampler import load_distribution, sample_solutions, \
     get_parameter_values, validate_solutions, refine_solutions
+from slurf.load_valuations import load_fixed_valuations
 from slurf.scenario_problem import compute_confidence_region, \
     compute_confidence_per_dim, refinement_scheme, init_rho_list
 from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
@@ -62,8 +63,15 @@ if __name__ == '__main__':
     print("\n===== Script initialized at:", getTime(),"=====")
     
     # Sample parameter values from the probability distribution
-    param_values = get_parameter_values(args.Nsamples, param_dic)
-    
+    if 'values' not in list(param_dic.values())[0]:
+        print('- Sample from distribution...')
+        param_values = get_parameter_values(args.Nsamples, param_dic)
+    else:
+        print('- Load fixed parameter valuations...')
+        param_values = load_fixed_valuations(param_dic, args.Nsamples)
+        
+        print(param_values.shape)
+        
     print("\n===== Parameter values sampled at:", getTime(),"=====")
     
     # Sample parameter values

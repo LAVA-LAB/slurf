@@ -1,0 +1,26 @@
+label;property;time;enabled
+T=5;P=? [F<=5 s=5];5;True
+T=10;P=? [F<=10 s=5];10;True
+T=15;P=? [F<=15 s=5];15;True
+T=20;P=? [F<=20 s=5];20;True
+T=25;P=? [F<=25 s=5];25;True
+T=30;P=? [F<=30 s=5];30;True
+T=35;P=? [F<=35 s=5];35;True
+T=40;P=? [F<=40 s=5];40;True
+T=45;P=? [F<=45 s=5];45;True
+T=50;P=? [F<=50 s=5];50;True
+T=55;P=? [F<=55 s=5];55;True
+T=60;P=? [F<=60 s=5];60;True
+T=65;P=? [F<=65 s=5];65;True
+T=70;P=? [F<=70 s=5];70;True
+T=75;P=? [F<=75 s=5];75;True
+T=80;P=? [F<=80 s=5];80;True
+T=85;P=? [F<=85 s=5];85;True
+T=90;P=? [F<=90 s=5];90;True
+T=95;P=? [F<=95 s=5];95;True
+T=100;P=? [F<=100 s=5];100;True
+T=105;P=? [F<=105 s=5];105;True
+T=110;P=? [F<=110 s=5];110;True
+T=115;P=? [F<=115 s=5];115;True
+T=120;P=? [F<=120 s=5];120;True
+T=125;P=? [F<=125 s=5];125;True
