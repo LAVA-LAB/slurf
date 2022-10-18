@@ -52,8 +52,8 @@ def load_distribution(root_dir, model_path, model_type,
     else:
         property_df = pd.read_csv(properties_path, sep=';')
 
-    # Interpretation of properties differs between CTMCs and DFTs
-    if model_type == 'CTMC':
+    # Interpretation of properties differs between Markov chains and DFTs
+    if model_type == 'DTMC' or model_type == 'CTMC':
         
         property_df = property_df[ property_df['enabled'] == True ]
         properties = property_df['property'].to_list()
@@ -141,7 +141,7 @@ def sample_solutions(sampler, Nsamples, properties, param_list,
 
     Parameters
     ----------
-    :sampler: Sampler object (for either CTMC of DFT)
+    :sampler: Sampler object (for either Markov chain or DFT)
     :Nsamples: Number of samples
     :properties: List of property strings
     :param_list: Names (labels) of the parameters
@@ -250,7 +250,7 @@ def refine_solutions(sampler, sampleObj, solutions, idx, precision, ind_precisio
 
     Parameters
     ----------
-    :sampler: Sampler object (for either CTMC of DFT)
+    :sampler: Sampler object (for either Markov chain or DFT)
     :solutions: 3D np.array with solutions
     :idx: List of indices to refine
     :precision: Maximal allowed distance between upper and lower bounds on results.
@@ -284,7 +284,7 @@ def validate_solutions(sampler, regions, Nvalidate, properties,
 
     Parameters
     ----------
-    :sampler: Sampler object (for either CTMC of DFT)
+    :sampler: Sampler object (for either Markov chain or DFT)
     :regions: Solutions to scenario problems (for multiple values of rho)
     :Nvaliate: Number of samples
     :properties: List of property strings

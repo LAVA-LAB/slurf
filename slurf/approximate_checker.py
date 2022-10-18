@@ -68,26 +68,38 @@ class SubModelInfo:
         self._model = submodel
         assert len(self._model.initial_states) == 1
         self._init_state = self._model.initial_states[0]
-        self._instantiator = sp.pars.PCtmcInstantiator(self._model)
+        # Create instantiation model checkers
+        if self._model.model_type == stormpy.ModelType.DTMC:
+            self._instantiator = sp.pars.PDtmcInstantiator(self._model)
+        elif self._model.model_type == stormpy.ModelType.CTMC:
+            self._instantiator = sp.pars.PCtmcInstantiator(self._model)
+        else:
+            raise NotImplementedError("Model type {} not supported".format(self._model.model_type))
 
 
 class ApproximateChecker:
     """
-    For a given pCTMC, check CTMC by approximating the CTMC.
+    For a given pDTMC or pCTMC, check the DTMC/CTMC by building a partial state space.
     """
 
-    def __init__(self, pctmc, model_desc=None, options=ApproximationOptions()):
-        self._original_model = pctmc
+    def __init__(self, pmc, model_desc=None, options=ApproximationOptions()):
+        self._original_model = pmc
         self._original_desc = model_desc
         self._options = options
         assert len(self._original_model.initial_states) == 1
         self._original_init_state = self._original_model.initial_states[0]
         self._environment = sp.Environment()
         self._clusters = dict()
-        self._instantiator_original = sp.pars.PCtmcInstantiator(self._original_model)
         self._abort_label = "deadl"
         self._formulas = []
         self._reach_label = None
+        # Create instantiation model checkers
+        if self._original_model.model_type == stormpy.ModelType.DTMC:
+            self._instantiator_original = sp.pars.PDtmcInstantiator(self._original_model)
+        elif self._original_model.model_type == stormpy.ModelType.CTMC:
+            self._instantiator_original = sp.pars.PCtmcInstantiator(self._original_model)
+        else:
+            raise NotImplementedError("Model type {} not supported".format(self._model.model_type))
 
     def check(self, sample_point, instantiation, properties, precision, ind_precisions=dict()):
         if ind_precisions:
@@ -122,19 +134,19 @@ class ApproximateChecker:
             submodel_info = ApproximateChecker.build_submodel(submodel_info, self._original_model, self._abort_label)
 
         # Instantiate parametric model
-        inst_ctmc = submodel_info._instantiator.instantiate(instantiation)
-        assert len(inst_ctmc.initial_states) == 1
-        init_state = inst_ctmc.initial_states[0]
+        inst_mc = submodel_info._instantiator.instantiate(instantiation)
+        assert len(inst_mc.initial_states) == 1
+        init_state = inst_mc.initial_states[0]
 
         while True:
             if submodel_info._exact:
                 # Compute results on exact model
                 results = []
                 for lb_formula, _ in self._formulas:
-                    results.append(self._compute_formula(inst_ctmc, lb_formula, init_state, self._environment))
+                    results.append(self._compute_formula(inst_mc, lb_formula, init_state, self._environment))
                 break
             else:
-                results = self.compute_bounds(inst_ctmc, self._formulas, init_state, precision)
+                results = self.compute_bounds(inst_mc, self._formulas, init_state, precision)
                 if results is None:
                     # Refine further
                     submodel_info = self._refine_absorbing_states(submodel_info, instantiation, self._reach_label, self._options._heuristic)
@@ -207,7 +219,7 @@ class ApproximateChecker:
         options.fix_deadlocks = True
         submodel_result = sp.construct_submodel(orig_model, sp.BitVector(orig_model.nr_states, True), selected_outgoing_transitions, False, options)
         submodel_info.update_model(submodel_result.model)
-        # sp.export_to_drn(submodel, "test_ctmc.drn")
+        # sp.export_to_drn(submodel, "test_mc.drn")
         assert submodel_result.deadlock_label is None or abort_label == submodel_result.deadlock_label
         if len(submodel_info.get_absorbing_states()) == 0:
             submodel_info._exact = True
@@ -238,12 +250,12 @@ class ApproximateChecker:
         return submodel_info
 
     def _absorbing_states_by_expected_time(self, submodel_info, instantiation, reach_label, threshold):
-        # Check expected time on CTMC to as heuristic for important/unimportant states
+        # Check expected steps/time on DTMC/CTMC as heuristic for important/unimportant states
         if len(submodel_info._state_expected_times) == 0:
             # Initially compute expected times
             formula = ApproximateChecker.parse_property(f'T=? [F {reach_label}]', self._original_desc)
 
-            # Check CTMC
+            # Check Markov chain
             inst_model = self._instantiator_original.instantiate(instantiation)
             task = sp.CheckTask(formula, False)  # Compute results for all states
             result = sp.core._model_checking_sparse_engine(inst_model, task, self._environment)

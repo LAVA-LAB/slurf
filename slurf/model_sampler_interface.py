@@ -1,5 +1,5 @@
 from slurf.sample_cache import SampleCache
-from slurf.approximate_ctmc_checker import ApproximationOptions
+from slurf.approximate_checker import ApproximationOptions
 
 import stormpy as sp
 

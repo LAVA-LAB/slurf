@@ -1,4 +1,4 @@
-from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
+from slurf.markov_chain_sampler import MarkovChainSamplerInterface
 from slurf.sample_cache import SampleCache
 from slurf.model_sampler_interface import get_timebounds_and_target
 import slurf.util
@@ -11,17 +11,17 @@ import time
 import random
 
 
-class DftModelSamplerInterface(CtmcReliabilityModelSamplerInterface):
+class DftModelSamplerInterface(MarkovChainSamplerInterface):
     """
     General class for DFT sampler interface.
     """
 
     def __init__(self):
-        super(CtmcReliabilityModelSamplerInterface, self).__init__()
+        super(MarkovChainSamplerInterface, self).__init__()
         self._dft = None
 
     def get_stats(self):
-        stats = super(CtmcReliabilityModelSamplerInterface, self).get_stats()
+        stats = super(MarkovChainSamplerInterface, self).get_stats()
         stats["dft_be"] = self._dft.nr_be()
         stats["dft_elements"] = self._dft.nr_elements()
         stats["dft_dynamic"] = self._dft.nr_dynamic()

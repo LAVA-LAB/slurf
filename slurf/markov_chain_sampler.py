@@ -1,5 +1,5 @@
 from slurf.model_sampler_interface import ModelSamplerInterface
-from slurf.approximate_ctmc_checker import ApproximateChecker
+from slurf.approximate_checker import ApproximateChecker
 
 import stormpy as sp
 import stormpy.pars
@@ -9,21 +9,21 @@ import os.path
 import time
 
 
-class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
+class MarkovChainSamplerInterface(ModelSamplerInterface):
     """
-    This simple interface builds a parametric CTMC and then uses an 
+    This simple interface builds a parametric DTMC or CTMC and then uses an 
     instantiation checker to check the model.
     """
 
     def init_from_model(self, model, bisim=True):
         """
-        Initialize sampler from CTMC model.
+        Initialize sampler from DTMC or CTMC model.
 
         Parameters
         ----------
-        model CTMC.
+        model DTMC or CTMC.
 
-        Returns Dict of all params. and their bounds (default [0, infinity)).
+        Returns Dict of all parameters and their bounds (default [0, infinity)).
         -------
 
         """
@@ -45,7 +45,12 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._parameters = {p.name: p for p in self._model.collect_all_parameters()}
 
         # Create instantiation model checkers
-        self._instantiator = sp.pars.PCtmcInstantiator(self._model)
+        if self._model.model_type == stormpy.ModelType.DTMC:
+            self._instantiator = sp.pars.PDtmcInstantiator(self._model)
+        elif self._model.model_type == stormpy.ModelType.CTMC:
+            self._instantiator = sp.pars.PCtmcInstantiator(self._model)
+        else:
+            raise NotImplementedError("Model type {} not supported".format(self._model.model_type))
         self._inst_checker_approx = ApproximateChecker(self._model, self._symb_desc, self._approx_options)
 
         # Return all parameters each with range (0 infinity)
@@ -87,7 +92,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
 
         Parameters
         ----------
-        model A CTMC with a label.
+        model A Markov chain with a label.
         properties Properties here is either a tuple (event, [time bounds]) or 
         a list of properties.
         bisim Whether to apply bisimulation.
@@ -113,7 +118,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         self._symb_desc = stormpy.SymbolicModelDescription(model_desc)
         # Create properties
         self.prepare_properties(properties)
-        # Build (sparse) CTMC
+        # Build (sparse) Markov chain
         options = sp.BuilderOptions([p.raw_formula for p in self._properties])
         model = sp.build_sparse_parametric_model_with_options(model_desc, options)
         parameters = self.init_from_model(model, bisim)
@@ -124,7 +129,7 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
         # Create parameter valuation
         storm_valuation = {self._parameters[p]: sp.RationalRF(val) for p, val in sample_point.get_valuation().items()}
 
-        # Check CTMC using approximation checker
+        # Check Markov chain using approximation checker
         precision = 10
         results, exact = self._inst_checker_approx.check(sample_point, storm_valuation, self._properties, precision)
         # Add result
@@ -140,13 +145,8 @@ class CtmcReliabilityModelSamplerInterface(ModelSamplerInterface):
             # Compute exact results
             # Instantiate model
             inst_model = self._instantiator.instantiate(storm_valuation)
-
-            env = sp.Environment()
-            # Analyse each property individually (Storm does not allow multiple properties)
-            results = []
-            for prop in self._properties:
-                # Check CTMC
-                results.append(stormpy.model_checking(inst_model, prop).at(self._init_state))
+            # Compute results
+            results = compute_multiple_properties(inst_model, self._properties, self._init_state)
             # Add result
             sample_point.set_results(results, refined=True)
             return sample_point

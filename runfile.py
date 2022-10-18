@@ -23,10 +23,10 @@ from slurf.solution_sampler import load_distribution, sample_solutions, \
 from slurf.load_valuations import load_fixed_valuations
 from slurf.scenario_problem import compute_confidence_region, \
     compute_confidence_per_dim, refinement_scheme, init_rho_list
-from slurf.ctmc_sampler import CtmcReliabilityModelSamplerInterface
+from slurf.markov_chain_sampler import MarkovChainSamplerInterface
 from slurf.dft_sampler import DftParametricModelSamplerInterface, \
     DftConcreteApproximationSamplerInterface, DftSimulationSamplerInterface
-from slurf.approximate_ctmc_checker import ApproxHeuristic
+from slurf.approximate_checker import ApproxHeuristic
 from slurf.util import path, getTime, print_stats, set_solution_df, \
     set_output_path
 from slurf.parser import parse_arguments
@@ -73,8 +73,11 @@ if __name__ == '__main__':
     print("\n===== Parameter values sampled at:", getTime(),"=====")
     
     # Sample parameter values
-    if args.model_type == 'CTMC':
-        sampler = CtmcReliabilityModelSamplerInterface()
+    if args.model_type == 'DTMC':
+        sampler = MarkovChainSamplerInterface()
+        expdata['instantiator'] = 'DTMC'
+    elif args.model_type == 'CTMC':
+        sampler = MarkovChainSamplerInterface()
         expdata['instantiator'] = 'CTMC'
 
     else:
