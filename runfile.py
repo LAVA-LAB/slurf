@@ -70,8 +70,6 @@ if __name__ == '__main__':
         print('- Load fixed parameter valuations...')
         param_values = load_fixed_valuations(param_dic, args.Nsamples)
         
-        print(param_values.shape)
-        
     print("\n===== Parameter values sampled at:", getTime(),"=====")
     
     # Sample parameter values
