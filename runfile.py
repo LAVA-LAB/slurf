@@ -70,6 +70,10 @@ if __name__ == '__main__':
         print('- Load fixed parameter valuations...')
         param_values = load_fixed_valuations(param_dic, args.Nsamples)
         
+        
+    print(list(param_dic.keys()))
+    print(param_values)
+    
     print("\n===== Parameter values sampled at:", getTime(),"=====")
     
     # Sample parameter values
@@ -118,6 +122,9 @@ if __name__ == '__main__':
                             root_dir = root_dir,
                             cache = cache, 
                             exact = args.exact)
+    
+    print(properties)
+    print(solutions)
     
     # If approximate model checker is active, also refine solution vectors
     if not args.exact:

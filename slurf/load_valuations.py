@@ -14,6 +14,6 @@ def load_fixed_valuations(param_dic, N):
     # Each column represents a parameter; each row a valuation
     enum_concat = np.vstack(enum).T
     
-    assert len(enum_concat) == N
+    assert len(enum_concat) >= N
     
-    return enum_concat
+    return enum_concat[:N, :]
