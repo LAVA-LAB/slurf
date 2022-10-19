@@ -1,9 +1,9 @@
 dtmc
 
-const double p11=0.9;
-const double p22=0.9;
-const double p33=0.9;
-const double p44=0.9;
+const double p11;
+const double p22;
+const double p33;
+const double p44;
 
 module pipe
 
