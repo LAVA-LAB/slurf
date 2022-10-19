@@ -145,8 +145,14 @@ class MarkovChainSamplerInterface(ModelSamplerInterface):
             # Compute exact results
             # Instantiate model
             inst_model = self._instantiator.instantiate(storm_valuation)
-            # Compute results
-            results = compute_multiple_properties(inst_model, self._properties, self._init_state)
+
+            env = sp.Environment()
+            # Analyse each property individually (Storm does not allow multiple properties)
+            results = []
+            for prop in self._properties:
+                # Check Markov chain
+                results.append(stormpy.model_checking(inst_model, prop).at(self._init_state))
+
             # Add result
             sample_point.set_results(results, refined=True)
             return sample_point
