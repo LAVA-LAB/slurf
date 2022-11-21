@@ -43,6 +43,11 @@ def parse_arguments(manualModel=None, nobisim=False):
                         help="Disable bisimulation")
     parser.set_defaults(bisim=True)
     
+    # Enable/disable cache usage
+    parser.add_argument('--no-cache', dest='cache', action='store_false',
+                        help="Disable usage of solution cache")
+    parser.set_defaults(cache=True)
+    
     # Number of repetitions
     parser.add_argument('--seed', type=int, action="store", dest='seed', 
                         default=1, help="Random seed to set in the experiment")

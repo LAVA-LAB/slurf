@@ -1,5 +1,10 @@
 dtmc
 
+const double s1_init;
+const double s2_init;
+const double s3_init;
+const double s4_init;
+const double s5_init;
 const double p11;
 const double p22;
 const double p33;
@@ -7,8 +12,9 @@ const double p44;
 
 module pipe
 
-    s : [1..5] init 1;
+    s : [0..5] init 0;
     
+	[] s=0 -> s1_init : (s'=1) + s2_init : (s'=2) + s3_init : (s'=3) + s4_init : (s'=4) + s5_init : (s'=5);	
     [] s=1 -> p11 : (s'=1) + (1-p11) : (s'=2);
     [] s=2 -> p22 : (s'=2) + (1-p22) : (s'=3);
     [] s=3 -> p33 : (s'=3) + (1-p33) : (s'=4);

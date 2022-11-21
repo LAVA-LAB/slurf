@@ -111,8 +111,15 @@ if __name__ == '__main__':
     model_file = path(root_dir, "models", model_file)
     sampler.load(model_file, properties, bisim=args.bisim)
     
+    # Check if cache for solutions is enabled
+    if args.cache:
+        cache = str(args.modelfile_nosuffix) + '_N=' + \
+                str(args.Nsamples) + '_seed=' + str(args.seed) + '.pkl'
+    else:
+        cache = False
+        print('- Disable cache for solutions')    
+    
     # Compute solutions by verifying the instantiated CTMCs
-    cache = str(args.modelfile_nosuffix) + '_N=' + str(args.Nsamples) + '_seed=' + str(args.seed) + '.pkl'
     sampleObj, solutions = sample_solutions( 
                             sampler = sampler,
                             Nsamples = args.Nsamples, 
